@@ -12,12 +12,20 @@ export enum UserRole {
   RIDER = 'RIDER',
 }
 
+export enum ActorType {
+  SYSTEM = 'SYSTEM',
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+}
+
 // ─── Delivery Lifecycle ──────────────────────────────────────────────────────
 
 export enum DeliveryStatus {
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
   PENDING = 'PENDING',
   ASSIGNED = 'ASSIGNED',
   IN_TRANSIT = 'IN_TRANSIT',
+  EN_ROUTE = 'EN_ROUTE',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
 }
@@ -42,8 +50,46 @@ export enum EntityType {
   DELIVERY = 'DELIVERY',
   RIDER = 'RIDER',
   COMPANY = 'COMPANY',
+  DISPATCHER = 'DISPATCHER',
+  SYSTEM = 'SYSTEM',
   CHAT_MESSAGE = 'CHAT_MESSAGE',
   COMPANY_INTEGRATION = 'COMPANY_INTEGRATION',
+}
+
+// ─── Integrations & Platforms ─────────────────────────────────────────────────
+
+export enum MappingPlatform {
+  WHATSAPP = 'WHATSAPP',
+  INSTAGRAM = 'INSTAGRAM',
+  FACEBOOK = 'FACEBOOK',
+  TIKTOK = 'TIKTOK',
+}
+
+export enum MomentoType {
+  MAIN = 'MAIN',
+  AI = 'AI',
+}
+
+// ─── Billing & Subscriptions ──────────────────────────────────────────────────
+
+export enum SubscriptionTier {
+  FREE = 'FREE',
+  STARTER = 'STARTER',
+  PRO = 'PRO',
+  ENTERPRISE = 'ENTERPRISE',
+}
+
+export enum TransactionStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  REVERSED = 'REVERSED',
+}
+
+export enum PaymentProvider {
+  SQUAD = 'SQUAD',
+  PAYSTACK = 'PAYSTACK',
+  FLUTTERWAVE = 'FLUTTERWAVE',
 }
 
 export enum EventType {
