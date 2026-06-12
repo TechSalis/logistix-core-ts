@@ -23,7 +23,8 @@
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
     "check": "tsc --noEmit",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
   },
   "keywords": ["logistix", "shared", "types", "enums"],
   "author": "TechSalis",
