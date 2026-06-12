@@ -70,13 +70,21 @@ export enum MomentoType {
   AI = 'AI',
 }
 
+// ─── Vehicle Types ────────────────────────────────────────────────────────────
+
+export enum VehicleType {
+  BIKE = 'BIKE',
+  CAR = 'CAR',
+  VAN = 'VAN',
+  TRUCK = 'TRUCK',
+}
+
 // ─── Billing & Subscriptions ──────────────────────────────────────────────────
 
 export enum SubscriptionTier {
   FREE = 'FREE',
   STARTER = 'STARTER',
-  PRO = 'PRO',
-  ENTERPRISE = 'ENTERPRISE',
+  PROFESSIONAL = 'PROFESSIONAL',
 }
 
 export enum TransactionStatus {

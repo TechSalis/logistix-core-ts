@@ -50,8 +50,6 @@ const deliveries = localParse(rawText);
 | `BRAND_PHONE_NUMBER`    | `09069184604`        | Support phone number         |
 | `BRAND_LOGO_URL`        | `/icon_transparent.png` | Logo URL                  |
 | `BRAND_FAVICON_URL`     | `/favicon.png`       | Favicon URL                  |
-| `PUBLIC_APP_STORE_URL`  | Apple App Store      | iOS app link                 |
-| `PUBLIC_PLAY_STORE_URL` | Google Play Store    | Android app link             |
 | `ENABLE_TRACKING_CODES` | `true`               | Enable delivery tracking     |
 | `BRAND_TRACKING_LINK`   | `https://{domain}/track` | Tracking page URL        |
 
