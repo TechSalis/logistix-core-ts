@@ -29,7 +29,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build",
-    "prepare": "husky"
+    "prepare": "npm run build && (husky || true)"
   },
   "lint-staged": {
     "*.{js,ts}": [
