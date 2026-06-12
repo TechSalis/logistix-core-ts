@@ -82,7 +82,9 @@ export function buildSystemConfig(env: Record<string, string | undefined> = {}):
         console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
       }
     }
-    throw new Error('System configuration validation failed.', { cause: err });
+    const newErr = new Error('System configuration validation failed.');
+    (newErr as any).cause = err;
+    throw newErr;
   }
 }
 
