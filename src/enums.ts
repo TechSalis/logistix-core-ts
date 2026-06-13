@@ -43,6 +43,12 @@ export enum RiderStatus {
   BUSY = 'BUSY',
 }
 
+export enum PermitStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
 // ─── System & Events ─────────────────────────────────────────────────────────
 
 export enum EntityType {
@@ -54,6 +60,8 @@ export enum EntityType {
   SYSTEM = 'SYSTEM',
   CHAT_MESSAGE = 'CHAT_MESSAGE',
   COMPANY_INTEGRATION = 'COMPANY_INTEGRATION',
+  MESSAGE = 'MESSAGE',
+  CONVERSATION = 'CONVERSATION',
 }
 
 // ─── Integrations & Platforms ─────────────────────────────────────────────────
@@ -94,6 +102,13 @@ export enum TransactionStatus {
   REVERSED = 'REVERSED',
 }
 
+export enum LedgerAdjustmentType {
+  CREDIT = 'CREDIT',
+  DEBIT = 'DEBIT',
+  CORRECTION = 'CORRECTION',
+  REFUND = 'REFUND',
+}
+
 export enum PaymentProvider {
   SQUAD = 'SQUAD',
   PAYSTACK = 'PAYSTACK',
@@ -120,6 +135,12 @@ export enum EventType {
   INTEGRATION_SETUP = 'INTEGRATION_SETUP',
   INTEGRATION_ACTIVATED = 'INTEGRATION_ACTIVATED',
   INTEGRATION_DEACTIVATED = 'INTEGRATION_DEACTIVATED',
+  MESSAGE_DELETED = 'MESSAGE_DELETED',
+  DISPATCHER_DELETED = 'DISPATCHER_DELETED',
+  DOWNGRADE = 'DOWNGRADE',
+  CANCEL_PAYMENT_TIMEOUT = 'CANCEL_PAYMENT_TIMEOUT',
+  SUMMARIZE_AND_PRUNE = 'SUMMARIZE_AND_PRUNE',
+  AI_EXECUTION = 'AI_EXECUTION',
 }
 
 export enum SubscriptionEventType {
