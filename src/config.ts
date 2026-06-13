@@ -28,6 +28,8 @@ export interface SystemConfig {
   readonly trackingLink: string;
   /** Business working hours per weekday */
   readonly workingHours: Record<string, { start: string; close: string }>;
+  /** The unique business handle representing the central/system company hub */
+  readonly systemHubHandle: string;
 }
 
 import { z } from 'zod';
@@ -50,6 +52,7 @@ const SystemConfigSchema = z.object({
   BRAND_FAVICON_URL: z.string().optional(),
   BRAND_TRACKING_LINK: z.string().optional(),
   ENABLE_TRACKING_CODES: z.string().optional(),
+  SYSTEM_HUB_HANDLE: z.string().optional(),
 });
 
 /**
@@ -74,6 +77,7 @@ export function buildSystemConfig(env: Record<string, string | undefined> = {}):
       enableTrackingCodes: (validated.ENABLE_TRACKING_CODES || 'true') === 'true',
       trackingLink: validated.BRAND_TRACKING_LINK || `https://${domain}/track`,
       workingHours: DEFAULT_WORKING_HOURS,
+      systemHubHandle: validated.SYSTEM_HUB_HANDLE || 'logistix',
     };
   } catch (err) {
     if (err instanceof z.ZodError) {
