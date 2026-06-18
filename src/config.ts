@@ -24,8 +24,6 @@ export interface SystemConfig {
   readonly faviconUrl: string;
   /** Whether delivery tracking codes are enabled */
   readonly enableTrackingCodes: boolean;
-  /** Full public tracking link, e.g. "https://logistix.team/track" */
-  readonly trackingLink: string;
   /** Business working hours per weekday */
   readonly workingHours: Record<string, { start: string; close: string }>;
   /** The unique business handle representing the central/system company hub */
@@ -50,7 +48,6 @@ const SystemConfigSchema = z.object({
   BRAND_PHONE_NUMBER: z.string().optional(),
   BRAND_LOGO_URL: z.string().optional(),
   BRAND_FAVICON_URL: z.string().optional(),
-  BRAND_TRACKING_LINK: z.string().optional(),
   ENABLE_TRACKING_CODES: z.string().optional(),
   SYSTEM_HUB_HANDLE: z.string().optional(),
 });
@@ -75,7 +72,6 @@ export function buildSystemConfig(env: Record<string, string | undefined> = {}):
       logoUrl: validated.BRAND_LOGO_URL || '/icon_transparent.png',
       faviconUrl: validated.BRAND_FAVICON_URL || '/favicon.png',
       enableTrackingCodes: (validated.ENABLE_TRACKING_CODES || 'true') === 'true',
-      trackingLink: validated.BRAND_TRACKING_LINK || `https://${domain}/track`,
       workingHours: DEFAULT_WORKING_HOURS,
       systemHubHandle: validated.SYSTEM_HUB_HANDLE || 'logistix',
     };

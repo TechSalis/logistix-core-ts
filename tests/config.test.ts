@@ -22,11 +22,6 @@ describe('buildSystemConfig', () => {
     expect(config.enableTrackingCodes).toBe(false);
   });
 
-  it('builds tracking link from hardcoded domain', () => {
-    const config = buildSystemConfig({});
-    expect(config.trackingLink).toBe('https://logistix.team/track');
-  });
-
   it('has working hours for Monday–Saturday by default', () => {
     const config = buildSystemConfig({});
     expect(config.workingHours['Monday']).toEqual({ start: '07:00', close: '19:00' });
@@ -40,7 +35,7 @@ describe('SYSTEM_CONFIG singleton', () => {
     expect(SYSTEM_CONFIG).toHaveProperty('brandName');
     expect(SYSTEM_CONFIG).toHaveProperty('domain');
     expect(SYSTEM_CONFIG).toHaveProperty('supportEmail');
-    expect(SYSTEM_CONFIG).toHaveProperty('trackingLink');
+
     expect(SYSTEM_CONFIG).toHaveProperty('workingHours');
     expect(typeof SYSTEM_CONFIG.enableTrackingCodes).toBe('boolean');
   });
