@@ -41,3 +41,4 @@ export type { ParsedDelivery } from './deliveryParser.js';
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetchWithTimeout.js';
 export type { FetchWithTimeoutOptions } from './fetchWithTimeout.js';
+export * from './services/email.service';
