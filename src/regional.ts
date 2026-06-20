@@ -3,19 +3,19 @@ import { z } from 'zod';
 export interface RegionalConfig {
   readonly defaultCountryCode: string;
   readonly timeZone: string;
-  readonly nigerianStates: readonly string[];
+  readonly states: readonly string[];
 }
 
 const regionalConfigSchema = z.object({
   defaultCountryCode: z.string(),
   timeZone: z.string(),
-  nigerianStates: z.array(z.string()),
+  states: z.array(z.string()),
 });
 
 const rawRegionalConfig = {
   defaultCountryCode: '234',
   timeZone: 'Africa/Lagos',
-  nigerianStates: [
+  states: [
     'Abia',
     'Adamawa',
     'Akwa Ibom',

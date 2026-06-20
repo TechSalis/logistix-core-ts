@@ -24,7 +24,15 @@ export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
 export type { LimitsConfig, TierLimits } from './limits.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
-export { BILLING_CONFIG } from './billing.js';
+export {
+  BILLING_CONFIG,
+  getSubscriptionPrice,
+  isBillableTier,
+  formatAmount,
+  shouldBillNow,
+  shouldRetryPayment,
+  getNextRetryDate,
+} from './billing.js';
 
 // ─── Seed Data / Defaults ─────────────────────────────────────────────────────
 export {

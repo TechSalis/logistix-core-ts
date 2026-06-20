@@ -58,9 +58,8 @@ export enum EntityType {
   COMPANY = 'COMPANY',
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
-  CHAT_MESSAGE = 'CHAT_MESSAGE',
-  COMPANY_INTEGRATION = 'COMPANY_INTEGRATION',
   MESSAGE = 'MESSAGE',
+  COMPANY_INTEGRATION = 'COMPANY_INTEGRATION',
   CONVERSATION = 'CONVERSATION',
 }
 
@@ -100,6 +99,9 @@ export enum TransactionStatus {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
   REVERSED = 'REVERSED',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+  EXPIRED = 'EXPIRED',
 }
 
 export enum LedgerAdjustmentType {
@@ -111,8 +113,6 @@ export enum LedgerAdjustmentType {
 
 export enum PaymentProvider {
   SQUAD = 'SQUAD',
-  PAYSTACK = 'PAYSTACK',
-  FLUTTERWAVE = 'FLUTTERWAVE',
 }
 
 export enum EventType {
@@ -130,8 +130,7 @@ export enum EventType {
   USER_LOGIN = 'USER_LOGIN',
   USER_LOGOUT = 'USER_LOGOUT',
   USER_REGISTER = 'USER_REGISTER',
-  CHAT_MESSAGE_SENT = 'CHAT_MESSAGE_SENT',
-  CHAT_MESSAGE_DELETED = 'CHAT_MESSAGE_DELETED',
+  MESSAGE_SENT = 'MESSAGE_SENT',
   INTEGRATION_SETUP = 'INTEGRATION_SETUP',
   INTEGRATION_ACTIVATED = 'INTEGRATION_ACTIVATED',
   INTEGRATION_DEACTIVATED = 'INTEGRATION_DEACTIVATED',
@@ -195,12 +194,6 @@ export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
   TYPING = 'TYPING',
   STATUS = 'STATUS',
-}
-
-// ─── Billing & Payments ──────────────────────────────────────────────────────
-
-export enum TransactionProvider {
-  SQUAD = 'SQUAD',
 }
 
 // ─── Security ────────────────────────────────────────────────────────────────

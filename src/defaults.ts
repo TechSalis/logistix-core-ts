@@ -1,4 +1,5 @@
 import { SubscriptionTier, VehicleType } from './enums.js';
+import { SYSTEM_CONFIG } from './config.js';
 
 /**
  * Default pricing scheme entry used when seeding a new system.
@@ -21,7 +22,7 @@ export const DEFAULT_PRICING_SCHEMES: readonly DefaultPricingScheme[] = [
 /**
  * Default system company handle.
  */
-export const SYSTEM_COMPANY_HANDLE = 'logistix' as const;
+export const SYSTEM_COMPANY_HANDLE = SYSTEM_CONFIG.systemHubHandle;
 
 /**
  * Default system subscription tier applied to the Central Hub company.
