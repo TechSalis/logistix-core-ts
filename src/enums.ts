@@ -196,6 +196,13 @@ export enum ChatUpdateType {
   STATUS = 'STATUS',
 }
 
+export enum MessageStatus {
+  SENT = 'SENT',
+  DELIVERED = 'DELIVERED',
+  READ = 'READ',
+  FAILED = 'FAILED',
+}
+
 // ─── Security ────────────────────────────────────────────────────────────────
 
 export enum SecurityEventType {
