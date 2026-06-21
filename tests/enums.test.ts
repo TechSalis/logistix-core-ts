@@ -49,9 +49,9 @@ describe('Enums', () => {
   });
 
   describe('PaymentMethod', () => {
-    it('has PREPAID and POD', () => {
+    it('has PREPAID and PAY_ON_DELIVERY', () => {
       expect(PaymentMethod.PREPAID).toBe('PREPAID');
-      expect(PaymentMethod.POD).toBe('POD');
+      expect(PaymentMethod.PAY_ON_DELIVERY).toBe('PAY_ON_DELIVERY');
     });
   });
 
