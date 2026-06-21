@@ -32,7 +32,7 @@ export enum DeliveryStatus {
 
 export enum PaymentMethod {
   PREPAID = 'PREPAID',
-  POD = 'POD',
+  PAY_ON_DELIVERY = 'PAY_ON_DELIVERY',
 }
 
 // ─── Rider ───────────────────────────────────────────────────────────────────
