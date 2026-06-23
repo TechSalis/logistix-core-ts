@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 const createId = () => randomUUID();
 import {
   pgTable,
