@@ -436,7 +436,7 @@ export const deliveries = pgTable(
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
     trackingId: text('tracking_id').notNull(),
     pin: text(),
-    proofOfDeliveryImageUrl: text('proof_of_delivery_image_url'),
+    proofOfDeliveryImagePath: text('proof_of_delivery_image_path'),
     price: doublePrecision(),
     metadata: jsonb(),
   },
