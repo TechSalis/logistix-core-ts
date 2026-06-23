@@ -1,5 +1,5 @@
-name: CI Production
-run-name: CI Production (${{ github.ref_name }}) - ${{ github.sha }} by @${{ github.actor }}
+name: Deploy Core (Production)
+run-name: Deploy (Production) (${{ github.ref_name }})  - ${{ github.event.head_commit.message || github.event.pull_request.title || inputs.commit_message || github.sha }} by @${{ github.actor }}
 
 on:
   push:
