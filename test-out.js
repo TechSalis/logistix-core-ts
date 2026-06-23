@@ -1,4 +1,5 @@
-const createId = () => globalThis.crypto.randomUUID();
+import { randomUUID } from 'node:crypto';
+const createId = () => randomUUID();
 import {
   pgTable,
   timestamp,
@@ -13,8 +14,7 @@ import {
   pgEnum,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-
-export const deliveryStatus = pgEnum('DeliveryStatus', [
+const deliveryStatus = pgEnum('DeliveryStatus', [
   'AWAITING_PAYMENT',
   'PENDING',
   'ASSIGNED',
@@ -22,41 +22,30 @@ export const deliveryStatus = pgEnum('DeliveryStatus', [
   'DELIVERED',
   'CANCELLED',
 ]);
-export const exportRequestStatus = pgEnum('ExportRequestStatus', [
+const exportRequestStatus = pgEnum('ExportRequestStatus', [
   'PENDING',
   'PROCESSING',
   'COMPLETED',
   'FAILED',
 ]);
-export const ledgerAdjustmentType = pgEnum('LedgerAdjustmentType', [
+const ledgerAdjustmentType = pgEnum('LedgerAdjustmentType', [
   'CREDIT',
   'DEBIT',
   'CORRECTION',
   'REFUND',
 ]);
-export const mappingPlatform = pgEnum('MappingPlatform', [
-  'WHATSAPP',
-  'INSTAGRAM',
-  'TIKTOK',
-  'FACEBOOK',
-]);
-export const mappingSource = pgEnum('MappingSource', ['MANUAL', 'DISCOVERY']);
-export const messageStatus = pgEnum('MessageStatus', ['SENT', 'DELIVERED', 'READ', 'FAILED']);
-export const paymentMethod = pgEnum('PaymentMethod', ['PREPAID', 'POD']);
-export const permitStatus = pgEnum('PermitStatus', ['PENDING', 'APPROVED', 'REJECTED']);
-export const riderStatus = pgEnum('RiderStatus', ['OFFLINE', 'ONLINE', 'BUSY']);
-export const role = pgEnum('Role', ['DISPATCHER', 'COMPANY', 'RIDER', 'CUSTOMER', 'ADMIN']);
-export const senderType = pgEnum('SenderType', ['CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM']);
-export const subscriptionTier = pgEnum('SubscriptionTier', ['FREE', 'STARTER', 'PROFESSIONAL']);
-export const transactionStatus = pgEnum('TransactionStatus', [
-  'PENDING',
-  'SUCCESS',
-  'FAILED',
-  'REVERSED',
-]);
-export const vehicleType = pgEnum('VehicleType', ['BIKE', 'CAR', 'VAN', 'TRUCK']);
-
-export const companies = pgTable(
+const mappingPlatform = pgEnum('MappingPlatform', ['WHATSAPP', 'INSTAGRAM', 'TIKTOK', 'FACEBOOK']);
+const mappingSource = pgEnum('MappingSource', ['MANUAL', 'DISCOVERY']);
+const messageStatus = pgEnum('MessageStatus', ['SENT', 'DELIVERED', 'READ', 'FAILED']);
+const paymentMethod = pgEnum('PaymentMethod', ['PREPAID', 'POD']);
+const permitStatus = pgEnum('PermitStatus', ['PENDING', 'APPROVED', 'REJECTED']);
+const riderStatus = pgEnum('RiderStatus', ['OFFLINE', 'ONLINE', 'BUSY']);
+const role = pgEnum('Role', ['DISPATCHER', 'COMPANY', 'RIDER', 'CUSTOMER', 'ADMIN']);
+const senderType = pgEnum('SenderType', ['CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM']);
+const subscriptionTier = pgEnum('SubscriptionTier', ['FREE', 'STARTER', 'PROFESSIONAL']);
+const transactionStatus = pgEnum('TransactionStatus', ['PENDING', 'SUCCESS', 'FAILED', 'REVERSED']);
+const vehicleType = pgEnum('VehicleType', ['BIKE', 'CAR', 'VAN', 'TRUCK']);
+const companies = pgTable(
   'companies',
   {
     id: text()
@@ -84,8 +73,7 @@ export const companies = pgTable(
     index('companies_name_idx').using('btree', table.name.asc().nullsLast().op('text_ops')),
   ],
 );
-
-export const companySettings = pgTable(
+const companySettings = pgTable(
   'company_settings',
   {
     id: text()
@@ -124,8 +112,7 @@ export const companySettings = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const pricingSchemes = pgTable(
+const pricingSchemes = pgTable(
   'pricing_schemes',
   {
     id: text()
@@ -134,9 +121,9 @@ export const pricingSchemes = pgTable(
       .notNull(),
     companyId: text('company_id').notNull(),
     vehicleType: vehicleType('vehicle_type').default('BIKE').notNull(),
-    baseFare: doublePrecision('base_fare').default(1000).notNull(),
+    baseFare: doublePrecision('base_fare').default(1e3).notNull(),
     perKmRate: doublePrecision('per_km_rate').default(150).notNull(),
-    minFare: doublePrecision('min_fare').default(1000).notNull(),
+    minFare: doublePrecision('min_fare').default(1e3).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -156,8 +143,7 @@ export const pricingSchemes = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const companyIntegrations = pgTable(
+const companyIntegrations = pgTable(
   'company_integrations',
   {
     id: text()
@@ -202,8 +188,7 @@ export const companyIntegrations = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const conversations = pgTable(
+const conversations = pgTable(
   'conversations',
   {
     id: text()
@@ -255,8 +240,7 @@ export const conversations = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const messages = pgTable(
+const messages = pgTable(
   'messages',
   {
     id: text()
@@ -316,8 +300,7 @@ export const messages = pgTable(
       .onDelete('restrict'),
   ],
 );
-
-export const admins = pgTable(
+const admins = pgTable(
   'admins',
   {
     id: text()
@@ -336,8 +319,7 @@ export const admins = pgTable(
     uniqueIndex('admins_user_id_key').using('btree', table.userId.asc().nullsLast().op('text_ops')),
   ],
 );
-
-export const dispatchers = pgTable(
+const dispatchers = pgTable(
   'dispatchers',
   {
     id: text()
@@ -377,8 +359,7 @@ export const dispatchers = pgTable(
       .onDelete('set null'),
   ],
 );
-
-export const blockedIps = pgTable(
+const blockedIps = pgTable(
   'blocked_ips',
   {
     id: text()
@@ -404,8 +385,7 @@ export const blockedIps = pgTable(
     ),
   ],
 );
-
-export const deliveries = pgTable(
+const deliveries = pgTable(
   'deliveries',
   {
     id: text()
@@ -508,8 +488,7 @@ export const deliveries = pgTable(
       .onDelete('set null'),
   ],
 );
-
-export const riders = pgTable(
+const riders = pgTable(
   'riders',
   {
     id: text()
@@ -563,8 +542,7 @@ export const riders = pgTable(
       .onDelete('set null'),
   ],
 );
-
-export const deliveryTransactions = pgTable(
+const deliveryTransactions = pgTable(
   'delivery_transactions',
   {
     id: text()
@@ -604,8 +582,7 @@ export const deliveryTransactions = pgTable(
     ),
   ],
 );
-
-export const deliveryAllocations = pgTable(
+const deliveryAllocations = pgTable(
   'delivery_allocations',
   {
     id: text()
@@ -649,8 +626,7 @@ export const deliveryAllocations = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const ledgerTransactions = pgTable(
+const ledgerTransactions = pgTable(
   'ledger_transactions',
   {
     id: text()
@@ -684,8 +660,7 @@ export const ledgerTransactions = pgTable(
     ),
   ],
 );
-
-export const eventLogs = pgTable(
+const eventLogs = pgTable(
   'event_logs',
   {
     id: text()
@@ -736,8 +711,7 @@ export const eventLogs = pgTable(
     ),
   ],
 );
-
-export const exportRequests = pgTable(
+const exportRequests = pgTable(
   'export_requests',
   {
     id: text()
@@ -768,15 +742,13 @@ export const exportRequests = pgTable(
     ),
   ],
 );
-
-export const appConfigs = pgTable('app_configs', {
+const appConfigs = pgTable('app_configs', {
   key: text().primaryKey().notNull(),
   value: jsonb().notNull(),
   scope: text(),
   updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
 });
-
-export const subscriptionTransactions = pgTable(
+const subscriptionTransactions = pgTable(
   'subscription_transactions',
   {
     id: text()
@@ -819,8 +791,7 @@ export const subscriptionTransactions = pgTable(
     ),
   ],
 );
-
-export const customerCompanyMappings = pgTable(
+const customerCompanyMappings = pgTable(
   'customer_company_mappings',
   {
     id: text()
@@ -865,8 +836,7 @@ export const customerCompanyMappings = pgTable(
       .onDelete('cascade'),
   ],
 );
-
-export const riderLocationLogs = pgTable(
+const riderLocationLogs = pgTable(
   'rider_location_logs',
   {
     id: text()
@@ -900,3 +870,39 @@ export const riderLocationLogs = pgTable(
       .onDelete('cascade'),
   ],
 );
+export {
+  admins,
+  appConfigs,
+  blockedIps,
+  companies,
+  companyIntegrations,
+  companySettings,
+  conversations,
+  customerCompanyMappings,
+  deliveries,
+  deliveryAllocations,
+  deliveryStatus,
+  deliveryTransactions,
+  dispatchers,
+  eventLogs,
+  exportRequestStatus,
+  exportRequests,
+  ledgerAdjustmentType,
+  ledgerTransactions,
+  mappingPlatform,
+  mappingSource,
+  messageStatus,
+  messages,
+  paymentMethod,
+  permitStatus,
+  pricingSchemes,
+  riderLocationLogs,
+  riderStatus,
+  riders,
+  role,
+  senderType,
+  subscriptionTier,
+  subscriptionTransactions,
+  transactionStatus,
+  vehicleType,
+};
