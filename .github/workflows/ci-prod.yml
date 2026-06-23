@@ -1,15 +1,16 @@
-name: CI
-run-name: CI (${{ github.ref_name }}) - ${{ github.sha }} by @${{ github.actor }}
+name: CI Production
+run-name: CI Production (${{ github.ref_name }}) - ${{ github.sha }} by @${{ github.actor }}
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    tags:
+      - 'v*'
+  release:
+    types: [published]
 
 jobs:
-  test:
-    name: Test & Build
+  test-and-migrate:
+    name: Test & Migrate (Production)
     runs-on: ubuntu-latest
 
     steps:
@@ -33,14 +34,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run Drizzle Migrations (Staging)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DIRECT_URL }}
-        run: npm run db:migrate
-
       - name: Run Drizzle Migrations (Production)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           DATABASE_URL: ${{ secrets.PROD_DIRECT_URL }}
         run: npm run db:migrate

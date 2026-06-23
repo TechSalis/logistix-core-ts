@@ -1,0 +1,40 @@
+name: CI Staging
+run-name: CI Staging (${{ github.ref_name }}) - ${{ github.sha }} by @${{ github.actor }}
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test-and-migrate:
+    name: Test & Migrate (Staging)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type check
+        run: npm run check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Drizzle Migrations (Staging)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DIRECT_URL }}
+        run: npm run db:migrate
