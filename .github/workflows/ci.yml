@@ -32,3 +32,15 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Run Drizzle Migrations (Staging)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DIRECT_URL }}
+        run: npm run db:migrate
+
+      - name: Run Drizzle Migrations (Production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DIRECT_URL }}
+        run: npm run db:migrate

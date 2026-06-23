@@ -50,3 +50,6 @@ export type { ParsedDelivery } from './deliveryParser.js';
 export { fetchWithTimeout } from './fetchWithTimeout.js';
 export type { FetchWithTimeoutOptions } from './fetchWithTimeout.js';
 export * from './services/email.service';
+
+// ─── Drizzle ORM Schema ───────────────────────────────────────────────────────
+export * from './drizzle/index.js';
