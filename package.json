@@ -31,7 +31,7 @@
     "db:generate": "DATABASE_URL=postgresql://dummy:dummy@localhost/dummy drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:migrate": "tsx scripts/migrate.ts",
-    "seed": "tsx scripts/seed.ts",
+    "db:seed": "tsx scripts/seed.ts",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build && (husky || true)"
   },
