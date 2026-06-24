@@ -42,7 +42,11 @@ export {
   DEFAULT_COMPANY_SETTINGS,
   DEFAULT_SYSTEM_COMPANY,
 } from './defaults.js';
-export type { DefaultPricingScheme, DefaultCompanySettings, DefaultSystemCompany } from './defaults.js';
+export type {
+  DefaultPricingScheme,
+  DefaultCompanySettings,
+  DefaultSystemCompany,
+} from './defaults.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';

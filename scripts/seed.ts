@@ -15,7 +15,10 @@ export async function seedSystem() {
 
   const url = new URL(DATABASE_URL);
   const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-  const connection = postgres(DATABASE_URL, { max: 1, ssl: isLocal ? false : { rejectUnauthorized: false } });
+  const connection = postgres(DATABASE_URL, {
+    max: 1,
+    ssl: isLocal ? false : { rejectUnauthorized: false },
+  });
   const db = drizzle(connection);
 
   const SYSTEM_CONFIG = buildSystemConfig(process.env as Record<string, string | undefined>);
