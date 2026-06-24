@@ -77,17 +77,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "admins_isolation": {
-          "name": "admins_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "(current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text]))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -124,17 +114,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "app_configs_isolation": {
-          "name": "app_configs_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "(current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text, 'WEBHOOK'::text]))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -217,17 +197,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "blocked_ips_isolation": {
-          "name": "blocked_ips_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "(current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text]))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -341,17 +311,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "companies_isolation": {
-          "name": "companies_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text, 'WEBHOOK'::text])) OR (id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -509,17 +469,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "company_owned_isolation": {
-          "name": "company_owned_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -610,17 +560,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "company_owned_isolation": {
-          "name": "company_owned_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -811,17 +751,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "conversations_isolation": {
-          "name": "conversations_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text, 'WEBHOOK'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -981,17 +911,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "mappings_isolation": {
-          "name": "mappings_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text, 'WEBHOOK'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -1140,8 +1060,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "proof_of_delivery_image_url": {
-          "name": "proof_of_delivery_image_url",
+        "proof_of_delivery_image_path": {
+          "name": "proof_of_delivery_image_path",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1160,6 +1080,29 @@
         }
       },
       "indexes": {
+        "deliveries_company_id_status_idx": {
+          "name": "deliveries_company_id_status_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "deliveries_company_id_created_by_idx": {
           "name": "deliveries_company_id_created_by_idx",
           "columns": [
@@ -1197,6 +1140,29 @@
               "expression": "updated_at",
               "isExpression": false,
               "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_company_id_created_at_idx": {
+          "name": "deliveries_company_id_created_at_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
               "nulls": "last",
               "opclass": "timestamp_ops"
             }
@@ -1299,6 +1265,54 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "deliveries_created_by_idx": {
+          "name": "deliveries_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_pickup_phone_idx": {
+          "name": "deliveries_pickup_phone_idx",
+          "columns": [
+            {
+              "expression": "pickup_phone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_drop_off_phone_idx": {
+          "name": "deliveries_drop_off_phone_idx",
+          "columns": [
+            {
+              "expression": "drop_off_phone",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -1331,17 +1345,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "deliveries_isolation": {
-          "name": "deliveries_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)) OR (rider_id IN ( SELECT riders.id\n   FROM riders\n  WHERE (riders.user_id = current_setting('app.current_user_id'::text, true)))) OR (created_by = current_setting('app.current_user_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -1468,17 +1472,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "delivery_allocations_isolation": {
-          "name": "delivery_allocations_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (delivery_id IN ( SELECT deliveries.id\n   FROM deliveries\n  WHERE (deliveries.company_id = current_setting('app.current_company_id'::text, true)))))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -1634,17 +1628,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "transactions_isolation": {
-          "name": "transactions_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -1778,17 +1762,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "dispatchers_isolation": {
-          "name": "dispatchers_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)) OR (user_id = current_setting('app.current_user_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -1969,22 +1943,42 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "event_logs_event_type_success_created_at_idx": {
+          "name": "event_logs_event_type_success_created_at_idx",
+          "columns": [
+            {
+              "expression": "event_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "success",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "event_logs_isolation": {
-          "name": "event_logs_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2057,25 +2051,25 @@
         }
       },
       "indexes": {
-          "export_requests_company_id_status_idx": {
-            "name": "export_requests_company_id_status_idx",
-            "columns": [
-              {
-                "expression": "company_id",
-                "isExpression": false,
-                "asc": true,
-                "nulls": "last",
-                "opclass": "text_ops"
-              },
-              {
-                "expression": "status",
-                "isExpression": false,
-                "asc": true,
-                "nulls": "last",
-                "opclass": "enum_ops"
-              }
-            ],
-            "isUnique": false,
+        "export_requests_company_id_status_idx": {
+          "name": "export_requests_company_id_status_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2100,17 +2094,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "company_owned_isolation": {
-          "name": "company_owned_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2235,17 +2219,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "transactions_isolation": {
-          "name": "transactions_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2425,6 +2399,29 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "messages_conversation_id_is_deleted_idx": {
+          "name": "messages_conversation_id_is_deleted_idx",
+          "columns": [
+            {
+              "expression": "conversation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "is_deleted",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2444,17 +2441,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "messages_isolation": {
-          "name": "messages_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text, 'WEBHOOK'::text])) OR (conversation_id IN ( SELECT conversations.id\n   FROM conversations\n  WHERE (conversations.company_id = current_setting('app.current_company_id'::text, true)))))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2553,17 +2540,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "company_owned_isolation": {
-          "name": "company_owned_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2611,6 +2588,22 @@
         }
       },
       "indexes": {
+        "rider_location_logs_created_at_idx": {
+          "name": "rider_location_logs_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "rider_location_logs_rider_id_created_at_idx": {
           "name": "rider_location_logs_rider_id_created_at_idx",
           "columns": [
@@ -2621,16 +2614,16 @@
               "nulls": "last",
               "opclass": "text_ops"
             },
-              {
-                "expression": "created_at",
-                "isExpression": false,
-                "asc": true,
-                "nulls": "last",
-                "opclass": "timestamp_ops"
-              }
-            ],
-            "isUnique": false,
-            "concurrently": false,
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
           "method": "btree",
           "with": {}
         }
@@ -2652,17 +2645,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "rider_location_logs_isolation": {
-          "name": "rider_location_logs_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (rider_id IN ( SELECT riders.id\n   FROM riders\n  WHERE ((riders.company_id = current_setting('app.current_company_id'::text, true)) OR (riders.user_id = current_setting('app.current_user_id'::text, true))))))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -2906,17 +2889,7 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "riders_isolation": {
-          "name": "riders_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)) OR (user_id = current_setting('app.current_user_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -3091,17 +3064,7 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {
-        "transactions_isolation": {
-          "name": "transactions_isolation",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": [
-            "public"
-          ],
-          "using": "((current_setting('app.current_role'::text, true) = ANY (ARRAY['SYSTEM'::text, 'ADMIN'::text])) OR (company_id = current_setting('app.current_company_id'::text, true)))"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     }
