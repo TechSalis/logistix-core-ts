@@ -3,9 +3,9 @@ run-name: Deploy (Staging) (${{ github.ref_name }})  - ${{ github.event.head_com
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
   test-and-migrate:
