@@ -37,4 +37,4 @@ jobs:
       - name: Run Drizzle Migrations (Production)
         env:
           DATABASE_URL: ${{ secrets.PROD_DIRECT_URL }}
-        run: npm run db:migrate
+        run: npx tsx scripts/migrate.ts

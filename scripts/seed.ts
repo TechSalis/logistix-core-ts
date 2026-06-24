@@ -13,11 +13,13 @@ if (!DATABASE_URL) {
 export async function seedSystem() {
   console.log('🌱 Seeding System Configuration...');
 
-  const connection = postgres(DATABASE_URL, { max: 1, ssl: { rejectUnauthorized: false } });
+  const url = new URL(DATABASE_URL);
+  const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const connection = postgres(DATABASE_URL, { max: 1, ssl: isLocal ? false : { rejectUnauthorized: false } });
   const db = drizzle(connection);
 
   const SYSTEM_CONFIG = buildSystemConfig(process.env as Record<string, string | undefined>);
-  const handle = SYSTEM_CONFIG.systemHubHandle;
+  const handle = SYSTEM_CONFIG.businessHandle;
   const brandName = SYSTEM_CONFIG.brandName;
 
   // 1. Ensure the Central Hub Company exists

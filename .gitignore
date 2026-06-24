@@ -4,3 +4,9 @@ dist/
 
 # Scratch directories
 scratch/
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test

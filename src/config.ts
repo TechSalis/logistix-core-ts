@@ -27,12 +27,12 @@ export interface SystemConfig {
   /** Business working hours per weekday */
   readonly workingHours: Record<string, { start: string; close: string }>;
   /** The unique business handle representing the central/system company hub */
-  readonly systemHubHandle: string;
+  readonly businessHandle: string;
 }
 
 import { z } from 'zod';
 
-const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
+export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
   Monday: { start: '07:00', close: '19:00' },
   Tuesday: { start: '07:00', close: '19:00' },
   Wednesday: { start: '07:00', close: '19:00' },
@@ -73,7 +73,7 @@ export function buildSystemConfig(env: Record<string, string | undefined> = {}):
       faviconUrl: validated.BRAND_FAVICON_URL || '/favicon.png',
       enableTrackingCodes: (validated.ENABLE_TRACKING_CODES || 'true') === 'true',
       workingHours: DEFAULT_WORKING_HOURS,
-      systemHubHandle: validated.SYSTEM_HUB_HANDLE || 'logistix',
+      businessHandle: validated.SYSTEM_HUB_HANDLE || 'logistix',
     };
   } catch (err) {
     if (err instanceof z.ZodError) {

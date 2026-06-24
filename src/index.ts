@@ -12,7 +12,7 @@
 export * from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-export { buildSystemConfig, SYSTEM_CONFIG } from './config.js';
+export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS } from './config.js';
 export type { SystemConfig } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
@@ -39,8 +39,18 @@ export {
   DEFAULT_PRICING_SCHEMES,
   SYSTEM_COMPANY_HANDLE,
   SYSTEM_SUBSCRIPTION_TIER,
+  DEFAULT_COMPANY_SETTINGS,
+  DEFAULT_SYSTEM_COMPANY,
 } from './defaults.js';
-export type { DefaultPricingScheme } from './defaults.js';
+export type { DefaultPricingScheme, DefaultCompanySettings, DefaultSystemCompany } from './defaults.js';
+
+// ─── Security ─────────────────────────────────────────────────────────────────
+export { SECURITY_CONFIG } from './security.js';
+export type { SecurityConfig } from './security.js';
+
+// ─── AI ───────────────────────────────────────────────────────────────────────
+export { AI_CONFIG } from './ai.js';
+export type { AIConfig } from './ai.js';
 
 // ─── Delivery Parsing ────────────────────────────────────────────────────────
 export { localParse } from './deliveryParser.js';

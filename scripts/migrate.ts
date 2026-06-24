@@ -28,10 +28,12 @@ const MIGRATIONS_FOLDER = resolve(__dirname, '..', 'drizzle');
 const sql = String.raw;
 
 async function run() {
+  const url = new URL(DATABASE_URL);
+  const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
   const connection = postgres(DATABASE_URL, {
     max: 1,
     connect_timeout: 30,
-    ssl: { rejectUnauthorized: false },
+    ssl: isLocal ? false : { rejectUnauthorized: false },
   });
   const db = drizzle(connection);
 
