@@ -23,8 +23,8 @@
     "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "build": "npx -y tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "npx -y tsup src/index.ts --format esm,cjs --dts --watch",
     "check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
