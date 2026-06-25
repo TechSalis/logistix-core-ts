@@ -25,9 +25,22 @@ export enum DeliveryStatus {
   PENDING = 'PENDING',
   ASSIGNED = 'ASSIGNED',
   IN_TRANSIT = 'IN_TRANSIT',
-  EN_ROUTE = 'EN_ROUTE',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+export function isDeliveryActive(status: DeliveryStatus): boolean {
+  return (
+    status === DeliveryStatus.PENDING ||
+    status === DeliveryStatus.ASSIGNED ||
+    status === DeliveryStatus.IN_TRANSIT
+  );
+}
+
+export function isDeliveryTerminal(status: DeliveryStatus): boolean {
+  return status === DeliveryStatus.DELIVERED || status === DeliveryStatus.CANCELLED;
 }
 
 export enum PaymentMethod {

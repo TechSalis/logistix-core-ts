@@ -4,7 +4,7 @@ CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTI
 CREATE TYPE "public"."MappingPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'TIKTOK', 'FACEBOOK');--> statement-breakpoint
 CREATE TYPE "public"."MappingSource" AS ENUM('MANUAL', 'DISCOVERY');--> statement-breakpoint
 CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
-CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'POD');--> statement-breakpoint
+CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> statement-breakpoint
 CREATE TYPE "public"."PermitStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED');--> statement-breakpoint
 CREATE TYPE "public"."RiderStatus" AS ENUM('OFFLINE', 'ONLINE', 'BUSY');--> statement-breakpoint
 CREATE TYPE "public"."Role" AS ENUM('DISPATCHER', 'COMPANY', 'RIDER', 'CUSTOMER', 'ADMIN');--> statement-breakpoint
@@ -47,6 +47,7 @@ CREATE TABLE "companies" (
 	"place_id" text,
 	"states" text[] DEFAULT '{"RAY"}',
 	"interstate_deliveries" boolean NOT NULL,
+	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -75,7 +76,7 @@ CREATE TABLE "conversations" (
 	"id" text PRIMARY KEY NOT NULL,
 	"platform" "MappingPlatform" DEFAULT 'WHATSAPP' NOT NULL,
 	"platform_id" text NOT NULL,
-	"company_id" text NOT NULL,
+	"company_id" text,
 	"last_message_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp (3) NOT NULL,
@@ -154,6 +155,7 @@ CREATE TABLE "dispatchers" (
 	"fcm_token" text,
 	"is_owner" boolean DEFAULT false NOT NULL,
 	"permit_status" "PermitStatus" DEFAULT 'PENDING' NOT NULL,
+	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -244,6 +246,7 @@ CREATE TABLE "riders" (
 	"permit_status" "PermitStatus" DEFAULT 'PENDING' NOT NULL,
 	"is_accepted" boolean DEFAULT false NOT NULL,
 	"status" "RiderStatus" NOT NULL,
+	"deactivated_at" timestamp (3),
 	"last_lat" double precision,
 	"last_lng" double precision,
 	"last_seen" timestamp (3),
@@ -351,4 +354,7 @@ CREATE UNIQUE INDEX "riders_user_id_key" ON "riders" USING btree ("user_id" text
 CREATE INDEX "subscription_transactions_company_id_created_at_idx" ON "subscription_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_reference_idx" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
-CREATE INDEX "subscription_transactions_status_created_at_idx" ON "subscription_transactions" USING btree ("status" enum_ops,"created_at" timestamp_ops);
+CREATE INDEX "subscription_transactions_status_created_at_idx" ON "subscription_transactions" USING btree ("status" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "companies_states_gin_idx" ON "companies" USING gin ("states");--> statement-breakpoint
+CREATE INDEX "company_integrations_company_id_is_active_idx" ON "company_integrations" USING btree ("company_id" text_ops,"is_active" bool_ops);--> statement-breakpoint
+CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;

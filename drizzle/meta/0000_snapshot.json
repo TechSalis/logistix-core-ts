@@ -266,6 +266,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
@@ -305,6 +311,22 @@
           "isUnique": false,
           "concurrently": false,
           "method": "btree",
+          "with": {}
+        },
+        "companies_states_gin_idx": {
+          "name": "companies_states_gin_idx",
+          "columns": [
+            {
+              "expression": "states",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
           "with": {}
         }
       },
@@ -450,6 +472,29 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "company_integrations_company_id_is_active_idx": {
+          "name": "company_integrations_company_id_is_active_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -592,7 +637,7 @@
           "name": "company_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "last_message_at": {
           "name": "last_message_at",
@@ -729,6 +774,29 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "conversations_auto_reply_disabled_idx": {
+          "name": "conversations_auto_reply_disabled_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "last_message_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1686,6 +1754,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'PENDING'"
+        },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -2718,6 +2792,12 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
+        },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
         },
         "last_lat": {
           "name": "last_lat",

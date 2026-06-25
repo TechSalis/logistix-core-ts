@@ -34,7 +34,6 @@ describe('Enums', () => {
       expect(DeliveryStatus.PENDING).toBe('PENDING');
       expect(DeliveryStatus.ASSIGNED).toBe('ASSIGNED');
       expect(DeliveryStatus.IN_TRANSIT).toBe('IN_TRANSIT');
-      expect(DeliveryStatus.EN_ROUTE).toBe('EN_ROUTE');
       expect(DeliveryStatus.DELIVERED).toBe('DELIVERED');
       expect(DeliveryStatus.CANCELLED).toBe('CANCELLED');
     });

@@ -12,7 +12,6 @@ export interface SecurityConfig {
       readonly FREE: { readonly max: number; readonly windowMs: number };
       readonly STARTER: { readonly max: number; readonly windowMs: number };
       readonly PROFESSIONAL: { readonly max: number; readonly windowMs: number };
-      readonly ENTERPRISE: { readonly max: number; readonly windowMs: number };
     };
   };
   readonly jwt: {
@@ -48,7 +47,6 @@ const securityConfigSchema = z.object({
       FREE: z.object({ max: z.number(), windowMs: z.number() }),
       STARTER: z.object({ max: z.number(), windowMs: z.number() }),
       PROFESSIONAL: z.object({ max: z.number(), windowMs: z.number() }),
-      ENTERPRISE: z.object({ max: z.number(), windowMs: z.number() }),
     }),
   }),
   jwt: z.object({
@@ -82,7 +80,6 @@ const rawSecurityConfig = {
       FREE: { max: 100, windowMs: 900_000 },
       STARTER: { max: 500, windowMs: 900_000 },
       PROFESSIONAL: { max: 2000, windowMs: 900_000 },
-      ENTERPRISE: { max: 10000, windowMs: 900_000 },
     },
   },
   jwt: {

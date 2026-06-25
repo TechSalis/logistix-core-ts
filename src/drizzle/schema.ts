@@ -72,6 +72,7 @@ export const companies = pgTable(
     placeId: text('place_id'),
     states: text().array().default(['RAY']),
     interstateDeliveries: boolean('interstate_deliveries').notNull(),
+    deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -82,6 +83,7 @@ export const companies = pgTable(
       table.businessHandle.asc().nullsLast().op('text_ops'),
     ),
     index('companies_name_idx').using('btree', table.name.asc().nullsLast().op('text_ops')),
+    index('companies_states_gin_idx').using('gin', table.states),
   ],
 );
 
@@ -183,6 +185,11 @@ export const companyIntegrations = pgTable(
       'btree',
       table.isActive.asc().nullsLast().op('bool_ops'),
     ),
+    index('company_integrations_company_id_is_active_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.isActive.asc().nullsLast().op('bool_ops'),
+    ),
     uniqueIndex('company_integrations_platform_company_id_key').using(
       'btree',
       table.platform.asc().nullsLast().op('enum_ops'),
@@ -212,7 +219,7 @@ export const conversations = pgTable(
       .notNull(),
     platform: mappingPlatform().default('WHATSAPP').notNull(),
     platformId: text('platform_id').notNull(),
-    companyId: text('company_id').notNull(),
+    companyId: text('company_id'),
     lastMessageAt: timestamp('last_message_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -246,6 +253,9 @@ export const conversations = pgTable(
       table.platformId.asc().nullsLast().op('text_ops'),
       table.companyId.asc().nullsLast().op('text_ops'),
     ),
+    index('conversations_auto_reply_disabled_idx')
+      .on(table.companyId, table.lastMessageAt)
+      .where(sql`auto_reply_enabled = false AND company_id IS NULL`),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -351,6 +361,7 @@ export const dispatchers = pgTable(
     fcmToken: text('fcm_token'),
     isOwner: boolean('is_owner').default(false).notNull(),
     permitStatus: permitStatus('permit_status').default('PENDING').notNull(),
+    deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -531,6 +542,7 @@ export const riders = pgTable(
     batteryLevel: integer('battery_level'),
     fcmToken: text('fcm_token'),
     companyId: text('company_id'),
+    deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

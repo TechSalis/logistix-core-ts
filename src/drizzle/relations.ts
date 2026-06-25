@@ -22,8 +22,8 @@ export const companySettingsRelations = relations(companySettings, ({ one }) => 
   }),
 }));
 
-export const companiesRelations = relations(companies, ({ many }) => ({
-  companySettings: many(companySettings),
+export const companiesRelations = relations(companies, ({ many, one }) => ({
+  companySettings: one(companySettings),
   pricingSchemes: many(pricingSchemes),
   companyIntegrations: many(companyIntegrations),
   conversations: many(conversations),
