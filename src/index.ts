@@ -1,11 +1,11 @@
 /**
  * logistix-core-ts
  *
- * Single source of truth for enums, config, seed data, and utilities shared
+ * Single source of truth for enums, config, and utilities shared
  * across logistix-backend, logistix-workers, and logistix-web.
  *
  * Usage:
- *   import { UserRole, SYSTEM_CONFIG, DEFAULT_PRICING_SCHEMES } from 'logistix-core-ts';
+ *   import { UserRole, SYSTEM_CONFIG } from 'logistix-core-ts';
  */
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -33,20 +33,6 @@ export {
   shouldRetryPayment,
   getNextRetryDate,
 } from './billing.js';
-
-// ─── Seed Data / Defaults ─────────────────────────────────────────────────────
-export {
-  DEFAULT_PRICING_SCHEMES,
-  SYSTEM_COMPANY_HANDLE,
-  SYSTEM_SUBSCRIPTION_TIER,
-  DEFAULT_COMPANY_SETTINGS,
-  DEFAULT_SYSTEM_COMPANY,
-} from './defaults.js';
-export type {
-  DefaultPricingScheme,
-  DefaultCompanySettings,
-  DefaultSystemCompany,
-} from './defaults.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';
