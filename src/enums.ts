@@ -1,14 +1,6 @@
-/**
- * Application-wide enumerations shared across backend, workers, and web clients.
- * This is the single source of truth — never duplicate these in downstream projects.
- */
-
-// ─── User & Access ───────────────────────────────────────────────────────────
-
 export enum UserRole {
   ADMIN = 'ADMIN',
   COMPANY = 'COMPANY',
-  CUSTOMER = 'CUSTOMER',
   DISPATCHER = 'DISPATCHER',
   RIDER = 'RIDER',
 }
@@ -19,8 +11,6 @@ export enum ActorType {
   ADMIN = 'ADMIN',
 }
 
-// ─── Delivery Lifecycle ──────────────────────────────────────────────────────
-
 export enum DeliveryStatus {
   AWAITING_PAYMENT = 'AWAITING_PAYMENT',
   PENDING = 'PENDING',
@@ -29,8 +19,6 @@ export enum DeliveryStatus {
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
 
 export function isDeliveryActive(status: DeliveryStatus): boolean {
   return (
@@ -46,12 +34,8 @@ export function isDeliveryTerminal(status: DeliveryStatus): boolean {
 
 export enum PaymentMethod {
   PREPAID = 'PREPAID',
-  /** @deprecated Use {@link PaymentMethod.POD} instead. DB pgEnum uses 'POD'. */
   PAY_ON_DELIVERY = 'PAY_ON_DELIVERY',
-  POD = 'POD',
 }
-
-// ─── Rider ───────────────────────────────────────────────────────────────────
 
 export enum RiderStatus {
   ONLINE = 'ONLINE',
@@ -65,8 +49,6 @@ export enum PermitStatus {
   REJECTED = 'REJECTED',
 }
 
-// ─── System & Events ─────────────────────────────────────────────────────────
-
 export enum EntityType {
   USER = 'USER',
   DELIVERY = 'DELIVERY',
@@ -79,8 +61,6 @@ export enum EntityType {
   CONVERSATION = 'CONVERSATION',
 }
 
-// ─── Integrations & Platforms ─────────────────────────────────────────────────
-
 export enum MappingPlatform {
   WHATSAPP = 'WHATSAPP',
   INSTAGRAM = 'INSTAGRAM',
@@ -88,13 +68,10 @@ export enum MappingPlatform {
   TIKTOK = 'TIKTOK',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum MomentoType {
   MAIN = 'MAIN',
   AI = 'AI',
 }
-
-// ─── Vehicle Types ────────────────────────────────────────────────────────────
 
 export enum VehicleType {
   BIKE = 'BIKE',
@@ -102,8 +79,6 @@ export enum VehicleType {
   VAN = 'VAN',
   TRUCK = 'TRUCK',
 }
-
-// ─── Billing & Subscriptions ──────────────────────────────────────────────────
 
 export enum SubscriptionTier {
   FREE = 'FREE',
@@ -159,7 +134,6 @@ export enum EventType {
   AI_EXECUTION = 'AI_EXECUTION',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum SubscriptionEventType {
   CREATED = 'CREATED',
   UPDATED = 'UPDATED',
@@ -169,7 +143,6 @@ export enum SubscriptionEventType {
   LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum NotificationEventType {
   HUMAN_REQUEST = 'HUMAN_REQUEST',
   ACTION_REQUIRED = 'ACTION_REQUIRED',
@@ -177,15 +150,12 @@ export enum NotificationEventType {
   RIDER_UPDATE = 'RIDER_UPDATE',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum NotificationPriority {
   LOW = 'LOW',
   NORMAL = 'NORMAL',
   HIGH = 'HIGH',
   URGENT = 'URGENT',
 }
-
-// ─── Audit ───────────────────────────────────────────────────────────────────
 
 export enum AuditAction {
   CREATE = 'CREATE',
@@ -208,9 +178,6 @@ export enum UserAuditAction {
   INVALID_ACCESS_ATTEMPT = 'INVALID_ACCESS_ATTEMPT',
 }
 
-// ─── Chat ────────────────────────────────────────────────────────────────────
-
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
   TYPING = 'TYPING',
@@ -224,9 +191,6 @@ export enum MessageStatus {
   FAILED = 'FAILED',
 }
 
-// ─── Security ────────────────────────────────────────────────────────────────
-
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum SecurityEventType {
   RATE_LIMIT = 'RATE_LIMIT',
   MALICIOUS_REQUEST = 'MALICIOUS_REQUEST',
@@ -234,15 +198,12 @@ export enum SecurityEventType {
   BRUTE_FORCE = 'BRUTE_FORCE',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum SecuritySeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
 }
-
-// ─── Errors ───────────────────────────────────────────────────────────────────
 
 export enum ErrorCode {
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
@@ -257,15 +218,12 @@ export enum ErrorCode {
   LOW_CONFIDENCE_EXTRACTION = 'LOW_CONFIDENCE_EXTRACTION',
 }
 
-// ─── System Status ───────────────────────────────────────────────────────────
-
 export enum SystemStatus {
   UP = 'UP',
   DOWN = 'DOWN',
   DEGRADED = 'DEGRADED',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum ComponentStatus {
   HEALTHY = 'HEALTHY',
   UNHEALTHY = 'UNHEALTHY',
@@ -274,8 +232,6 @@ export enum ComponentStatus {
   NOT_CONFIGURED = 'NOT_CONFIGURED',
   PARTIALLY_CONFIGURED = 'PARTIALLY_CONFIGURED',
 }
-
-// ─── AI / LLM ────────────────────────────────────────────────────────────────
 
 export enum LlmRole {
   USER = 'user',
@@ -289,8 +245,6 @@ export enum ProviderRole {
   BOTH = 'both',
 }
 
-// ─── Logging ─────────────────────────────────────────────────────────────────
-
 export enum LogLevel {
   INFO = 'info',
   WARN = 'warn',
@@ -298,9 +252,6 @@ export enum LogLevel {
   DEBUG = 'debug',
 }
 
-// ─── API ─────────────────────────────────────────────────────────────────────
-
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum ApiTag {
   ANALYTICS = 'Analytics',
   TRACKING = 'Tracking',
@@ -312,7 +263,6 @@ export enum ApiTag {
   SYSTEM = 'System',
 }
 
-/** @deprecated Will be removed in a future release — no internal consumers. */
 export enum UpdateReason {
   REJECTED_BY_COMPANY = 'REJECTED_BY_COMPANY',
 }
