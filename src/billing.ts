@@ -15,7 +15,7 @@ export const BILLING_CONFIG = {
    */
   PRICING: {
     [SubscriptionTier.FREE]: 0,
-    [SubscriptionTier.STARTER]: 30000_00, // ₦15000.00
+    [SubscriptionTier.STARTER]: 30000_00, // ₦30,000.00
     [SubscriptionTier.PROFESSIONAL]: 50000_00, // ₦50000.00
   },
 

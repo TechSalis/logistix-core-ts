@@ -45,7 +45,6 @@ export const messageStatus = pgEnum('MessageStatus', ['SENT', 'DELIVERED', 'READ
 export const paymentMethod = pgEnum('PaymentMethod', ['PREPAID', 'POD']);
 export const permitStatus = pgEnum('PermitStatus', ['PENDING', 'APPROVED', 'REJECTED']);
 export const riderStatus = pgEnum('RiderStatus', ['OFFLINE', 'ONLINE', 'BUSY']);
-export const role = pgEnum('Role', ['DISPATCHER', 'COMPANY', 'RIDER', 'CUSTOMER', 'ADMIN']);
 export const senderType = pgEnum('SenderType', ['CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM']);
 export const subscriptionTier = pgEnum('SubscriptionTier', ['FREE', 'STARTER', 'PROFESSIONAL']);
 export const transactionStatus = pgEnum('TransactionStatus', [
