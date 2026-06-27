@@ -9,3 +9,6 @@ scratch/
 .env.*
 !.env.example
 !.env.test
+
+# TypeScript build output
+dist/
