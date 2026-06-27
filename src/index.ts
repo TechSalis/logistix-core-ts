@@ -39,7 +39,7 @@ export { SECURITY_CONFIG } from './security.js';
 export type { SecurityConfig } from './security.js';
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
-export { AI_CONFIG } from './ai.js';
+export { AI_CONFIG, QUEUES } from './ai.js';
 export type { AIConfig } from './ai.js';
 
 // ─── Delivery Parsing ────────────────────────────────────────────────────────

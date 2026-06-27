@@ -70,3 +70,7 @@ const rawAiConfig = {
 } as const;
 
 export const AI_CONFIG: AIConfig = aiConfigSchema.parse(rawAiConfig);
+
+export const QUEUES = {
+  aiChatTasks: 'ai-chat-tasks',
+} as const;
