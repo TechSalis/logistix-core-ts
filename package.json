@@ -34,7 +34,9 @@
     "db:migrate:staging": "dotenv -e .env.staging -- tsx scripts/migrate.ts",
     "db:migrate:prod": "dotenv -e .env.production -- tsx scripts/migrate.ts",
     "prepublishOnly": "npm run build",
-    "prepare": "npm run build && (husky || true)"
+    "prepare": "npm run build && (husky || true)",
+    "postinstall": "if [ -d ../../logistix-backend/node_modules/drizzle-orm ]; then rm -rf node_modules/drizzle-orm && ln -sf ../../logistix-backend/node_modules/drizzle-orm node_modules/drizzle-orm; fi",
+    "dev:link": "if [ -d ../../logistix-backend/node_modules/drizzle-orm ]; then rm -rf node_modules/drizzle-orm && ln -sf ../../logistix-backend/node_modules/drizzle-orm node_modules/drizzle-orm; fi"
   },
   "lint-staged": {
     "*.{js,ts}": [
