@@ -69,7 +69,7 @@ export function buildSystemConfig(env: Record<string, string | undefined> = {}):
       brandName: validated.BRAND_NAME || 'Logistix',
       supportEmail: validated.BRAND_SUPPORT_EMAIL || `contact@${domain}`,
       phoneNumber: validated.BRAND_PHONE_NUMBER || '09069184604',
-      logoUrl: validated.BRAND_LOGO_URL || '/icon_transparent.png',
+      logoUrl: validated.BRAND_LOGO_URL || '/pwa-512x512.png',
       faviconUrl: validated.BRAND_FAVICON_URL || '/favicon.png',
       enableTrackingCodes: (validated.ENABLE_TRACKING_CODES || 'true') === 'true',
       workingHours: DEFAULT_WORKING_HOURS,
