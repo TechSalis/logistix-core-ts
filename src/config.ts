@@ -1,8 +1,8 @@
 /**
  * Global system configuration.
  *
- * All values are hardcoded defaults. Consumers can pass partial overrides
- * to buildSystemConfig() for environment-specific values (e.g. support email).
+ * Brand values are hardcoded. Use buildSystemConfig() to override
+ * environment-specific fields like domain and supportEmail.
  */
 
 export interface SystemConfig {
@@ -12,9 +12,13 @@ export interface SystemConfig {
   readonly phoneNumber: string;
   readonly logoUrl: string;
   readonly faviconUrl: string;
-  readonly enableTrackingCodes: boolean;
   readonly workingHours: Record<string, { start: string; close: string }>;
   readonly businessHandle: string;
+}
+
+export interface SystemConfigOverrides {
+  domain?: string;
+  supportEmail?: string;
 }
 
 export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
@@ -24,25 +28,27 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
   Thursday: { start: '07:00', close: '19:00' },
   Friday: { start: '07:00', close: '19:00' },
   Saturday: { start: '07:00', close: '19:00' },
+  Sunday: { start: '07:00', close: '19:00' },
 };
 
-export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
+const BASE_CONFIG: SystemConfig = {
   domain: 'logistix.team',
   brandName: 'Logistix',
   supportEmail: 'contact@logistix.team',
   phoneNumber: '09069184604',
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
-  enableTrackingCodes: true,
   workingHours: DEFAULT_WORKING_HOURS,
   businessHandle: 'logistix',
 };
 
-export function buildSystemConfig(overrides?: Partial<SystemConfig>): SystemConfig {
-  const defined = Object.fromEntries(
-    Object.entries(overrides ?? {}).filter(([, v]) => v !== undefined),
-  ) as Partial<SystemConfig>;
-  return { ...DEFAULT_SYSTEM_CONFIG, ...defined };
+export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {
+  const domain = overrides?.domain ?? BASE_CONFIG.domain;
+  return {
+    ...BASE_CONFIG,
+    domain,
+    supportEmail: overrides?.supportEmail ?? `contact@${domain}`,
+  };
 }
 
-export const SYSTEM_CONFIG: SystemConfig = DEFAULT_SYSTEM_CONFIG;
+export const SYSTEM_CONFIG: SystemConfig = BASE_CONFIG;

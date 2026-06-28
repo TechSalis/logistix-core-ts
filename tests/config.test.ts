@@ -3,40 +3,39 @@ import { buildSystemConfig, SYSTEM_CONFIG } from '../src/config.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {
-    const config = buildSystemConfig({});
-    expect(config.brandName).toBe('Logistix');
-    expect(config.domain).toBe('logistix.team');
-    expect(config.supportEmail).toBe('contact@logistix.team');
-    expect(config.enableTrackingCodes).toBe(true);
-  });
-
-  it('has hardcoded brand Name and domain', () => {
-    const config = buildSystemConfig({});
+    const config = buildSystemConfig();
     expect(config.brandName).toBe('Logistix');
     expect(config.domain).toBe('logistix.team');
     expect(config.supportEmail).toBe('contact@logistix.team');
   });
 
-  it('disables tracking codes via override', () => {
-    const config = buildSystemConfig({ enableTrackingCodes: false });
-    expect(config.enableTrackingCodes).toBe(false);
+  it('overrides domain', () => {
+    const config = buildSystemConfig({ domain: 'staging.logistix.team' });
+    expect(config.domain).toBe('staging.logistix.team');
+    expect(config.supportEmail).toBe('contact@staging.logistix.team');
   });
 
-  it('has working hours for Monday–Saturday by default', () => {
-    const config = buildSystemConfig({});
-    expect(config.workingHours['Monday']).toEqual({ start: '07:00', close: '19:00' });
-    expect(config.workingHours['Saturday']).toEqual({ start: '07:00', close: '19:00' });
-    expect(config.workingHours['Sunday']).toBeUndefined();
+  it('overrides supportEmail explicitly', () => {
+    const config = buildSystemConfig({ supportEmail: 'help@logistix.team' });
+    expect(config.supportEmail).toBe('help@logistix.team');
+    expect(config.domain).toBe('logistix.team');
+  });
+
+  it('keeps brandName hardcoded', () => {
+    const config = buildSystemConfig({ domain: 'other.com' });
+    expect(config.brandName).toBe('Logistix');
   });
 });
 
 describe('SYSTEM_CONFIG singleton', () => {
-  it('is a valid SystemConfig object', () => {
-    expect(SYSTEM_CONFIG).toHaveProperty('brandName');
-    expect(SYSTEM_CONFIG).toHaveProperty('domain');
-    expect(SYSTEM_CONFIG).toHaveProperty('supportEmail');
+  it('has all required properties', () => {
+    expect(SYSTEM_CONFIG.brandName).toBe('Logistix');
+    expect(SYSTEM_CONFIG.domain).toBe('logistix.team');
+    expect(SYSTEM_CONFIG.supportEmail).toBe('contact@logistix.team');
+    expect(SYSTEM_CONFIG.workingHours['Monday']).toEqual({ start: '07:00', close: '19:00' });
+  });
 
-    expect(SYSTEM_CONFIG).toHaveProperty('workingHours');
-    expect(typeof SYSTEM_CONFIG.enableTrackingCodes).toBe('boolean');
+  it('includes Sunday in DEFAULT_WORKING_HOURS', () => {
+    expect(SYSTEM_CONFIG.workingHours['Sunday']).toEqual({ start: '07:00', close: '19:00' });
   });
 });

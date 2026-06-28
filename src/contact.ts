@@ -1,11 +1,11 @@
-import { EmailService } from './services/email.service';
-import { ContactCategory, LEAD_CATEGORIES } from './enums';
-import { submitterAckTemplate } from './templates/contact-email';
+import { EmailService } from './services/email.service.js';
+import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
+import { submitterAckTemplate } from './templates/contact-email.js';
 
 export interface ContactSubmission {
   email: string;
   name: string;
-  category: string;
+  category: ContactCategory;
   message: string;
 }
 

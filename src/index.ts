@@ -12,13 +12,8 @@
 export * from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-export {
-  buildSystemConfig,
-  SYSTEM_CONFIG,
-  DEFAULT_SYSTEM_CONFIG,
-  DEFAULT_WORKING_HOURS,
-} from './config.js';
-export type { SystemConfig } from './config.js';
+export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS } from './config.js';
+export type { SystemConfig, SystemConfigOverrides } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
 export { REGIONAL_CONFIG } from './regional.js';
@@ -54,7 +49,7 @@ export type { ParsedDelivery } from './deliveryParser.js';
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetchWithTimeout.js';
 export type { FetchWithTimeoutOptions } from './fetchWithTimeout.js';
-export * from './services/email.service';
+export * from './services/email.service.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export { submitterAckTemplate } from './templates/contact-email.js';
