@@ -268,6 +268,16 @@ export enum UpdateReason {
   REJECTED_BY_COMPANY = 'REJECTED_BY_COMPANY',
 }
 
+export enum SseEventType {
+  CONNECTED = 'connected',
+  DELIVERY = 'delivery',
+  RIDER = 'rider',
+  MESSAGE = 'message',
+  ASSIGNMENT = 'assignment',
+  APP_CONFIG = 'appConfig',
+  RIDER_LOCATION = 'rider-location',
+}
+
 export enum ContactCategory {
   SUPPORT = 'Support',
   PARTNERSHIP = 'Become a Partner',
