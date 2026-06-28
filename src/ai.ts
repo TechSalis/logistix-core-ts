@@ -43,7 +43,7 @@ const aiConfigSchema = z.object({
   }),
   memoryCacheTtl: z.number().default(600_000),
   maxIterations: z.number().default(2),
-  providerTimeoutMs: z.number().default(30000),
+  providerTimeoutMs: z.number().default(20000),
 });
 
 const rawAiConfig = {
@@ -66,7 +66,7 @@ const rawAiConfig = {
   },
   memoryCacheTtl: 600_000,
   maxIterations: 2,
-  providerTimeoutMs: 30000,
+  providerTimeoutMs: 20000,
 } as const;
 
 export const AI_CONFIG: AIConfig = aiConfigSchema.parse(rawAiConfig);
