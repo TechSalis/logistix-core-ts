@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildSystemConfig, SYSTEM_CONFIG } from '../src/config.js';
 
 describe('buildSystemConfig', () => {
-  it('returns defaults with no env vars', () => {
+  it('returns defaults with no overrides', () => {
     const config = buildSystemConfig({});
     expect(config.brandName).toBe('Logistix');
     expect(config.domain).toBe('logistix.team');
@@ -17,8 +17,8 @@ describe('buildSystemConfig', () => {
     expect(config.supportEmail).toBe('contact@logistix.team');
   });
 
-  it('disables tracking codes via env', () => {
-    const config = buildSystemConfig({ ENABLE_TRACKING_CODES: 'false' });
+  it('disables tracking codes via override', () => {
+    const config = buildSystemConfig({ enableTrackingCodes: false });
     expect(config.enableTrackingCodes).toBe(false);
   });
 

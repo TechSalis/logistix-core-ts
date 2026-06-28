@@ -12,7 +12,12 @@
 export * from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS } from './config.js';
+export {
+  buildSystemConfig,
+  SYSTEM_CONFIG,
+  DEFAULT_SYSTEM_CONFIG,
+  DEFAULT_WORKING_HOURS,
+} from './config.js';
 export type { SystemConfig } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
@@ -50,6 +55,11 @@ export type { ParsedDelivery } from './deliveryParser.js';
 export { fetchWithTimeout } from './fetchWithTimeout.js';
 export type { FetchWithTimeoutOptions } from './fetchWithTimeout.js';
 export * from './services/email.service';
+
+// ─── Contact Form ─────────────────────────────────────────────────────────────
+export { submitterAckTemplate } from './templates/contact-email.js';
+export { sendContactSubmissionAck } from './contact.js';
+export type { ContactSubmission, ContactNotifierOptions } from './contact.js';
 
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────
 export * from './drizzle/index.js';

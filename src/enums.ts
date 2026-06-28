@@ -266,3 +266,16 @@ export enum ApiTag {
 export enum UpdateReason {
   REJECTED_BY_COMPANY = 'REJECTED_BY_COMPANY',
 }
+
+export enum ContactCategory {
+  SUPPORT = 'Support',
+  PARTNERSHIP = 'Become a Partner',
+  BUSINESS = 'Use Logistix for Business',
+}
+
+// Categories that should generate leads in external CRM/Sheets
+// Uses enum members so display strings can change without breaking logic
+export const LEAD_CATEGORIES: ReadonlySet<ContactCategory> = new Set([
+  ContactCategory.PARTNERSHIP,
+  ContactCategory.BUSINESS,
+]);
