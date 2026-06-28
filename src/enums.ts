@@ -47,6 +47,7 @@ export enum PermitStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
+  SUSPENDED = 'SUSPENDED',
 }
 
 export enum EntityType {

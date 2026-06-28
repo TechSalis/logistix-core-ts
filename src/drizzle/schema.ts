@@ -13,47 +13,43 @@ import {
   pgEnum,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import {
+  DeliveryStatus,
+  LedgerAdjustmentType,
+  MappingPlatform,
+  MessageStatus,
+  PaymentMethod,
+  PermitStatus,
+  RiderStatus,
+  SubscriptionTier,
+  TransactionStatus,
+  VehicleType,
+} from '../enums';
 
-export const deliveryStatus = pgEnum('DeliveryStatus', [
-  'AWAITING_PAYMENT',
-  'PENDING',
-  'ASSIGNED',
-  'IN_TRANSIT',
-  'DELIVERED',
-  'CANCELLED',
-]);
+const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
+  Object.values(e) as [string, ...string[]];
+
+export const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
 export const exportRequestStatus = pgEnum('ExportRequestStatus', [
   'PENDING',
   'PROCESSING',
   'COMPLETED',
   'FAILED',
 ]);
-export const ledgerAdjustmentType = pgEnum('LedgerAdjustmentType', [
-  'CREDIT',
-  'DEBIT',
-  'CORRECTION',
-  'REFUND',
-]);
-export const mappingPlatform = pgEnum('MappingPlatform', [
-  'WHATSAPP',
-  'INSTAGRAM',
-  'TIKTOK',
-  'FACEBOOK',
-]);
+export const ledgerAdjustmentType = pgEnum(
+  'LedgerAdjustmentType',
+  enumValues(LedgerAdjustmentType),
+);
+export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatform));
 export const mappingSource = pgEnum('MappingSource', ['MANUAL', 'DISCOVERY']);
-export const messageStatus = pgEnum('MessageStatus', ['SENT', 'DELIVERED', 'READ', 'FAILED']);
-export const paymentMethod = pgEnum('PaymentMethod', ['PREPAID', 'POD']);
-export const permitStatus = pgEnum('PermitStatus', ['PENDING', 'APPROVED', 'REJECTED']);
-export const riderStatus = pgEnum('RiderStatus', ['OFFLINE', 'ONLINE', 'BUSY']);
+export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
+export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
+export const permitStatus = pgEnum('PermitStatus', enumValues(PermitStatus));
+export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
 export const senderType = pgEnum('SenderType', ['CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM']);
-export const subscriptionTier = pgEnum('SubscriptionTier', ['FREE', 'STARTER', 'PROFESSIONAL']);
-export const transactionStatus = pgEnum('TransactionStatus', [
-  'PENDING',
-  'SUCCESS',
-  'FAILED',
-  'REVERSED',
-]);
-export const vehicleType = pgEnum('VehicleType', ['BIKE', 'CAR', 'VAN', 'TRUCK']);
+export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
+export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
+export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
 
 export const companies = pgTable(
   'companies',
