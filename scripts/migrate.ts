@@ -16,7 +16,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { readFileSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -24,6 +25,8 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const MIGRATIONS_FOLDER = resolve(__dirname, '..', 'drizzle');
 const sql = String.raw;
 
