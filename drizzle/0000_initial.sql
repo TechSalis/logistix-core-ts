@@ -357,4 +357,26 @@ CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_t
 CREATE INDEX "subscription_transactions_status_created_at_idx" ON "subscription_transactions" USING btree ("status" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "companies_states_gin_idx" ON "companies" USING gin ("states");--> statement-breakpoint
 CREATE INDEX "company_integrations_company_id_is_active_idx" ON "company_integrations" USING btree ("company_id" text_ops,"is_active" bool_ops);--> statement-breakpoint
-CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;
+CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;--> statement-breakpoint
+CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'HIJACKED');--> statement-breakpoint
+CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN');--> statement-breakpoint
+CREATE TABLE "escalations" (
+	"id" text PRIMARY KEY NOT NULL,
+	"conversation_id" text NOT NULL,
+	"company_id" text,
+	"escalated_to" "public"."EscalatedTo" NOT NULL,
+	"reason" text,
+	"status" "public"."EscalationStatus" DEFAULT 'OPEN' NOT NULL,
+	"resolved_by" text,
+	"hijacked_by" text,
+	"hijacked_at" timestamp (3),
+	"resolved_at" timestamp (3),
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+);--> statement-breakpoint
+CREATE INDEX "escalations_conversation_id_idx" ON "escalations" USING btree ("conversation_id" text_ops);--> statement-breakpoint
+CREATE INDEX "escalations_company_id_idx" ON "escalations" USING btree ("company_id" text_ops);--> statement-breakpoint
+CREATE INDEX "escalations_status_idx" ON "escalations" USING btree ("status" enum_ops);--> statement-breakpoint
+CREATE INDEX "escalations_escalated_to_status_idx" ON "escalations" USING btree ("escalated_to" enum_ops, "status" enum_ops);--> statement-breakpoint
+ALTER TABLE "escalations" ADD CONSTRAINT "escalations_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON UPDATE cascade ON DELETE cascade;--> statement-breakpoint
+ALTER TABLE "escalations" ADD CONSTRAINT "escalations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON UPDATE cascade ON DELETE set null;--> statement-breakpoint
+ALTER TABLE "admins" ADD COLUMN "fcm_token" text;

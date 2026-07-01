@@ -3,6 +3,7 @@ export enum UserRole {
   COMPANY = 'COMPANY',
   DISPATCHER = 'DISPATCHER',
   RIDER = 'RIDER',
+  CUSTOMER = 'CUSTOMER',
 }
 
 export enum ActorType {
@@ -189,6 +190,36 @@ export enum MessageStatus {
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   READ = 'READ',
+  FAILED = 'FAILED',
+}
+
+export enum EscalationStatus {
+  OPEN = 'OPEN',
+  RESOLVED = 'RESOLVED',
+  HIJACKED = 'HIJACKED',
+}
+
+export enum EscalatedTo {
+  COMPANY = 'COMPANY',
+  ADMIN = 'ADMIN',
+}
+
+export enum SenderType {
+  CUSTOMER = 'CUSTOMER',
+  AGENT = 'AGENT',
+  DISPATCHER = 'DISPATCHER',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum MappingSource {
+  MANUAL = 'MANUAL',
+  DISCOVERY = 'DISCOVERY',
+}
+
+export enum ExportRequestStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
 }
 

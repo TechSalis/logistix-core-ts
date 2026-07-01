@@ -15,38 +15,38 @@ import {
 import { sql } from 'drizzle-orm';
 import {
   DeliveryStatus,
+  EscalatedTo,
+  EscalationStatus,
+  ExportRequestStatus,
   LedgerAdjustmentType,
   MappingPlatform,
+  MappingSource,
   MessageStatus,
   PaymentMethod,
   PermitStatus,
   RiderStatus,
+  SenderType,
   SubscriptionTier,
   TransactionStatus,
   VehicleType,
-} from '../enums';
+} from '../enums.js';
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
 
 export const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
-export const exportRequestStatus = pgEnum('ExportRequestStatus', [
-  'PENDING',
-  'PROCESSING',
-  'COMPLETED',
-  'FAILED',
-]);
+export const exportRequestStatus = pgEnum('ExportRequestStatus', enumValues(ExportRequestStatus));
 export const ledgerAdjustmentType = pgEnum(
   'LedgerAdjustmentType',
   enumValues(LedgerAdjustmentType),
 );
 export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatform));
-export const mappingSource = pgEnum('MappingSource', ['MANUAL', 'DISCOVERY']);
+export const mappingSource = pgEnum('MappingSource', enumValues(MappingSource));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const permitStatus = pgEnum('PermitStatus', enumValues(PermitStatus));
 export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
-export const senderType = pgEnum('SenderType', ['CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM']);
+export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
 export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
@@ -332,6 +332,7 @@ export const admins = pgTable(
     userId: text('user_id').notNull(),
     email: text().notNull(),
     fullName: text('full_name').notNull(),
+    fcmToken: text('fcm_token'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -825,6 +826,61 @@ export const subscriptionTransactions = pgTable(
       table.status.asc().nullsLast().op('enum_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
+  ],
+);
+
+export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
+export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
+
+export const escalations = pgTable(
+  'escalations',
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId())
+      .notNull(),
+    conversationId: text('conversation_id').notNull(),
+    companyId: text('company_id'),
+    escalatedTo: escalatedTo('escalated_to').notNull(),
+    reason: text(),
+    status: escalationStatus().default('OPEN').notNull(),
+    resolvedBy: text('resolved_by'),
+    hijackedBy: text('hijacked_by'),
+    hijackedAt: timestamp('hijacked_at', { precision: 3, mode: 'date' }),
+    resolvedAt: timestamp('resolved_at', { precision: 3, mode: 'date' }),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('escalations_conversation_id_idx').using(
+      'btree',
+      table.conversationId.asc().nullsLast().op('text_ops'),
+    ),
+    index('escalations_company_id_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+    ),
+    index('escalations_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    index('escalations_escalated_to_status_idx').using(
+      'btree',
+      table.escalatedTo.asc().nullsLast().op('enum_ops'),
+      table.status.asc().nullsLast().op('enum_ops'),
+    ),
+    foreignKey({
+      columns: [table.conversationId],
+      foreignColumns: [conversations.id],
+      name: 'escalations_conversation_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'escalations_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('set null'),
   ],
 );
 

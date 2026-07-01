@@ -13,7 +13,8 @@ import {
   deliveryTransactions,
   customerCompanyMappings,
   riderLocationLogs,
-} from './schema';
+  escalations,
+} from './schema.js';
 
 export const companySettingsRelations = relations(companySettings, ({ one }) => ({
   company: one(companies, {
@@ -116,5 +117,16 @@ export const riderLocationLogsRelations = relations(riderLocationLogs, ({ one })
   rider: one(riders, {
     fields: [riderLocationLogs.riderId],
     references: [riders.id],
+  }),
+}));
+
+export const escalationsRelations = relations(escalations, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [escalations.conversationId],
+    references: [conversations.id],
+  }),
+  company: one(companies, {
+    fields: [escalations.companyId],
+    references: [companies.id],
   }),
 }));

@@ -38,6 +38,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "fcm_token": {
+          "name": "fcm_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -3147,6 +3153,143 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.escalations": {
+      "schema": "public",
+      "name": "escalations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escalated_to": {
+          "name": "escalated_to",
+          "type": "EscalatedTo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "EscalationStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'OPEN'::EscalationStatus"
+        },
+        "resolved_by": {
+          "name": "resolved_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hijacked_by": {
+          "name": "hijacked_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hijacked_at": {
+          "name": "hijacked_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "escalations_conversation_id_idx": {
+          "name": "escalations_conversation_id_idx",
+          "columns": [
+            "conversation_id"
+          ],
+          "isUnique": false
+        },
+        "escalations_company_id_idx": {
+          "name": "escalations_company_id_idx",
+          "columns": [
+            "company_id"
+          ],
+          "isUnique": false
+        },
+        "escalations_status_idx": {
+          "name": "escalations_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "escalations_escalated_to_status_idx": {
+          "name": "escalations_escalated_to_status_idx",
+          "columns": [
+            "escalated_to",
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "escalations_conversation_id_fkey": {
+          "name": "escalations_conversation_id_fkey",
+          "tableFrom": "escalations",
+          "columnsFrom": [
+            "conversation_id"
+          ],
+          "tableTo": "conversations",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
+        },
+        "escalations_company_id_fkey": {
+          "name": "escalations_company_id_fkey",
+          "tableFrom": "escalations",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "tableTo": "companies",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "cascade",
+          "onDelete": "set null"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     }
   },
   "enums": {
@@ -3285,6 +3428,23 @@
         "VAN",
         "TRUCK"
       ]
+    },
+    "public.EscalationStatus": {
+      "name": "EscalationStatus",
+      "schema": "public",
+      "values": [
+        "OPEN",
+        "RESOLVED",
+        "HIJACKED"
+      ]
+    },
+    "public.EscalatedTo": {
+      "name": "EscalatedTo",
+      "schema": "public",
+      "values": [
+        "COMPANY",
+        "ADMIN"
+      ]
     }
   },
   "schemas": {},
@@ -3295,6 +3455,7 @@
   "_meta": {
     "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "consistent": true
   }
 }
