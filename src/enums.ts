@@ -262,6 +262,7 @@ export enum ApiTag {
   ADMIN = 'Admin',
   GRAPHQL = 'GraphQL',
   SYSTEM = 'System',
+  ONBOARDING = 'Onboarding',
 }
 
 export enum UpdateReason {
@@ -276,6 +277,11 @@ export enum SseEventType {
   ASSIGNMENT = 'assignment',
   APP_CONFIG = 'appConfig',
   RIDER_LOCATION = 'rider-location',
+}
+
+export enum JwtTokenType {
+  ACCESS = 'access',
+  REFRESH = 'refresh',
 }
 
 export enum ContactCategory {

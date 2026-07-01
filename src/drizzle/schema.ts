@@ -59,7 +59,6 @@ export const companies = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     name: text().notNull(),
-    businessHandle: text('business_handle'),
     logoUrl: text('logo_url'),
     cac: text(),
     contactPhone: text('contact_phone'),
@@ -73,10 +72,6 @@ export const companies = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex('companies_business_handle_key').using(
-      'btree',
-      table.businessHandle.asc().nullsLast().op('text_ops'),
-    ),
     index('companies_name_idx').using('btree', table.name.asc().nullsLast().op('text_ops')),
     index('companies_states_gin_idx').using('gin', table.states),
   ],
@@ -103,6 +98,7 @@ export const companySettings = pgTable(
       .notNull(),
     bankDetails: jsonb('bank_details'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
+    companyCode: text('company_code'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -111,6 +107,10 @@ export const companySettings = pgTable(
     uniqueIndex('company_settings_company_id_key').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
+    ),
+    uniqueIndex('company_settings_company_code_key').using(
+      'btree',
+      table.companyCode.asc().nullsLast().op('text_ops'),
     ),
     foreignKey({
       columns: [table.companyId],
@@ -527,6 +527,7 @@ export const riders = pgTable(
     fullName: text('full_name').notNull(),
     phoneNumber: text('phone_number'),
     registrationNumber: text('registration_number'),
+    idType: text('id_type'),
     vehicleType: vehicleType('vehicle_type').default('BIKE').notNull(),
     permitStatus: permitStatus('permit_status').default('PENDING').notNull(),
     isAccepted: boolean('is_accepted').default(false).notNull(),
