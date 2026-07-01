@@ -1,4 +1,4 @@
-const createId = () => globalThis.crypto.randomUUID();
+const createId = () => crypto.randomUUID();
 import {
   pgTable,
   timestamp,
