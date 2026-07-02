@@ -221,7 +221,9 @@ export const conversations = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     autoReplyEnabled: boolean('auto_reply_enabled').default(true).notNull(),
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
     scratchpad: jsonb(),
@@ -440,7 +442,9 @@ export const deliveries = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     trackingId: text('tracking_id').notNull(),
     pin: text(),
     proofOfDeliveryImagePath: text('proof_of_delivery_image_path'),
@@ -543,7 +547,9 @@ export const riders = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     index('riders_company_id_status_idx').using(
@@ -782,7 +788,9 @@ export const appConfigs = pgTable('app_configs', {
   key: text().primaryKey().notNull(),
   value: jsonb().notNull(),
   scope: text(),
-  updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' }).notNull(),
+  updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export const subscriptionTransactions = pgTable(

@@ -24,7 +24,7 @@ CREATE TABLE "app_configs" (
 	"key" text PRIMARY KEY NOT NULL,
 	"value" jsonb NOT NULL,
 	"scope" text,
-	"updated_at" timestamp (3) NOT NULL
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "blocked_ips" (
@@ -79,7 +79,7 @@ CREATE TABLE "conversations" (
 	"company_id" text,
 	"last_message_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) NOT NULL,
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"auto_reply_enabled" boolean DEFAULT true NOT NULL,
 	"last_customer_message_at" timestamp (3),
 	"scratchpad" jsonb,
@@ -117,7 +117,7 @@ CREATE TABLE "deliveries" (
 	"scheduled_at" timestamp (3),
 	"delivered_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) NOT NULL,
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"tracking_id" text NOT NULL,
 	"pin" text,
 	"proof_of_delivery_image_path" text,
@@ -254,7 +254,7 @@ CREATE TABLE "riders" (
 	"fcm_token" text,
 	"company_id" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) NOT NULL
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "subscription_transactions" (
