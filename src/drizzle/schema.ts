@@ -165,7 +165,7 @@ export const companyIntegrations = pgTable(
     platformId: text('platform_id').notNull(),
     companyId: text('company_id').notNull(),
     isActive: boolean('is_active').default(false).notNull(),
-    isPlatformOwned: boolean('is_platform_owned').default(true).notNull(),
+    isSystemOwned: boolean('is_system_owned').default(true).notNull(),
     metadata: jsonb(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)

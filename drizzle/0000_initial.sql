@@ -57,7 +57,7 @@ CREATE TABLE "company_integrations" (
 	"platform_id" text NOT NULL,
 	"company_id" text NOT NULL,
 	"is_active" boolean DEFAULT false NOT NULL,
-	"is_platform_owned" boolean DEFAULT true NOT NULL,
+	"is_system_owned" boolean DEFAULT true NOT NULL,
 	"metadata" jsonb,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
