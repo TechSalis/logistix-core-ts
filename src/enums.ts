@@ -272,9 +272,14 @@ export enum LlmRole {
 }
 
 export enum ProviderRole {
-  INTERPRETATION = 'interpretation',
-  SYNTHESIS = 'synthesis',
-  BOTH = 'both',
+  INTERPRET = 'interpret',
+  SYNTHESIZE = 'synthesize',
+}
+
+export enum ProviderCapability {
+  JSON = 'json',
+  TOOLS = 'tools',
+  VISION = 'vision',
 }
 
 export enum LogLevel {
