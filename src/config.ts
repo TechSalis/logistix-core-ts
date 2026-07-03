@@ -5,6 +5,13 @@
  * environment-specific fields like domain and supportEmail.
  */
 
+export interface BankDetails {
+  readonly bankName: string;
+  readonly bankCode: string;
+  readonly accountNumber: string;
+  readonly accountName: string;
+}
+
 export interface SystemConfig {
   readonly brandName: string;
   readonly domain: string;
@@ -13,6 +20,7 @@ export interface SystemConfig {
   readonly logoUrl: string;
   readonly faviconUrl: string;
   readonly workingHours: Record<string, { start: string; close: string }>;
+  readonly defaultBankDetails: BankDetails | null;
 }
 
 export interface SystemConfigOverrides {
@@ -38,6 +46,12 @@ const BASE_CONFIG: SystemConfig = {
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
   workingHours: DEFAULT_WORKING_HOURS,
+  defaultBankDetails: {
+    bankName: 'First Bank of Nigeria',
+    bankCode: '011',
+    accountNumber: '3139248826',
+    accountName: 'Onyeulo Eric Ifeanyi',
+  },
 };
 
 export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {

@@ -13,7 +13,7 @@ export * from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS } from './config.js';
-export type { SystemConfig, SystemConfigOverrides } from './config.js';
+export type { SystemConfig, SystemConfigOverrides, BankDetails } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
 export { REGIONAL_CONFIG } from './regional.js';
