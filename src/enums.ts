@@ -107,6 +107,7 @@ export enum LedgerAdjustmentType {
 
 export enum PaymentProvider {
   SQUAD = 'SQUAD',
+  SYSTEM = 'SYSTEM',
 }
 
 export enum EventType {
@@ -247,6 +248,7 @@ export enum ErrorCode {
   TOO_MANY_ATTEMPTS = 'TOO_MANY_ATTEMPTS',
   TOO_MANY_REGISTRATIONS = 'TOO_MANY_REGISTRATIONS',
   LOW_CONFIDENCE_EXTRACTION = 'LOW_CONFIDENCE_EXTRACTION',
+  DISPATCH_UNAVAILABLE = 'DISPATCH_UNAVAILABLE',
 }
 
 export enum SystemStatus {
