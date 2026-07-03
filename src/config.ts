@@ -13,7 +13,6 @@ export interface SystemConfig {
   readonly logoUrl: string;
   readonly faviconUrl: string;
   readonly workingHours: Record<string, { start: string; close: string }>;
-  readonly businessHandle: string;
 }
 
 export interface SystemConfigOverrides {
@@ -39,7 +38,6 @@ const BASE_CONFIG: SystemConfig = {
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
   workingHours: DEFAULT_WORKING_HOURS,
-  businessHandle: 'logistix',
 };
 
 export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {
