@@ -1,6 +1,7 @@
 import { EmailService } from './services/email.service.js';
 import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
 import { submitterAckTemplate } from './templates/contact-email.js';
+import { SYSTEM_CONFIG } from './config.js';
 
 export interface ContactSubmission {
   email: string;
@@ -20,7 +21,7 @@ export async function sendContactSubmissionAck(
   options: ContactNotifierOptions,
 ): Promise<void> {
   const { email, name, category, message } = submission;
-  const { resendApiKey, googleLeadsUrl, fromEmail = 'contact@logistix.team' } = options;
+  const { resendApiKey, googleLeadsUrl, fromEmail = SYSTEM_CONFIG.supportEmail } = options;
 
   const emailService = new EmailService(resendApiKey);
 
@@ -31,7 +32,7 @@ export async function sendContactSubmissionAck(
     html: submitterAckTemplate(name, category, message),
   });
 
-  if (googleLeadsUrl && LEAD_CATEGORIES.has(category as ContactCategory)) {
+  if (googleLeadsUrl && LEAD_CATEGORIES.has(category)) {
     await fetch(googleLeadsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

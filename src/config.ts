@@ -1,10 +1,3 @@
-/**
- * Global system configuration.
- *
- * Brand values are hardcoded. Use buildSystemConfig() to override
- * environment-specific fields like domain and supportEmail.
- */
-
 export interface BankDetails {
   readonly bankName: string;
   readonly bankCode: string;
@@ -26,6 +19,8 @@ export interface SystemConfig {
 export interface SystemConfigOverrides {
   domain?: string;
   supportEmail?: string;
+  phoneNumber?: string;
+  defaultBankDetails?: BankDetails | null;
 }
 
 export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
@@ -42,16 +37,11 @@ const BASE_CONFIG: SystemConfig = {
   domain: 'logistix.team',
   brandName: 'Logistix',
   supportEmail: 'contact@logistix.team',
-  phoneNumber: '09069184604',
+  phoneNumber: '',
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
   workingHours: DEFAULT_WORKING_HOURS,
-  defaultBankDetails: {
-    bankName: 'First Bank of Nigeria',
-    bankCode: '011',
-    accountNumber: '3139248826',
-    accountName: 'Onyeulo Eric Ifeanyi',
-  },
+  defaultBankDetails: null,
 };
 
 export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {
@@ -60,6 +50,8 @@ export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConf
     ...BASE_CONFIG,
     domain,
     supportEmail: overrides?.supportEmail ?? `contact@${domain}`,
+    phoneNumber: overrides?.phoneNumber ?? BASE_CONFIG.phoneNumber,
+    defaultBankDetails: overrides?.defaultBankDetails ?? BASE_CONFIG.defaultBankDetails,
   };
 }
 

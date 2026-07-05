@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SubscriptionTier } from './enums.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {
@@ -8,11 +9,7 @@ export interface SecurityConfig {
     readonly login: { readonly max: number; readonly window: number };
     readonly register: { readonly max: number; readonly window: number };
     readonly otp: { readonly max: number; readonly window: number };
-    readonly tiers: {
-      readonly FREE: { readonly max: number; readonly windowMs: number };
-      readonly STARTER: { readonly max: number; readonly windowMs: number };
-      readonly PROFESSIONAL: { readonly max: number; readonly windowMs: number };
-    };
+    readonly tiers: Record<SubscriptionTier, { readonly max: number; readonly windowMs: number }>;
   };
   readonly jwt: {
     readonly jwtExpiresIn: string;
@@ -43,17 +40,16 @@ const securityConfigSchema = z.object({
     login: z.object({ max: z.number(), window: z.number() }),
     register: z.object({ max: z.number(), window: z.number() }),
     otp: z.object({ max: z.number(), window: z.number() }),
-    tiers: z.object({
-      FREE: z.object({ max: z.number(), windowMs: z.number() }),
-      STARTER: z.object({ max: z.number(), windowMs: z.number() }),
-      PROFESSIONAL: z.object({ max: z.number(), windowMs: z.number() }),
-    }),
+    tiers: z.record(
+      z.nativeEnum(SubscriptionTier),
+      z.object({ max: z.number(), windowMs: z.number() }),
+    ),
   }),
   jwt: z.object({
     jwtExpiresIn: z.string(),
     jwtRefreshExpiresIn: z.string(),
   }),
-  headers: z.custom<Record<string, string>>((val) => typeof val === 'object' && val !== null),
+  headers: z.record(z.string(), z.string()),
   maliciousPatterns: z.array(z.instanceof(RegExp)),
   validation: z.object({
     maxEmailLength: z.number(),
@@ -77,9 +73,8 @@ const rawSecurityConfig = {
     register: { max: 3, window: 3600 },
     otp: { max: 5, window: 3600 },
     tiers: {
-      FREE: { max: 100, windowMs: 900_000 },
-      STARTER: { max: 500, windowMs: 900_000 },
-      PROFESSIONAL: { max: 2000, windowMs: 900_000 },
+      [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
+      [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },
     },
   },
   jwt: {

@@ -70,16 +70,6 @@ export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsCon
  * These limits control the entire flow from drafting to synthesis
  */
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
-  [SubscriptionTier.FREE]: {
-    maxAIDeliveriesPerAction: 10, // AI draft/book limit per request
-    maxBulkDeliveries: 20, // Manual bulk creation limit
-    maxQueryLimit: 20, // Database query limit
-    maxTrackingHistory: 20, // Tracking IDs in session memory
-    maxMemoryArraySize: 20, // Array size during memory merging
-    maxSynthesisResults: 20, // Results sent to LLM for synthesis
-    maxDrafts: 10, // Draft deliveries per session
-    retentionDays: 40, // Hot storage retention
-  },
   [SubscriptionTier.STARTER]: {
     maxAIDeliveriesPerAction: 30, // AI draft/book limit per request
     maxBulkDeliveries: 50, // Manual bulk creation limit
@@ -105,6 +95,6 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 /**
  * Get tier-specific limits for a subscription tier
  */
-export const getTierLimits = (tier: string | SubscriptionTier): TierLimits => {
-  return TIER_LIMITS[tier as SubscriptionTier] || TIER_LIMITS[SubscriptionTier.FREE];
+export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
+  return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
 };

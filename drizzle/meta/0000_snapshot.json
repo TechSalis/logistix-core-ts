@@ -1,5 +1,5 @@
 {
-  "id": "f93b5fe4-35c6-4b68-bd34-59375c2f34e4",
+  "id": "1dbfce2a-e22f-45ce-9b7a-3cf515e7e9f4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -32,18 +32,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "fcm_token": {
+          "name": "fcm_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
-        },
-        "fcm_token": {
-          "name": "fcm_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -87,37 +87,113 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.app_configs": {
-      "name": "app_configs",
+    "public.ai_usage": {
+      "name": "ai_usage",
       "schema": "",
       "columns": {
-        "key": {
-          "name": "key",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "value": {
-          "name": "value",
-          "type": "jsonb",
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "scope": {
-          "name": "scope",
+        "integration_id": {
+          "name": "integration_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3)",
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "tokens_in": {
+          "name": "tokens_in",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tokens_out": {
+          "name": "tokens_out",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cost": {
+          "name": "cost",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'NGN'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "ai_usage_company_id_created_at_idx": {
+          "name": "ai_usage_company_id_created_at_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "ai_usage_company_id_fkey": {
+          "name": "ai_usage_company_id_fkey",
+          "tableFrom": "ai_usage",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -223,12 +299,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "business_handle": {
-          "name": "business_handle",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "logo_url": {
           "name": "logo_url",
           "type": "text",
@@ -287,22 +357,6 @@
         }
       },
       "indexes": {
-        "companies_business_handle_key": {
-          "name": "companies_business_handle_key",
-          "columns": [
-            {
-              "expression": "business_handle",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "companies_name_idx": {
           "name": "companies_name_idx",
           "columns": [
@@ -326,8 +380,7 @@
               "expression": "states",
               "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "gin_ops"
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -379,8 +432,8 @@
           "notNull": true,
           "default": false
         },
-        "is_platform_owned": {
-          "name": "is_platform_owned",
+        "is_system_owned": {
+          "name": "is_system_owned",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -420,6 +473,29 @@
         "company_integrations_is_active_idx": {
           "name": "company_integrations_is_active_idx",
           "columns": [
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_integrations_company_id_is_active_idx": {
+          "name": "company_integrations_company_id_is_active_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
             {
               "expression": "is_active",
               "isExpression": false,
@@ -478,29 +554,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "company_integrations_company_id_is_active_idx": {
-          "name": "company_integrations_company_id_is_active_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "is_active",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "bool_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -546,7 +599,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'FREE'"
+          "default": "'STARTER'"
         },
         "working_hours": {
           "name": "working_hours",
@@ -568,6 +621,12 @@
           "notNull": true,
           "default": 0
         },
+        "company_code": {
+          "name": "company_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
@@ -582,6 +641,22 @@
           "columns": [
             {
               "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_settings_company_code_key": {
+          "name": "company_settings_company_code_key",
+          "columns": [
+            {
+              "expression": "company_code",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -663,7 +738,8 @@
           "name": "updated_at",
           "type": "timestamp (3)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
         },
         "auto_reply_enabled": {
           "name": "auto_reply_enabled",
@@ -791,18 +867,17 @@
               "expression": "company_id",
               "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "nulls": "last"
             },
             {
               "expression": "last_message_at",
               "isExpression": false,
               "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
+              "nulls": "last"
             }
           ],
           "isUnique": false,
+          "where": "auto_reply_enabled = false AND company_id IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1120,7 +1195,8 @@
           "name": "updated_at",
           "type": "timestamp (3)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
         },
         "tracking_id": {
           "name": "tracking_id",
@@ -1439,8 +1515,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "delivery_transaction_id": {
-          "name": "delivery_transaction_id",
+        "transaction_id": {
+          "name": "transaction_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -1460,8 +1536,8 @@
         }
       },
       "indexes": {
-        "delivery_allocations_delivery_id_delivery_transaction_id_key": {
-          "name": "delivery_allocations_delivery_id_delivery_transaction_id_key",
+        "delivery_allocations_delivery_id_transaction_id_key": {
+          "name": "delivery_allocations_delivery_id_transaction_id_key",
           "columns": [
             {
               "expression": "delivery_id",
@@ -1471,7 +1547,7 @@
               "opclass": "text_ops"
             },
             {
-              "expression": "delivery_transaction_id",
+              "expression": "transaction_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -1499,11 +1575,11 @@
           "method": "btree",
           "with": {}
         },
-        "delivery_allocations_delivery_transaction_id_idx": {
-          "name": "delivery_allocations_delivery_transaction_id_idx",
+        "delivery_allocations_transaction_id_idx": {
+          "name": "delivery_allocations_transaction_id_idx",
           "columns": [
             {
-              "expression": "delivery_transaction_id",
+              "expression": "transaction_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -1530,12 +1606,12 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "delivery_allocations_delivery_transaction_id_fkey": {
-          "name": "delivery_allocations_delivery_transaction_id_fkey",
+        "delivery_allocations_transaction_id_fkey": {
+          "name": "delivery_allocations_transaction_id_fkey",
           "tableFrom": "delivery_allocations",
-          "tableTo": "delivery_transactions",
+          "tableTo": "transactions",
           "columnsFrom": [
-            "delivery_transaction_id"
+            "transaction_id"
           ],
           "columnsTo": [
             "id"
@@ -1544,162 +1620,6 @@
           "onUpdate": "cascade"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.delivery_transactions": {
-      "name": "delivery_transactions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "amount": {
-          "name": "amount",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "currency": {
-          "name": "currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'NGN'"
-        },
-        "status": {
-          "name": "status",
-          "type": "TransactionStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'PENDING'"
-        },
-        "reference": {
-          "name": "reference",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "processed_at": {
-          "name": "processed_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "delivery_transactions_company_id_created_at_idx": {
-          "name": "delivery_transactions_company_id_created_at_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "delivery_transactions_reference_idx": {
-          "name": "delivery_transactions_reference_idx",
-          "columns": [
-            {
-              "expression": "reference",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "delivery_transactions_reference_key": {
-          "name": "delivery_transactions_reference_key",
-          "columns": [
-            {
-              "expression": "reference",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "delivery_transactions_status_created_at_idx": {
-          "name": "delivery_transactions_status_created_at_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -1829,6 +1749,188 @@
         "dispatchers_company_id_fkey": {
           "name": "dispatchers_company_id_fkey",
           "tableFrom": "dispatchers",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.escalations": {
+      "name": "escalations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "conversation_id": {
+          "name": "conversation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escalated_to": {
+          "name": "escalated_to",
+          "type": "EscalatedTo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "EscalationStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'OPEN'"
+        },
+        "resolved_by": {
+          "name": "resolved_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hijacked_by": {
+          "name": "hijacked_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hijacked_at": {
+          "name": "hijacked_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "escalations_conversation_id_idx": {
+          "name": "escalations_conversation_id_idx",
+          "columns": [
+            {
+              "expression": "conversation_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "escalations_company_id_idx": {
+          "name": "escalations_company_id_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "escalations_status_idx": {
+          "name": "escalations_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "escalations_escalated_to_status_idx": {
+          "name": "escalations_escalated_to_status_idx",
+          "columns": [
+            {
+              "expression": "escalated_to",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "escalations_conversation_id_fkey": {
+          "name": "escalations_conversation_id_fkey",
+          "tableFrom": "escalations",
+          "tableTo": "conversations",
+          "columnsFrom": [
+            "conversation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "escalations_company_id_fkey": {
+          "name": "escalations_company_id_fkey",
+          "tableFrom": "escalations",
           "tableTo": "companies",
           "columnsFrom": [
             "company_id"
@@ -2769,6 +2871,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "id_type": {
+          "name": "id_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "vehicle_type": {
           "name": "vehicle_type",
           "type": "VehicleType",
@@ -2798,12 +2906,6 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
-        },
-        "deactivated_at": {
-          "name": "deactivated_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
         },
         "last_lat": {
           "name": "last_lat",
@@ -2841,6 +2943,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
@@ -2852,7 +2960,8 @@
           "name": "updated_at",
           "type": "timestamp (3)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {
@@ -3154,9 +3263,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.escalations": {
-      "schema": "public",
-      "name": "escalations",
+    "public.transactions": {
+      "name": "transactions",
+      "schema": "",
       "columns": {
         "id": {
           "name": "id",
@@ -3164,59 +3273,91 @@
           "primaryKey": true,
           "notNull": true
         },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "company_id": {
           "name": "company_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "escalated_to": {
-          "name": "escalated_to",
-          "type": "EscalatedTo",
+        "type": {
+          "name": "type",
+          "type": "TransactionType",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
-        "reason": {
-          "name": "reason",
+        "amount": {
+          "name": "amount",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'NGN'"
         },
         "status": {
           "name": "status",
-          "type": "EscalationStatus",
+          "type": "TransactionStatus",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'OPEN'::EscalationStatus"
+          "default": "'PENDING'"
         },
-        "resolved_by": {
-          "name": "resolved_by",
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "hijacked_by": {
-          "name": "hijacked_by",
-          "type": "text",
+        "tier": {
+          "name": "tier",
+          "type": "SubscriptionTier",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
-        "hijacked_at": {
-          "name": "hijacked_at",
+        "period_start": {
+          "name": "period_start",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": false
         },
-        "resolved_at": {
-          "name": "resolved_at",
+        "period_end": {
+          "name": "period_end",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "performed_by": {
+          "name": "performed_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "processed_at": {
+          "name": "processed_at",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": false
@@ -3230,66 +3371,100 @@
         }
       },
       "indexes": {
-        "escalations_conversation_id_idx": {
-          "name": "escalations_conversation_id_idx",
+        "transactions_company_id_created_at_idx": {
+          "name": "transactions_company_id_created_at_idx",
           "columns": [
-            "conversation_id"
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
           ],
-          "isUnique": false
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
-        "escalations_company_id_idx": {
-          "name": "escalations_company_id_idx",
+        "transactions_type_idx": {
+          "name": "transactions_type_idx",
           "columns": [
-            "company_id"
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
           ],
-          "isUnique": false
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
-        "escalations_status_idx": {
-          "name": "escalations_status_idx",
+        "transactions_reference_idx": {
+          "name": "transactions_reference_idx",
           "columns": [
-            "status"
+            {
+              "expression": "reference",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
           ],
-          "isUnique": false
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         },
-        "escalations_escalated_to_status_idx": {
-          "name": "escalations_escalated_to_status_idx",
+        "transactions_reference_key": {
+          "name": "transactions_reference_key",
           "columns": [
-            "escalated_to",
-            "status"
+            {
+              "expression": "reference",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
           ],
-          "isUnique": false
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "transactions_status_idx": {
+          "name": "transactions_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "foreignKeys": {
-        "escalations_conversation_id_fkey": {
-          "name": "escalations_conversation_id_fkey",
-          "tableFrom": "escalations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "tableTo": "conversations",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "cascade",
-          "onDelete": "cascade"
-        },
-        "escalations_company_id_fkey": {
-          "name": "escalations_company_id_fkey",
-          "tableFrom": "escalations",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "tableTo": "companies",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "cascade",
-          "onDelete": "set null"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
@@ -3303,6 +3478,23 @@
         "IN_TRANSIT",
         "DELIVERED",
         "CANCELLED"
+      ]
+    },
+    "public.EscalatedTo": {
+      "name": "EscalatedTo",
+      "schema": "public",
+      "values": [
+        "COMPANY",
+        "ADMIN"
+      ]
+    },
+    "public.EscalationStatus": {
+      "name": "EscalationStatus",
+      "schema": "public",
+      "values": [
+        "OPEN",
+        "RESOLVED",
+        "HIJACKED"
       ]
     },
     "public.ExportRequestStatus": {
@@ -3322,7 +3514,8 @@
         "CREDIT",
         "DEBIT",
         "CORRECTION",
-        "REFUND"
+        "REFUND",
+        "AI_USAGE"
       ]
     },
     "public.MappingPlatform": {
@@ -3331,8 +3524,8 @@
       "values": [
         "WHATSAPP",
         "INSTAGRAM",
-        "TIKTOK",
-        "FACEBOOK"
+        "FACEBOOK",
+        "TIKTOK"
       ]
     },
     "public.MappingSource": {
@@ -3358,7 +3551,7 @@
       "schema": "public",
       "values": [
         "PREPAID",
-        "POD"
+        "PAY_ON_DELIVERY"
       ]
     },
     "public.PermitStatus": {
@@ -3367,27 +3560,17 @@
       "values": [
         "PENDING",
         "APPROVED",
-        "REJECTED"
+        "REJECTED",
+        "SUSPENDED"
       ]
     },
     "public.RiderStatus": {
       "name": "RiderStatus",
       "schema": "public",
       "values": [
-        "OFFLINE",
         "ONLINE",
+        "OFFLINE",
         "BUSY"
-      ]
-    },
-    "public.Role": {
-      "name": "Role",
-      "schema": "public",
-      "values": [
-        "DISPATCHER",
-        "COMPANY",
-        "RIDER",
-        "CUSTOMER",
-        "ADMIN"
       ]
     },
     "public.SenderType": {
@@ -3404,7 +3587,6 @@
       "name": "SubscriptionTier",
       "schema": "public",
       "values": [
-        "FREE",
         "STARTER",
         "PROFESSIONAL"
       ]
@@ -3416,7 +3598,23 @@
         "PENDING",
         "SUCCESS",
         "FAILED",
-        "REVERSED"
+        "REVERSED",
+        "CANCELLED",
+        "REFUNDED",
+        "EXPIRED"
+      ]
+    },
+    "public.TransactionType": {
+      "name": "TransactionType",
+      "schema": "public",
+      "values": [
+        "DELIVERY_PAYMENT",
+        "SUBSCRIPTION",
+        "AI_OVERAGE",
+        "ADJUSTMENT",
+        "SETTLEMENT",
+        "REFUND",
+        "TOPUP"
       ]
     },
     "public.VehicleType": {
@@ -3428,23 +3626,6 @@
         "VAN",
         "TRUCK"
       ]
-    },
-    "public.EscalationStatus": {
-      "name": "EscalationStatus",
-      "schema": "public",
-      "values": [
-        "OPEN",
-        "RESOLVED",
-        "HIJACKED"
-      ]
-    },
-    "public.EscalatedTo": {
-      "name": "EscalatedTo",
-      "schema": "public",
-      "values": [
-        "COMPANY",
-        "ADMIN"
-      ]
     }
   },
   "schemas": {},
@@ -3455,7 +3636,6 @@
   "_meta": {
     "columns": {},
     "schemas": {},
-    "tables": {},
-    "consistent": true
+    "tables": {}
   }
 }

@@ -55,13 +55,9 @@ describe('Enums', () => {
   });
 
   describe('SubscriptionTier', () => {
-    it('has all three tiers in order', () => {
-      const tiers = [
-        SubscriptionTier.FREE,
-        SubscriptionTier.STARTER,
-        SubscriptionTier.PROFESSIONAL,
-      ];
-      expect(tiers).toEqual(['FREE', 'STARTER', 'PROFESSIONAL']);
+    it('has STARTER and PROFESSIONAL', () => {
+      const tiers = [SubscriptionTier.STARTER, SubscriptionTier.PROFESSIONAL];
+      expect(tiers).toEqual(['STARTER', 'PROFESSIONAL']);
     });
   });
 

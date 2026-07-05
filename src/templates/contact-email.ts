@@ -1,3 +1,6 @@
+import { SYSTEM_CONFIG } from '../config.js';
+import { ContactCategory } from '../enums.js';
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -25,7 +28,11 @@ const style = `
   .check { display: inline-block; width: 48px; height: 48px; background: #ecfdf5; border-radius: 50%; line-height: 48px; text-align: center; font-size: 24px; margin-bottom: 16px; }
 `;
 
-export function submitterAckTemplate(name: string, category: string, message: string): string {
+export function submitterAckTemplate(
+  name: string,
+  category: ContactCategory,
+  message: string,
+): string {
   const enc = (s: string) => escapeHtml(s);
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>${style}</style></head>
@@ -52,7 +59,7 @@ export function submitterAckTemplate(name: string, category: string, message: st
         <p style="font-size:14px;color:#64748b;">Our team will review your request and get back to you shortly.</p>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:#64748b;margin:0;">In the meantime, visit our <a href="https://logistix.team" style="color:#7c3aed;text-decoration:none;font-weight:600;">help center</a> for answers to common questions.</p>
+        <p style="font-size:13px;color:#64748b;margin:0;">In the meantime, visit our <a href="https://${SYSTEM_CONFIG.domain}" style="color:#7c3aed;text-decoration:none;font-weight:600;">help center</a> for answers to common questions.</p>
       </div>
     </div>
     <div class="footer">

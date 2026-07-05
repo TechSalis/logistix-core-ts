@@ -1,4 +1,4 @@
-const createId = () => crypto.randomUUID();
+import { randomUUID } from 'node:crypto';
 import {
   pgTable,
   timestamp,
@@ -23,13 +23,19 @@ import {
   MappingSource,
   MessageStatus,
   PaymentMethod,
+  PaymentProvider,
   PermitStatus,
   RiderStatus,
   SenderType,
   SubscriptionTier,
   TransactionStatus,
+  TransactionType,
   VehicleType,
 } from '../enums.js';
+import { DEFAULT_WORKING_HOURS } from '../config.js';
+import { BILLING_CONFIG } from '../billing.js';
+
+const createId = () => randomUUID();
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
@@ -49,7 +55,9 @@ export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
 export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
 export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
+export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
+export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 
 export const companies = pgTable(
   'companies',
@@ -64,7 +72,7 @@ export const companies = pgTable(
     contactPhone: text('contact_phone'),
     address: text(),
     placeId: text('place_id'),
-    states: text().array().default(['RAY']),
+    states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -85,17 +93,8 @@ export const companySettings = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     companyId: text('company_id').notNull(),
-    tier: subscriptionTier().default('FREE').notNull(),
-    workingHours: jsonb('working_hours')
-      .default({
-        Friday: { close: '19:00', start: '07:00' },
-        Monday: { close: '19:00', start: '07:00' },
-        Tuesday: { close: '19:00', start: '07:00' },
-        Saturday: { close: '19:00', start: '07:00' },
-        Thursday: { close: '19:00', start: '07:00' },
-        Wednesday: { close: '19:00', start: '07:00' },
-      })
-      .notNull(),
+    tier: subscriptionTier().default(SubscriptionTier.STARTER).notNull(),
+    workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
@@ -130,7 +129,7 @@ export const pricingSchemes = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     companyId: text('company_id').notNull(),
-    vehicleType: vehicleType('vehicle_type').default('BIKE').notNull(),
+    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
     baseFare: doublePrecision('base_fare').default(1000).notNull(),
     perKmRate: doublePrecision('per_km_rate').default(150).notNull(),
     minFare: doublePrecision('min_fare').default(1000).notNull(),
@@ -212,7 +211,7 @@ export const conversations = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    platform: mappingPlatform().default('WHATSAPP').notNull(),
+    platform: mappingPlatform().default(MappingPlatform.WHATSAPP).notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id'),
     lastMessageAt: timestamp('last_message_at', { precision: 3, mode: 'date' })
@@ -279,7 +278,7 @@ export const messages = pgTable(
     mediaUrl: text('media_url'),
     externalId: text('external_id'),
     replyToExternalId: text('reply_to_external_id'),
-    status: messageStatus().default('SENT').notNull(),
+    status: messageStatus().default(MessageStatus.SENT).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -358,7 +357,7 @@ export const dispatchers = pgTable(
     companyId: text('company_id'),
     fcmToken: text('fcm_token'),
     isOwner: boolean('is_owner').default(false).notNull(),
-    permitStatus: permitStatus('permit_status').default('PENDING').notNull(),
+    permitStatus: permitStatus('permit_status').default(PermitStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -533,8 +532,8 @@ export const riders = pgTable(
     phoneNumber: text('phone_number'),
     registrationNumber: text('registration_number'),
     idType: text('id_type'),
-    vehicleType: vehicleType('vehicle_type').default('BIKE').notNull(),
-    permitStatus: permitStatus('permit_status').default('PENDING').notNull(),
+    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
+    permitStatus: permitStatus('permit_status').default(PermitStatus.PENDING).notNull(),
     isAccepted: boolean('is_accepted').default(false).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
@@ -579,19 +578,25 @@ export const riders = pgTable(
   ],
 );
 
-export const deliveryTransactions = pgTable(
-  'delivery_transactions',
+export const transactions = pgTable(
+  'transactions',
   {
     id: text()
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    companyId: text('company_id'),
+    companyId: text('company_id').notNull(),
+    type: transactionType('type').notNull(),
     amount: doublePrecision().notNull(),
-    currency: text().default('NGN').notNull(),
-    status: transactionStatus().default('PENDING').notNull(),
+    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
+    status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
-    provider: text(),
+    provider: paymentProvider('provider'),
+    tier: subscriptionTier(),
+    periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
+    periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
+    description: text(),
+    performedBy: text('performed_by'),
     metadata: jsonb(),
     processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -599,24 +604,21 @@ export const deliveryTransactions = pgTable(
       .notNull(),
   },
   (table) => [
-    index('delivery_transactions_company_id_created_at_idx').using(
+    index('transactions_company_id_created_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
-    index('delivery_transactions_reference_idx').using(
+    index('transactions_type_idx').using('btree', table.type.asc().nullsLast().op('enum_ops')),
+    index('transactions_reference_idx').using(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
-    uniqueIndex('delivery_transactions_reference_key').using(
+    uniqueIndex('transactions_reference_key').using(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
-    index('delivery_transactions_status_created_at_idx').using(
-      'btree',
-      table.status.asc().nullsLast().op('enum_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
+    index('transactions_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
   ],
 );
 
@@ -628,25 +630,25 @@ export const deliveryAllocations = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     deliveryId: text('delivery_id').notNull(),
-    deliveryTransactionId: text('delivery_transaction_id').notNull(),
+    transactionId: text('transaction_id').notNull(),
     amount: doublePrecision().notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (table) => [
-    uniqueIndex('delivery_allocations_delivery_id_delivery_transaction_id_key').using(
+    uniqueIndex('delivery_allocations_delivery_id_transaction_id_key').using(
       'btree',
       table.deliveryId.asc().nullsLast().op('text_ops'),
-      table.deliveryTransactionId.asc().nullsLast().op('text_ops'),
+      table.transactionId.asc().nullsLast().op('text_ops'),
     ),
     index('delivery_allocations_delivery_id_idx').using(
       'btree',
       table.deliveryId.asc().nullsLast().op('text_ops'),
     ),
-    index('delivery_allocations_delivery_transaction_id_idx').using(
+    index('delivery_allocations_transaction_id_idx').using(
       'btree',
-      table.deliveryTransactionId.asc().nullsLast().op('text_ops'),
+      table.transactionId.asc().nullsLast().op('text_ops'),
     ),
     foreignKey({
       columns: [table.deliveryId],
@@ -656,9 +658,9 @@ export const deliveryAllocations = pgTable(
       .onUpdate('cascade')
       .onDelete('cascade'),
     foreignKey({
-      columns: [table.deliveryTransactionId],
-      foreignColumns: [deliveryTransactions.id],
-      name: 'delivery_allocations_delivery_transaction_id_fkey',
+      columns: [table.transactionId],
+      foreignColumns: [transactions.id],
+      name: 'delivery_allocations_transaction_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
@@ -761,7 +763,7 @@ export const exportRequests = pgTable(
       .notNull(),
     companyId: text('company_id').notNull(),
     userEmail: text('user_email').notNull(),
-    status: exportRequestStatus().default('PENDING').notNull(),
+    status: exportRequestStatus().default(ExportRequestStatus.PENDING).notNull(),
     requestedBy: text('requested_by').notNull(),
     targetMonth: text('target_month'),
     riderId: text('rider_id'),
@@ -784,15 +786,6 @@ export const exportRequests = pgTable(
   ],
 );
 
-export const appConfigs = pgTable('app_configs', {
-  key: text().primaryKey().notNull(),
-  value: jsonb().notNull(),
-  scope: text(),
-  updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
-
 export const subscriptionTransactions = pgTable(
   'subscription_transactions',
   {
@@ -802,10 +795,10 @@ export const subscriptionTransactions = pgTable(
       .notNull(),
     companyId: text('company_id').notNull(),
     amount: doublePrecision().notNull(),
-    currency: text().default('NGN').notNull(),
-    status: transactionStatus().default('PENDING').notNull(),
+    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
+    status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
-    provider: text(),
+    provider: paymentProvider('provider'),
     tier: subscriptionTier().notNull(),
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }).notNull(),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }).notNull(),
@@ -851,7 +844,7 @@ export const escalations = pgTable(
     companyId: text('company_id'),
     escalatedTo: escalatedTo('escalated_to').notNull(),
     reason: text(),
-    status: escalationStatus().default('OPEN').notNull(),
+    status: escalationStatus().default(EscalationStatus.OPEN).notNull(),
     resolvedBy: text('resolved_by'),
     hijackedBy: text('hijacked_by'),
     hijackedAt: timestamp('hijacked_at', { precision: 3, mode: 'date' }),
@@ -892,6 +885,41 @@ export const escalations = pgTable(
   ],
 );
 
+export const aiUsage = pgTable(
+  'ai_usage',
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId())
+      .notNull(),
+    companyId: text('company_id').notNull(),
+    integrationId: text('integration_id'),
+    conversationId: text('conversation_id'),
+    model: text().notNull(),
+    tokensIn: integer('tokens_in').notNull(),
+    tokensOut: integer('tokens_out').notNull(),
+    cost: doublePrecision().notNull(),
+    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('ai_usage_company_id_created_at_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'ai_usage_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+  ],
+);
+
 export const customerCompanyMappings = pgTable(
   'customer_company_mappings',
   {
@@ -900,9 +928,9 @@ export const customerCompanyMappings = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     platformId: text('platform_id').notNull(),
-    platform: mappingPlatform().default('WHATSAPP').notNull(),
+    platform: mappingPlatform().default(MappingPlatform.WHATSAPP).notNull(),
     companyId: text('company_id').notNull(),
-    source: mappingSource().default('DISCOVERY').notNull(),
+    source: mappingSource().default(MappingSource.DISCOVERY).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

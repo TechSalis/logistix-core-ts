@@ -1,30 +1,39 @@
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('AWAITING_PAYMENT', 'PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED');--> statement-breakpoint
+CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN');--> statement-breakpoint
+CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'HIJACKED');--> statement-breakpoint
 CREATE TYPE "public"."ExportRequestStatus" AS ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED');--> statement-breakpoint
-CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'REFUND');--> statement-breakpoint
-CREATE TYPE "public"."MappingPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'TIKTOK', 'FACEBOOK');--> statement-breakpoint
+CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'REFUND', 'AI_USAGE');--> statement-breakpoint
+CREATE TYPE "public"."MappingPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
 CREATE TYPE "public"."MappingSource" AS ENUM('MANUAL', 'DISCOVERY');--> statement-breakpoint
 CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> statement-breakpoint
-CREATE TYPE "public"."PermitStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED');--> statement-breakpoint
-CREATE TYPE "public"."RiderStatus" AS ENUM('OFFLINE', 'ONLINE', 'BUSY');--> statement-breakpoint
-CREATE TYPE "public"."Role" AS ENUM('DISPATCHER', 'COMPANY', 'RIDER', 'CUSTOMER', 'ADMIN');--> statement-breakpoint
+CREATE TYPE "public"."PermitStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED');--> statement-breakpoint
+CREATE TYPE "public"."RiderStatus" AS ENUM('ONLINE', 'OFFLINE', 'BUSY');--> statement-breakpoint
 CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM');--> statement-breakpoint
-CREATE TYPE "public"."SubscriptionTier" AS ENUM('FREE', 'STARTER', 'PROFESSIONAL');--> statement-breakpoint
-CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED');--> statement-breakpoint
+CREATE TYPE "public"."SubscriptionTier" AS ENUM('STARTER', 'PROFESSIONAL');--> statement-breakpoint
+CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED', 'CANCELLED', 'REFUNDED', 'EXPIRED');--> statement-breakpoint
+CREATE TYPE "public"."TransactionType" AS ENUM('DELIVERY_PAYMENT', 'SUBSCRIPTION', 'AI_OVERAGE', 'ADJUSTMENT', 'SETTLEMENT', 'REFUND', 'TOPUP');--> statement-breakpoint
 CREATE TYPE "public"."VehicleType" AS ENUM('BIKE', 'CAR', 'VAN', 'TRUCK');--> statement-breakpoint
 CREATE TABLE "admins" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"email" text NOT NULL,
 	"full_name" text NOT NULL,
+	"fcm_token" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "app_configs" (
-	"key" text PRIMARY KEY NOT NULL,
-	"value" jsonb NOT NULL,
-	"scope" text,
-	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE "ai_usage" (
+	"id" text PRIMARY KEY NOT NULL,
+	"company_id" text NOT NULL,
+	"integration_id" text,
+	"conversation_id" text,
+	"model" text NOT NULL,
+	"tokens_in" integer NOT NULL,
+	"tokens_out" integer NOT NULL,
+	"cost" double precision NOT NULL,
+	"currency" text DEFAULT 'NGN' NOT NULL,
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "blocked_ips" (
@@ -39,7 +48,6 @@ CREATE TABLE "blocked_ips" (
 CREATE TABLE "companies" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
-	"business_handle" text,
 	"logo_url" text,
 	"cac" text,
 	"contact_phone" text,
@@ -65,10 +73,11 @@ CREATE TABLE "company_integrations" (
 CREATE TABLE "company_settings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
-	"tier" "SubscriptionTier" DEFAULT 'FREE' NOT NULL,
+	"tier" "SubscriptionTier" DEFAULT 'STARTER' NOT NULL,
 	"working_hours" jsonb DEFAULT '{"Friday":{"close":"19:00","start":"07:00"},"Monday":{"close":"19:00","start":"07:00"},"Tuesday":{"close":"19:00","start":"07:00"},"Saturday":{"close":"19:00","start":"07:00"},"Thursday":{"close":"19:00","start":"07:00"},"Wednesday":{"close":"19:00","start":"07:00"}}'::jsonb NOT NULL,
 	"bank_details" jsonb,
 	"ledger_balance" double precision DEFAULT 0 NOT NULL,
+	"company_code" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -128,21 +137,8 @@ CREATE TABLE "deliveries" (
 CREATE TABLE "delivery_allocations" (
 	"id" text PRIMARY KEY NOT NULL,
 	"delivery_id" text NOT NULL,
-	"delivery_transaction_id" text NOT NULL,
+	"transaction_id" text NOT NULL,
 	"amount" double precision NOT NULL,
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "delivery_transactions" (
-	"id" text PRIMARY KEY NOT NULL,
-	"company_id" text,
-	"amount" double precision NOT NULL,
-	"currency" text DEFAULT 'NGN' NOT NULL,
-	"status" "TransactionStatus" DEFAULT 'PENDING' NOT NULL,
-	"reference" text NOT NULL,
-	"provider" text,
-	"metadata" jsonb,
-	"processed_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -156,6 +152,20 @@ CREATE TABLE "dispatchers" (
 	"is_owner" boolean DEFAULT false NOT NULL,
 	"permit_status" "PermitStatus" DEFAULT 'PENDING' NOT NULL,
 	"deactivated_at" timestamp (3),
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "escalations" (
+	"id" text PRIMARY KEY NOT NULL,
+	"conversation_id" text NOT NULL,
+	"company_id" text,
+	"escalated_to" "EscalatedTo" NOT NULL,
+	"reason" text,
+	"status" "EscalationStatus" DEFAULT 'OPEN' NOT NULL,
+	"resolved_by" text,
+	"hijacked_by" text,
+	"hijacked_at" timestamp (3),
+	"resolved_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -242,17 +252,18 @@ CREATE TABLE "riders" (
 	"full_name" text NOT NULL,
 	"phone_number" text,
 	"registration_number" text,
+	"id_type" text,
 	"vehicle_type" "VehicleType" DEFAULT 'BIKE' NOT NULL,
 	"permit_status" "PermitStatus" DEFAULT 'PENDING' NOT NULL,
 	"is_accepted" boolean DEFAULT false NOT NULL,
 	"status" "RiderStatus" NOT NULL,
-	"deactivated_at" timestamp (3),
 	"last_lat" double precision,
 	"last_lng" double precision,
 	"last_seen" timestamp (3),
 	"battery_level" integer,
 	"fcm_token" text,
 	"company_id" text,
+	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -273,6 +284,26 @@ CREATE TABLE "subscription_transactions" (
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "transactions" (
+	"id" text PRIMARY KEY NOT NULL,
+	"company_id" text NOT NULL,
+	"type" "TransactionType" NOT NULL,
+	"amount" double precision NOT NULL,
+	"currency" text DEFAULT 'NGN' NOT NULL,
+	"status" "TransactionStatus" DEFAULT 'PENDING' NOT NULL,
+	"reference" text NOT NULL,
+	"provider" text,
+	"tier" "SubscriptionTier",
+	"period_start" timestamp (3),
+	"period_end" timestamp (3),
+	"description" text,
+	"performed_by" text,
+	"metadata" jsonb,
+	"processed_at" timestamp (3),
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "ai_usage" ADD CONSTRAINT "ai_usage_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_integrations" ADD CONSTRAINT "company_integrations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_settings" ADD CONSTRAINT "company_settings_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "conversations" ADD CONSTRAINT "conversations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -280,27 +311,33 @@ ALTER TABLE "customer_company_mappings" ADD CONSTRAINT "customer_company_mapping
 ALTER TABLE "deliveries" ADD CONSTRAINT "deliveries_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "deliveries" ADD CONSTRAINT "deliveries_rider_id_fkey" FOREIGN KEY ("rider_id") REFERENCES "public"."riders"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "delivery_allocations" ADD CONSTRAINT "delivery_allocations_delivery_id_fkey" FOREIGN KEY ("delivery_id") REFERENCES "public"."deliveries"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "delivery_allocations" ADD CONSTRAINT "delivery_allocations_delivery_transaction_id_fkey" FOREIGN KEY ("delivery_transaction_id") REFERENCES "public"."delivery_transactions"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "delivery_allocations" ADD CONSTRAINT "delivery_allocations_transaction_id_fkey" FOREIGN KEY ("transaction_id") REFERENCES "public"."transactions"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "dispatchers" ADD CONSTRAINT "dispatchers_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "escalations" ADD CONSTRAINT "escalations_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "escalations" ADD CONSTRAINT "escalations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "pricing_schemes" ADD CONSTRAINT "pricing_schemes_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "rider_location_logs" ADD CONSTRAINT "rider_location_logs_rider_id_fkey" FOREIGN KEY ("rider_id") REFERENCES "public"."riders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "riders" ADD CONSTRAINT "riders_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 CREATE UNIQUE INDEX "admins_email_key" ON "admins" USING btree ("email" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "admins_user_id_key" ON "admins" USING btree ("user_id" text_ops);--> statement-breakpoint
+CREATE INDEX "ai_usage_company_id_created_at_idx" ON "ai_usage" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "blocked_ips_expires_at_idx" ON "blocked_ips" USING btree ("expires_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "blocked_ips_ip_address_idx" ON "blocked_ips" USING btree ("ip_address" text_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "companies_business_handle_key" ON "companies" USING btree ("business_handle" text_ops);--> statement-breakpoint
 CREATE INDEX "companies_name_idx" ON "companies" USING btree ("name" text_ops);--> statement-breakpoint
+CREATE INDEX "companies_states_gin_idx" ON "companies" USING gin ("states");--> statement-breakpoint
 CREATE INDEX "company_integrations_company_id_idx" ON "company_integrations" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE INDEX "company_integrations_is_active_idx" ON "company_integrations" USING btree ("is_active" bool_ops);--> statement-breakpoint
+CREATE INDEX "company_integrations_company_id_is_active_idx" ON "company_integrations" USING btree ("company_id" text_ops,"is_active" bool_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_integrations_platform_company_id_key" ON "company_integrations" USING btree ("platform" enum_ops,"company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_integrations_platform_platform_id_key" ON "company_integrations" USING btree ("platform" enum_ops,"platform_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_settings_company_id_key" ON "company_settings" USING btree ("company_id" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "company_settings_company_code_key" ON "company_settings" USING btree ("company_code" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_company_id_idx" ON "conversations" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_company_id_last_message_at_idx" ON "conversations" USING btree ("company_id" text_ops,"last_message_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "conversations_platform_id_platform_idx" ON "conversations" USING btree ("platform_id" text_ops,"platform" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "conversations_platform_platform_id_company_id_key" ON "conversations" USING btree ("platform" enum_ops,"platform_id" text_ops,"company_id" text_ops);--> statement-breakpoint
+CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;--> statement-breakpoint
 CREATE INDEX "customer_company_mappings_company_id_idx" ON "customer_company_mappings" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE INDEX "customer_company_mappings_platform_id_idx" ON "customer_company_mappings" USING btree ("platform_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "customer_company_mappings_platform_id_platform_company_id_key" ON "customer_company_mappings" USING btree ("platform_id" text_ops,"platform" enum_ops,"company_id" text_ops);--> statement-breakpoint
@@ -317,16 +354,16 @@ CREATE INDEX "deliveries_tracking_id_pin_idx" ON "deliveries" USING btree ("trac
 CREATE INDEX "deliveries_created_by_idx" ON "deliveries" USING btree ("created_by" text_ops);--> statement-breakpoint
 CREATE INDEX "deliveries_pickup_phone_idx" ON "deliveries" USING btree ("pickup_phone" text_ops);--> statement-breakpoint
 CREATE INDEX "deliveries_drop_off_phone_idx" ON "deliveries" USING btree ("drop_off_phone" text_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "delivery_allocations_delivery_id_delivery_transaction_id_key" ON "delivery_allocations" USING btree ("delivery_id" text_ops,"delivery_transaction_id" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "delivery_allocations_delivery_id_transaction_id_key" ON "delivery_allocations" USING btree ("delivery_id" text_ops,"transaction_id" text_ops);--> statement-breakpoint
 CREATE INDEX "delivery_allocations_delivery_id_idx" ON "delivery_allocations" USING btree ("delivery_id" text_ops);--> statement-breakpoint
-CREATE INDEX "delivery_allocations_delivery_transaction_id_idx" ON "delivery_allocations" USING btree ("delivery_transaction_id" text_ops);--> statement-breakpoint
-CREATE INDEX "delivery_transactions_company_id_created_at_idx" ON "delivery_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
-CREATE INDEX "delivery_transactions_reference_idx" ON "delivery_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "delivery_transactions_reference_key" ON "delivery_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
-CREATE INDEX "delivery_transactions_status_created_at_idx" ON "delivery_transactions" USING btree ("status" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "delivery_allocations_transaction_id_idx" ON "delivery_allocations" USING btree ("transaction_id" text_ops);--> statement-breakpoint
 CREATE INDEX "dispatchers_company_id_idx" ON "dispatchers" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "dispatchers_email_key" ON "dispatchers" USING btree ("email" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "dispatchers_user_id_key" ON "dispatchers" USING btree ("user_id" text_ops);--> statement-breakpoint
+CREATE INDEX "escalations_conversation_id_idx" ON "escalations" USING btree ("conversation_id" text_ops);--> statement-breakpoint
+CREATE INDEX "escalations_company_id_idx" ON "escalations" USING btree ("company_id" text_ops);--> statement-breakpoint
+CREATE INDEX "escalations_status_idx" ON "escalations" USING btree ("status" enum_ops);--> statement-breakpoint
+CREATE INDEX "escalations_escalated_to_status_idx" ON "escalations" USING btree ("escalated_to" enum_ops,"status" enum_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_actor_id_created_at_idx" ON "event_logs" USING btree ("actor_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_company_id_created_at_idx" ON "event_logs" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_entity_id_created_at_idx" ON "event_logs" USING btree ("entity_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
@@ -339,13 +376,13 @@ CREATE INDEX "ledger_transactions_reference_idx" ON "ledger_transactions" USING 
 CREATE UNIQUE INDEX "ledger_transactions_reference_key" ON "ledger_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_conversation_id_created_at_idx" ON "messages" USING btree ("conversation_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "messages_conversation_id_idx" ON "messages" USING btree ("conversation_id" text_ops);--> statement-breakpoint
-CREATE INDEX "messages_conversation_id_is_deleted_idx" ON "messages" USING btree ("conversation_id" text_ops,"is_deleted" bool_ops);--> statement-breakpoint
 CREATE INDEX "messages_external_id_idx" ON "messages" USING btree ("external_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "messages_external_id_key" ON "messages" USING btree ("external_id" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_reply_to_external_id_idx" ON "messages" USING btree ("reply_to_external_id" text_ops);--> statement-breakpoint
+CREATE INDEX "messages_conversation_id_is_deleted_idx" ON "messages" USING btree ("conversation_id" text_ops,"is_deleted" bool_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "pricing_schemes_company_id_vehicle_type_key" ON "pricing_schemes" USING btree ("company_id" text_ops,"vehicle_type" enum_ops);--> statement-breakpoint
-CREATE INDEX "rider_location_logs_rider_id_created_at_idx" ON "rider_location_logs" USING btree ("rider_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "rider_location_logs_created_at_idx" ON "rider_location_logs" USING btree ("created_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "rider_location_logs_rider_id_created_at_idx" ON "rider_location_logs" USING btree ("rider_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "riders_company_id_status_idx" ON "riders" USING btree ("company_id" text_ops,"status" enum_ops);--> statement-breakpoint
 CREATE INDEX "riders_company_id_updated_at_idx" ON "riders" USING btree ("company_id" text_ops,"updated_at" timestamp_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "riders_email_key" ON "riders" USING btree ("email" text_ops);--> statement-breakpoint
@@ -355,28 +392,8 @@ CREATE INDEX "subscription_transactions_company_id_created_at_idx" ON "subscript
 CREATE INDEX "subscription_transactions_reference_idx" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_status_created_at_idx" ON "subscription_transactions" USING btree ("status" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
-CREATE INDEX "companies_states_gin_idx" ON "companies" USING gin ("states");--> statement-breakpoint
-CREATE INDEX "company_integrations_company_id_is_active_idx" ON "company_integrations" USING btree ("company_id" text_ops,"is_active" bool_ops);--> statement-breakpoint
-CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;--> statement-breakpoint
-CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'HIJACKED');--> statement-breakpoint
-CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN');--> statement-breakpoint
-CREATE TABLE "escalations" (
-	"id" text PRIMARY KEY NOT NULL,
-	"conversation_id" text NOT NULL,
-	"company_id" text,
-	"escalated_to" "public"."EscalatedTo" NOT NULL,
-	"reason" text,
-	"status" "public"."EscalationStatus" DEFAULT 'OPEN' NOT NULL,
-	"resolved_by" text,
-	"hijacked_by" text,
-	"hijacked_at" timestamp (3),
-	"resolved_at" timestamp (3),
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);--> statement-breakpoint
-CREATE INDEX "escalations_conversation_id_idx" ON "escalations" USING btree ("conversation_id" text_ops);--> statement-breakpoint
-CREATE INDEX "escalations_company_id_idx" ON "escalations" USING btree ("company_id" text_ops);--> statement-breakpoint
-CREATE INDEX "escalations_status_idx" ON "escalations" USING btree ("status" enum_ops);--> statement-breakpoint
-CREATE INDEX "escalations_escalated_to_status_idx" ON "escalations" USING btree ("escalated_to" enum_ops, "status" enum_ops);--> statement-breakpoint
-ALTER TABLE "escalations" ADD CONSTRAINT "escalations_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON UPDATE cascade ON DELETE cascade;--> statement-breakpoint
-ALTER TABLE "escalations" ADD CONSTRAINT "escalations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON UPDATE cascade ON DELETE set null;--> statement-breakpoint
-ALTER TABLE "admins" ADD COLUMN "fcm_token" text;
+CREATE INDEX "transactions_company_id_created_at_idx" ON "transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "transactions_type_idx" ON "transactions" USING btree ("type" enum_ops);--> statement-breakpoint
+CREATE INDEX "transactions_reference_idx" ON "transactions" USING btree ("reference" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "transactions_reference_key" ON "transactions" USING btree ("reference" text_ops);--> statement-breakpoint
+CREATE INDEX "transactions_status_idx" ON "transactions" USING btree ("status" enum_ops);

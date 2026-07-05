@@ -10,7 +10,7 @@ import {
   deliveries,
   riders,
   deliveryAllocations,
-  deliveryTransactions,
+  transactions,
   customerCompanyMappings,
   riderLocationLogs,
   escalations,
@@ -96,13 +96,13 @@ export const deliveryAllocationsRelations = relations(deliveryAllocations, ({ on
     fields: [deliveryAllocations.deliveryId],
     references: [deliveries.id],
   }),
-  deliveryTransaction: one(deliveryTransactions, {
-    fields: [deliveryAllocations.deliveryTransactionId],
-    references: [deliveryTransactions.id],
+  transaction: one(transactions, {
+    fields: [deliveryAllocations.transactionId],
+    references: [transactions.id],
   }),
 }));
 
-export const deliveryTransactionsRelations = relations(deliveryTransactions, ({ many }) => ({
+export const transactionsRelations = relations(transactions, ({ many }) => ({
   deliveryAllocations: many(deliveryAllocations),
 }));
 

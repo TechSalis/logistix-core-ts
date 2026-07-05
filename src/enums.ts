@@ -83,7 +83,6 @@ export enum VehicleType {
 }
 
 export enum SubscriptionTier {
-  FREE = 'FREE',
   STARTER = 'STARTER',
   PROFESSIONAL = 'PROFESSIONAL',
 }
@@ -98,11 +97,22 @@ export enum TransactionStatus {
   EXPIRED = 'EXPIRED',
 }
 
+export enum TransactionType {
+  DELIVERY_PAYMENT = 'DELIVERY_PAYMENT',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  AI_OVERAGE = 'AI_OVERAGE',
+  ADJUSTMENT = 'ADJUSTMENT',
+  SETTLEMENT = 'SETTLEMENT',
+  REFUND = 'REFUND',
+  TOPUP = 'TOPUP',
+}
+
 export enum LedgerAdjustmentType {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
   CORRECTION = 'CORRECTION',
   REFUND = 'REFUND',
+  AI_USAGE = 'AI_USAGE',
 }
 
 export enum PaymentProvider {
@@ -143,6 +153,7 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
+  LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
 export enum NotificationEventType {
@@ -312,8 +323,9 @@ export enum SseEventType {
   RIDER = 'rider',
   MESSAGE = 'message',
   ASSIGNMENT = 'assignment',
-  APP_CONFIG = 'appConfig',
+
   RIDER_LOCATION = 'rider-location',
+  COMPANY = 'company',
 }
 
 export enum JwtTokenType {
