@@ -67,5 +67,11 @@ export {
 } from './offline.js';
 export type { OfflineProfile, OfflineExportFormat } from './offline.js';
 
+// ─── Domain Entity Types ─────────────────────────────────────────────────────
+export type { DeliveryBase, RiderBase, DispatcherBase } from './domain.js';
+
+// ─── Formatters ───────────────────────────────────────────────────────────────
+export { formatDeliveryStatus, formatEnumToTitleCase } from './formatters.js';
+
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────
 export * from './drizzle/index.js';

@@ -95,7 +95,8 @@ export function isBillableTier(tier: SubscriptionTier): boolean {
  * Format amount from Kobo to Naira string
  */
 export function formatAmount(kobo: number): string {
-  return `₦${(kobo / 100).toFixed(2)}`;
+  const value = kobo / 100;
+  return `₦${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
