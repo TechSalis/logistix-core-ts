@@ -13,14 +13,12 @@ export interface SystemConfig {
   readonly logoUrl: string;
   readonly faviconUrl: string;
   readonly workingHours: Record<string, { start: string; close: string }>;
-  readonly defaultBankDetails: BankDetails | null;
 }
 
 export interface SystemConfigOverrides {
   domain?: string;
   supportEmail?: string;
   phoneNumber?: string;
-  defaultBankDetails?: BankDetails | null;
 }
 
 export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
@@ -41,7 +39,6 @@ const BASE_CONFIG: SystemConfig = {
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
   workingHours: DEFAULT_WORKING_HOURS,
-  defaultBankDetails: null,
 };
 
 export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {
@@ -51,7 +48,6 @@ export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConf
     domain,
     supportEmail: overrides?.supportEmail ?? `contact@${domain}`,
     phoneNumber: overrides?.phoneNumber ?? BASE_CONFIG.phoneNumber,
-    defaultBankDetails: overrides?.defaultBankDetails ?? BASE_CONFIG.defaultBankDetails,
   };
 }
 
