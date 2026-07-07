@@ -13,7 +13,7 @@
         "default": "./dist/index.js"
       },
       "require": {
-        "types": "./src/index.ts",
+        "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
     }
