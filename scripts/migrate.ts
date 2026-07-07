@@ -4,12 +4,13 @@
  * Uses postgres-js (same driver as the app) — avoids drizzle-kit's
  * built-in pg driver which has SSL/connectivity issues with Supabase.
  *
- * Handles two edge cases:
+ * Handles two scenarios:
  *  - Fresh database: migrate applies 0000_initial.sql normally.
  *  - Existing database (previously managed by `drizzle-kit push`):
- *    tables exist but __drizzle_migrations doesn't. We create the
- *    tracking table and record all journal entries as already-applied
- *    so that only incremental migrations run from here on.
+ *    app tables exist → seed the tracking table with all journal
+ *    entries so that only incremental migrations run from here on.
+ *    This covers both a missing tracking table and a partially-
+ *    populated one from a previous failed migrate() call.
  */
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -40,32 +41,22 @@ async function run() {
   });
   const db = drizzle(connection);
 
-  // Check whether __drizzle_migrations tracking table exists
-  const [{ exists: trackingExists }] = await db.execute<{ exists: boolean }>(sql`
+  // Check if any app-managed tables already exist (from a previous push)
+  const [{ exists: hasAppTables }] = await db.execute<{ exists: boolean }>(sql`
     SELECT EXISTS (
       SELECT FROM information_schema.tables
-      WHERE table_schema = 'public' AND table_name = '__drizzle_migrations'
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        AND table_name NOT IN ('__drizzle_migrations', '__drizzle_migrations_lock')
     )
   `);
 
-  if (!trackingExists) {
-    // Check if any app-managed tables already exist (from a previous push)
-    const [{ exists: hasAppTables }] = await db.execute<{ exists: boolean }>(sql`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-          AND table_type = 'BASE TABLE'
-          AND table_name NOT IN ('__drizzle_migrations', '__drizzle_migrations_lock')
-      )
-    `);
-
-    if (hasAppTables) {
-      console.log('[migrate] Schema exists without migration tracking. Seeding tracking table...');
-      await seedTrackingTable(connection);
-      console.log('[migrate] All journal entries recorded. No incremental migrations to apply.');
-      await connection.end();
-      return;
-    }
+  if (hasAppTables) {
+    console.log('[migrate] Schema exists. Seeding migration tracking table...');
+    await seedTrackingTable(connection);
+    console.log('[migrate] All journal entries recorded. No incremental migrations to apply.');
+    await connection.end();
+    return;
   }
 
   // Normal migration path — applies pending files
