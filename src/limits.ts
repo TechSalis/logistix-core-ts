@@ -143,24 +143,31 @@ export function calculateReservedBalance(tier: SubscriptionTier, usage: MonthlyU
   const limits = getTierLimits(tier);
   let total = 0;
 
-  if (usage.deliveryCount > limits.maxDeliveriesPerMonth) {
-    const overage = usage.deliveryCount - limits.maxDeliveriesPerMonth;
+  const safe = {
+    deliveryCount: Math.max(0, usage.deliveryCount),
+    aiTokenCount: Math.max(0, usage.aiTokenCount),
+    riderCount: Math.max(0, usage.riderCount),
+    dispatcherCount: Math.max(0, usage.dispatcherCount),
+  };
+
+  if (safe.deliveryCount > limits.maxDeliveriesPerMonth) {
+    const overage = safe.deliveryCount - limits.maxDeliveriesPerMonth;
     total += overage * OVERAGE_PRICING.PER_DELIVERY;
   }
 
   const aiAllowance = getAiAllowance(tier);
-  if (usage.aiTokenCount > aiAllowance) {
-    const overageTokens = usage.aiTokenCount - aiAllowance;
+  if (safe.aiTokenCount > aiAllowance) {
+    const overageTokens = safe.aiTokenCount - aiAllowance;
     total += Math.ceil(overageTokens * OVERAGE_PRICING.AI_OVERAGE_PER_TOKEN);
   }
 
-  if (usage.riderCount > limits.maxRiders) {
-    const overage = usage.riderCount - limits.maxRiders;
+  if (safe.riderCount > limits.maxRiders) {
+    const overage = safe.riderCount - limits.maxRiders;
     total += overage * OVERAGE_PRICING.PER_RIDER_SEAT;
   }
 
-  if (usage.dispatcherCount > limits.maxDispatchers) {
-    const overage = usage.dispatcherCount - limits.maxDispatchers;
+  if (safe.dispatcherCount > limits.maxDispatchers) {
+    const overage = safe.dispatcherCount - limits.maxDispatchers;
     total += overage * OVERAGE_PRICING.PER_DISPATCHER_SEAT;
   }
 

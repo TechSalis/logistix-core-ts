@@ -673,6 +673,10 @@ export const transactions = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('payment_transactions_company_id_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+    ),
     index('payment_transactions_type_idx').using(
       'btree',
       table.type.asc().nullsLast().op('enum_ops'),
@@ -689,6 +693,13 @@ export const transactions = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
     ),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'payment_transactions_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('restrict'),
   ],
 );
 
@@ -769,6 +780,13 @@ export const ledgerTransactions = pgTable(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'ledger_transactions_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('restrict'),
   ],
 );
 

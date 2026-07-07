@@ -52,7 +52,6 @@ const rawRegionalConfig = {
     'Taraba',
     'Yobe',
     'Zamfara',
-    'Abuja',
     'Federal Capital Territory',
   ],
 } as const;

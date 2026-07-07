@@ -7,7 +7,7 @@ export interface PricingSchemeDefaults {
   minFare: number;
 }
 
-export const DEFAULT_PRICING_SCHEMES: PricingSchemeDefaults[] = [
+export const DEFAULT_PRICING_SCHEMES: readonly PricingSchemeDefaults[] = [
   { vehicleType: VehicleType.BIKE, baseFare: 1000, perKmRate: 150, minFare: 1000 },
   { vehicleType: VehicleType.CAR, baseFare: 2000, perKmRate: 300, minFare: 2000 },
   { vehicleType: VehicleType.VAN, baseFare: 3000, perKmRate: 400, minFare: 3000 },

@@ -2,6 +2,7 @@ import { EmailService } from './services/email.service.js';
 import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
 import { submitterAckTemplate } from './templates/contact-email.js';
 import { SYSTEM_CONFIG } from './config.js';
+import { fetchWithTimeout } from './fetchWithTimeout.js';
 
 export interface ContactSubmission {
   email: string;
@@ -33,15 +34,19 @@ export async function sendContactSubmissionAck(
   });
 
   if (googleLeadsUrl && LEAD_CATEGORIES.has(category)) {
-    await fetch(googleLeadsUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        fullName: name,
-        data: JSON.stringify({ category, message, type: 'contact_form' }),
-        action: 'contact_request',
-      }),
-    });
+    try {
+      await fetchWithTimeout(googleLeadsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          fullName: name,
+          data: JSON.stringify({ category, message, type: 'contact_form' }),
+          action: 'contact_request',
+        }),
+      });
+    } catch {
+      // Google Leads is a best-effort downstream — failure must not block the acknowledgement email
+    }
   }
 }

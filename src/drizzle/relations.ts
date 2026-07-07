@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm/relations';
 import {
-  admins,
   companies,
   companySettings,
   pricingSchemes,
@@ -17,8 +16,8 @@ import {
   riderLocationLogs,
   escalations,
   eventLogs,
-  blockedIps,
   exportRequests,
+  ledgerTransactions,
 } from './schema.js';
 
 export const companySettingsRelations = relations(companySettings, ({ one }) => ({
@@ -41,6 +40,8 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   monthlyUsage: many(monthlyUsage),
   eventLogs: many(eventLogs),
   exportRequests: many(exportRequests),
+  escalations: many(escalations),
+  ledgerTransactions: many(ledgerTransactions),
 }));
 
 export const pricingSchemesRelations = relations(pricingSchemes, ({ one }) => ({
@@ -158,8 +159,6 @@ export const eventLogsRelations = relations(eventLogs, ({ one }) => ({
   }),
 }));
 
-export const blockedIpsRelations = relations(blockedIps, () => ({}));
-
 export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
   company: one(companies, {
     fields: [exportRequests.companyId],
@@ -170,5 +169,3 @@ export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
     references: [riders.id],
   }),
 }));
-
-export const adminsRelations = relations(admins, () => ({}));
