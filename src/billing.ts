@@ -137,7 +137,7 @@ export function isBillableTier(tier: SubscriptionTier): boolean {
  */
 export function formatAmount(kobo: number): string {
   const value = kobo / 100;
-  return `₦${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
