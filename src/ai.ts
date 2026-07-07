@@ -26,15 +26,15 @@ export interface AIConfig {
 const aiConfigSchema = z.object({
   interpretation: z.object({
     maxTokens: z.number(),
-    cooldownSeconds: z.number().default(600),
+    cooldownSeconds: z.number().default(300),
   }),
   synthesis: z.object({
     temperature: z.number(),
     maxTokens: z.number(),
     cooldownSeconds: z.number().default(300),
   }),
-  heartbeatTtl: z.number().default(3_600_000),
-  heartbeatThresholdMs: z.number().default(420_000),
+  heartbeatTtl: z.number().default(600_000),
+  heartbeatThresholdMs: z.number().default(300_000),
   maxSingleMessageTokens: z.number().default(4096),
   maxMessagesPerResponse: z.number().default(3),
   messageFetchLimit: z.object({

@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm/relations';
 import {
+  admins,
   companies,
   companySettings,
   pricingSchemes,
@@ -11,9 +12,13 @@ import {
   riders,
   deliveryAllocations,
   transactions,
+  monthlyUsage,
   customerCompanyMappings,
   riderLocationLogs,
   escalations,
+  eventLogs,
+  blockedIps,
+  exportRequests,
 } from './schema.js';
 
 export const companySettingsRelations = relations(companySettings, ({ one }) => ({
@@ -32,6 +37,10 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   deliveries: many(deliveries),
   riders: many(riders),
   customerCompanyMappings: many(customerCompanyMappings),
+  transactions: many(transactions),
+  monthlyUsage: many(monthlyUsage),
+  eventLogs: many(eventLogs),
+  exportRequests: many(exportRequests),
 }));
 
 export const pricingSchemesRelations = relations(pricingSchemes, ({ one }) => ({
@@ -102,7 +111,11 @@ export const deliveryAllocationsRelations = relations(deliveryAllocations, ({ on
   }),
 }));
 
-export const transactionsRelations = relations(transactions, ({ many }) => ({
+export const transactionsRelations = relations(transactions, ({ one, many }) => ({
+  company: one(companies, {
+    fields: [transactions.companyId],
+    references: [companies.id],
+  }),
   deliveryAllocations: many(deliveryAllocations),
 }));
 
@@ -130,3 +143,32 @@ export const escalationsRelations = relations(escalations, ({ one }) => ({
     references: [companies.id],
   }),
 }));
+
+export const monthlyUsageRelations = relations(monthlyUsage, ({ one }) => ({
+  company: one(companies, {
+    fields: [monthlyUsage.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const eventLogsRelations = relations(eventLogs, ({ one }) => ({
+  company: one(companies, {
+    fields: [eventLogs.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const blockedIpsRelations = relations(blockedIps, () => ({}));
+
+export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
+  company: one(companies, {
+    fields: [exportRequests.companyId],
+    references: [companies.id],
+  }),
+  rider: one(riders, {
+    fields: [exportRequests.riderId],
+    references: [riders.id],
+  }),
+}));
+
+export const adminsRelations = relations(admins, () => ({}));

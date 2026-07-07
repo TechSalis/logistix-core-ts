@@ -20,13 +20,16 @@ export { REGIONAL_CONFIG } from './regional.js';
 export type { RegionalConfig } from './regional.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
-export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
-export type { LimitsConfig, TierLimits } from './limits.js';
+export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits, calculateReservedBalance } from './limits.js';
+export type { LimitsConfig, TierLimits, MonthlyUsageInput } from './limits.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
   BILLING_CONFIG,
   AI_CREDIT_CONFIG,
+  OVERAGE_PRICING,
+  DATA_RETENTION,
+  CHANNEL_FEES,
   getSubscriptionPrice,
   isBillableTier,
   formatAmount,
@@ -36,11 +39,16 @@ export {
   getAiAllowance,
   getOveragePrice,
   calculateRemainingAllowance,
+  type AICreditConfig,
 } from './billing.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';
 export type { SecurityConfig } from './security.js';
+
+// ─── Pricing ──────────────────────────────────────────────────────────────────
+export { DEFAULT_PRICING_SCHEMES } from './pricing-constants.js';
+export type { PricingSchemeDefaults } from './pricing-constants.js';
 
 // ─── AI ───────────────────────────────────────────────────────────────────────
 export { AI_CONFIG, QUEUES } from './ai.js';

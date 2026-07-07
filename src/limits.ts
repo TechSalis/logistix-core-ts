@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
+import {
+  DATA_RETENTION,
+  OVERAGE_PRICING,
+  getAiAllowance,
+  type MonthlyUsageInput,
+} from './billing.js';
+export type { MonthlyUsageInput };
 
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;
@@ -10,6 +17,12 @@ export interface TierLimits {
   readonly maxSynthesisResults: number;
   readonly maxDrafts: number;
   readonly retentionDays: number;
+
+  // Account & usage limits
+  readonly maxDispatchers: number;
+  readonly maxRiders: number;
+  readonly maxDeliveriesPerMonth: number;
+  readonly maxActiveDeliveries: number;
 }
 
 export interface LimitsConfig {
@@ -71,24 +84,46 @@ export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsCon
  */
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   [SubscriptionTier.STARTER]: {
-    maxAIDeliveriesPerAction: 30, // AI draft/book limit per request
-    maxBulkDeliveries: 50, // Manual bulk creation limit
-    maxQueryLimit: 50, // Database query limit
-    maxTrackingHistory: 50, // Tracking IDs in session memory
-    maxMemoryArraySize: 50, // Array size during memory merging
-    maxSynthesisResults: 50, // Results sent to LLM for synthesis
-    maxDrafts: 30, // Draft deliveries per session
-    retentionDays: 60, // Hot storage retention
+    maxAIDeliveriesPerAction: 30,
+    maxBulkDeliveries: 50,
+    maxQueryLimit: 50,
+    maxTrackingHistory: 50,
+    maxMemoryArraySize: 50,
+    maxSynthesisResults: 50,
+    maxDrafts: 30,
+    retentionDays: DATA_RETENTION[SubscriptionTier.STARTER],
+    maxDispatchers: 2,
+    maxRiders: 20,
+    maxDeliveriesPerMonth: 500,
+    maxActiveDeliveries: 20,
   },
   [SubscriptionTier.PROFESSIONAL]: {
-    maxAIDeliveriesPerAction: 50, // AI draft/book limit per request
-    maxBulkDeliveries: 100, // Manual bulk creation limit
-    maxQueryLimit: 100, // Database query limit
-    maxTrackingHistory: 100, // Tracking IDs in session memory
-    maxMemoryArraySize: 100, // Array size during memory merging
-    maxSynthesisResults: 100, // Results sent to LLM for synthesis
-    maxDrafts: 50, // Draft deliveries per session
-    retentionDays: 90, // Hot storage retention
+    maxAIDeliveriesPerAction: 50,
+    maxBulkDeliveries: 100,
+    maxQueryLimit: 100,
+    maxTrackingHistory: 100,
+    maxMemoryArraySize: 100,
+    maxSynthesisResults: 100,
+    maxDrafts: 50,
+    retentionDays: DATA_RETENTION[SubscriptionTier.PROFESSIONAL],
+    maxDispatchers: 10,
+    maxRiders: 100,
+    maxDeliveriesPerMonth: 5000,
+    maxActiveDeliveries: 50,
+  },
+  [SubscriptionTier.ENTERPRISE]: {
+    maxAIDeliveriesPerAction: 200,
+    maxBulkDeliveries: 500,
+    maxQueryLimit: 500,
+    maxTrackingHistory: 500,
+    maxMemoryArraySize: 500,
+    maxSynthesisResults: 500,
+    maxDrafts: 200,
+    retentionDays: DATA_RETENTION[SubscriptionTier.ENTERPRISE],
+    maxDispatchers: 999,
+    maxRiders: 9999,
+    maxDeliveriesPerMonth: 99999,
+    maxActiveDeliveries: 500,
   },
 };
 
@@ -98,3 +133,36 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
   return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
 };
+
+/**
+ * Calculate the amount of ledger balance that must be reserved
+ * to cover estimated overage charges for the current month.
+ * Returns amount in Kobo.
+ */
+export function calculateReservedBalance(tier: SubscriptionTier, usage: MonthlyUsageInput): number {
+  const limits = getTierLimits(tier);
+  let total = 0;
+
+  if (usage.deliveryCount > limits.maxDeliveriesPerMonth) {
+    const overage = usage.deliveryCount - limits.maxDeliveriesPerMonth;
+    total += overage * OVERAGE_PRICING.PER_DELIVERY;
+  }
+
+  const aiAllowance = getAiAllowance(tier);
+  if (usage.aiTokenCount > aiAllowance) {
+    const overageTokens = usage.aiTokenCount - aiAllowance;
+    total += Math.ceil(overageTokens * OVERAGE_PRICING.AI_OVERAGE_PER_TOKEN);
+  }
+
+  if (usage.riderCount > limits.maxRiders) {
+    const overage = usage.riderCount - limits.maxRiders;
+    total += overage * OVERAGE_PRICING.PER_RIDER_SEAT;
+  }
+
+  if (usage.dispatcherCount > limits.maxDispatchers) {
+    const overage = usage.dispatcherCount - limits.maxDispatchers;
+    total += overage * OVERAGE_PRICING.PER_DISPATCHER_SEAT;
+  }
+
+  return total;
+}

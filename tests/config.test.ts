@@ -35,7 +35,7 @@ describe('SYSTEM_CONFIG singleton', () => {
     expect(SYSTEM_CONFIG.workingHours['Monday']).toEqual({ start: '07:00', close: '19:00' });
   });
 
-  it('includes Sunday in DEFAULT_WORKING_HOURS', () => {
-    expect(SYSTEM_CONFIG.workingHours['Sunday']).toEqual({ start: '07:00', close: '19:00' });
+  it('does not include Sunday in DEFAULT_WORKING_HOURS', () => {
+    expect(SYSTEM_CONFIG.workingHours['Sunday']).toBeUndefined();
   });
 });

@@ -28,7 +28,6 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
   Thursday: { start: '07:00', close: '19:00' },
   Friday: { start: '07:00', close: '19:00' },
   Saturday: { start: '07:00', close: '19:00' },
-  Sunday: { start: '07:00', close: '19:00' },
 };
 
 const BASE_CONFIG: SystemConfig = {

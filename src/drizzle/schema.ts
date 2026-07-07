@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import {
+  ChannelType,
   DeliveryStatus,
   EscalatedTo,
   EscalationStatus,
@@ -28,14 +29,23 @@ import {
   RiderStatus,
   SenderType,
   SubscriptionTier,
+  SubscriptionStatus,
   TransactionStatus,
   TransactionType,
   VehicleType,
 } from '../enums.js';
-import { DEFAULT_WORKING_HOURS } from '../config.js';
-import { BILLING_CONFIG } from '../billing.js';
+import { Currency } from '../enums.js';
 
 const createId = () => randomUUID();
+
+const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
+  Monday: { start: '07:00', close: '19:00' },
+  Tuesday: { start: '07:00', close: '19:00' },
+  Wednesday: { start: '07:00', close: '19:00' },
+  Thursday: { start: '07:00', close: '19:00' },
+  Friday: { start: '07:00', close: '19:00' },
+  Saturday: { start: '07:00', close: '19:00' },
+};
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
@@ -58,6 +68,8 @@ export const transactionStatus = pgEnum('TransactionStatus', enumValues(Transact
 export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
 export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
+export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
+export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
 
 export const companies = pgTable(
   'companies',
@@ -74,6 +86,8 @@ export const companies = pgTable(
     placeId: text('place_id'),
     states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').notNull(),
+    verificationStatus: permitStatus('verification_status').default(PermitStatus.PENDING).notNull(),
+    verificationNote: text('verification_note'),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -94,6 +108,12 @@ export const companySettings = pgTable(
       .notNull(),
     companyId: text('company_id').notNull(),
     tier: subscriptionTier().default(SubscriptionTier.STARTER).notNull(),
+    subscriptionStatus: subscriptionStatus('subscription_status')
+      .default(SubscriptionStatus.PENDING)
+      .notNull(),
+    periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
+    periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
+    lockedAt: timestamp('locked_at', { precision: 3, mode: 'date' }),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
@@ -115,6 +135,51 @@ export const companySettings = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: 'company_settings_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+  ],
+);
+
+export const monthlyUsage = pgTable(
+  'monthly_usage',
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId())
+      .notNull(),
+    companyId: text('company_id').notNull(),
+    month: text().notNull(), // Format: 'YYYY-MM'
+    deliveryCount: integer('delivery_count').default(0).notNull(),
+    aiTokenCount: integer('ai_token_count').default(0).notNull(),
+    dispatcherCount: integer('dispatcher_count').default(0).notNull(),
+    riderCount: integer('rider_count').default(0).notNull(),
+    channelDeliveryCountLogistix: integer('channel_delivery_count_logistix').default(0).notNull(),
+    channelDeliveryCountMyChannel: integer('channel_delivery_count_my_channel')
+      .default(0)
+      .notNull(),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('monthly_usage_company_id_month_key').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.month.asc().nullsLast().op('text_ops'),
+    ),
+    index('monthly_usage_company_id_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+    ),
+    index('monthly_usage_month_idx').using('btree', table.month.asc().nullsLast().op('text_ops')),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'monthly_usage_company_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
@@ -223,6 +288,7 @@ export const conversations = pgTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     autoReplyEnabled: boolean('auto_reply_enabled').default(true).notNull(),
+    channelType: channelType('channel_type').default(ChannelType.LOGISTIX_NETWORK).notNull(),
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
     scratchpad: jsonb(),
     customerName: text('customer_name'),
@@ -578,7 +644,7 @@ export const riders = pgTable(
 );
 
 export const transactions = pgTable(
-  'transactions',
+  'payment_transactions',
   {
     id: text()
       .primaryKey()
@@ -587,15 +653,14 @@ export const transactions = pgTable(
     companyId: text('company_id').notNull(),
     type: transactionType('type').notNull(),
     amount: doublePrecision().notNull(),
-    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
+    currency: text().default(Currency.NGN).notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
     provider: paymentProvider('provider'),
-    tier: subscriptionTier(),
+    tier: subscriptionTier('tier'),
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
     description: text(),
-    performedBy: text('performed_by'),
     metadata: jsonb(),
     processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -603,21 +668,27 @@ export const transactions = pgTable(
       .notNull(),
   },
   (table) => [
-    index('transactions_company_id_created_at_idx').using(
+    index('payment_transactions_company_id_created_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
-    index('transactions_type_idx').using('btree', table.type.asc().nullsLast().op('enum_ops')),
-    index('transactions_reference_idx').using(
+    index('payment_transactions_type_idx').using(
+      'btree',
+      table.type.asc().nullsLast().op('enum_ops'),
+    ),
+    index('payment_transactions_reference_idx').using(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
-    uniqueIndex('transactions_reference_key').using(
+    uniqueIndex('payment_transactions_reference_key').using(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
-    index('transactions_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    index('payment_transactions_status_idx').using(
+      'btree',
+      table.status.asc().nullsLast().op('enum_ops'),
+    ),
   ],
 );
 
@@ -766,11 +837,10 @@ export const exportRequests = pgTable(
     requestedBy: text('requested_by').notNull(),
     targetMonth: text('target_month'),
     riderId: text('rider_id'),
+    downloadUrl: text('download_url'),
     requestedAt: timestamp('requested_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    completedAt: timestamp('completed_at', { precision: 3, mode: 'date' }),
-    downloadUrl: text('download_url'),
   },
   (table) => [
     index('export_requests_company_id_status_idx').using(
@@ -781,50 +851,6 @@ export const exportRequests = pgTable(
     index('export_requests_status_idx').using(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
-    ),
-  ],
-);
-
-export const subscriptionTransactions = pgTable(
-  'subscription_transactions',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    companyId: text('company_id').notNull(),
-    amount: doublePrecision().notNull(),
-    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
-    status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
-    reference: text().notNull(),
-    provider: paymentProvider('provider'),
-    tier: subscriptionTier().notNull(),
-    periodStart: timestamp('period_start', { precision: 3, mode: 'date' }).notNull(),
-    periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }).notNull(),
-    metadata: jsonb(),
-    processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('subscription_transactions_company_id_created_at_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    index('subscription_transactions_reference_idx').using(
-      'btree',
-      table.reference.asc().nullsLast().op('text_ops'),
-    ),
-    uniqueIndex('subscription_transactions_reference_key').using(
-      'btree',
-      table.reference.asc().nullsLast().op('text_ops'),
-    ),
-    index('subscription_transactions_status_created_at_idx').using(
-      'btree',
-      table.status.asc().nullsLast().op('enum_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
   ],
 );
@@ -884,41 +910,6 @@ export const escalations = pgTable(
   ],
 );
 
-export const aiUsage = pgTable(
-  'ai_usage',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    companyId: text('company_id').notNull(),
-    integrationId: text('integration_id'),
-    conversationId: text('conversation_id'),
-    model: text().notNull(),
-    tokensIn: integer('tokens_in').notNull(),
-    tokensOut: integer('tokens_out').notNull(),
-    cost: doublePrecision().notNull(),
-    currency: text().default(BILLING_CONFIG.CURRENCY).notNull(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('ai_usage_company_id_created_at_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'ai_usage_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
 export const customerCompanyMappings = pgTable(
   'customer_company_mappings',
   {
@@ -933,7 +924,6 @@ export const customerCompanyMappings = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    metadata: jsonb(),
   },
   (table) => [
     index('customer_company_mappings_company_id_idx').using(

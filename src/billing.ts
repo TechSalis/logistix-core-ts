@@ -1,8 +1,8 @@
-import { SubscriptionTier, TransactionStatus } from './enums.js';
+import { SubscriptionTier, TransactionStatus, ChannelType, Currency } from './enums.js';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-interface AICreditConfig {
+export interface AICreditConfig {
   MONTHLY_ALLOWANCE: Record<SubscriptionTier, number>;
   OVERAGE_PRICING: Record<string, number> & { default: number };
 }
@@ -14,6 +14,7 @@ export const AI_CREDIT_CONFIG: AICreditConfig = {
   MONTHLY_ALLOWANCE: {
     [SubscriptionTier.STARTER]: 50_000,
     [SubscriptionTier.PROFESSIONAL]: 500_000,
+    [SubscriptionTier.ENTERPRISE]: 10_000_000,
   },
 
   OVERAGE_PRICING: {
@@ -24,21 +25,41 @@ export const AI_CREDIT_CONFIG: AICreditConfig = {
 };
 
 /**
+ * Data retention in days per tier
+ */
+export const DATA_RETENTION: Record<SubscriptionTier, number> = {
+  [SubscriptionTier.STARTER]: 45,
+  [SubscriptionTier.PROFESSIONAL]: 90,
+  [SubscriptionTier.ENTERPRISE]: 365,
+};
+
+/**
+ * Per-delivery channel fees (in Kobo).
+ * Billed per-delivery when delivery is created from a channel conversation.
+ * Deducted from wallet in real-time, reconciled on monthly invoice.
+ */
+export const CHANNEL_FEES: Record<ChannelType, number> = {
+  [ChannelType.LOGISTIX_NETWORK]: 10000, // ₦100 — covers Logistix number + routing + AI
+  [ChannelType.MY_CHANNEL]: 5000, // ₦50  — covers AI only
+};
+
+/**
  * Billing configuration constants
  */
 export const BILLING_CONFIG = {
   /**
    * Currency to use across the system
    */
-  CURRENCY: 'NGN',
+  CURRENCY: Currency.NGN,
 
   /**
    * Monthly subscription pricing (in Kobo - Nigerian currency)
    * 1 Naira = 100 Kobo
    */
   PRICING: {
-    [SubscriptionTier.STARTER]: 30000_00,
-    [SubscriptionTier.PROFESSIONAL]: 50000_00,
+    [SubscriptionTier.STARTER]: 1_500_000, // ₦15,000
+    [SubscriptionTier.PROFESSIONAL]: 3_000_000, // ₦30,000
+    [SubscriptionTier.ENTERPRISE]: 0, // Custom pricing — handled via quote flow
   },
 
   /**
@@ -50,6 +71,11 @@ export const BILLING_CONFIG = {
    * Grace period before locking (in days)
    */
   GRACE_PERIOD_DAYS: 14,
+
+  /**
+   * Days after LOCKED before company data is purged
+   */
+  PURGE_AFTER_LOCKED_DAYS: 30,
 
   /**
    * Payment timeout for AWAITING_PAYMENT deliveries (in hours)
@@ -75,6 +101,21 @@ export const BILLING_CONFIG = {
     MAX_ATTEMPTS: 30, // Retry daily for up to 30 days
     DAILY_RETRY_INTERVAL_DAYS: 1, // Retry every day
   },
+} as const;
+
+/**
+ * Overage pricing for usage beyond tier allowances.
+ * All prices in Kobo (1 Naira = 100 Kobo).
+ */
+export const OVERAGE_PRICING = {
+  /** Per-delivery overage charge (beyond monthly allowance) — in Kobo */
+  PER_DELIVERY: 10000, // ₦100
+  /** Per extra dispatcher seat beyond tier allowance — in Kobo */
+  PER_DISPATCHER_SEAT: 500000, // ₦5,000
+  /** Per extra rider seat beyond tier allowance — in Kobo */
+  PER_RIDER_SEAT: 100000, // ₦1,000
+  /** Per-token AI overage charge (beyond monthly allowance) — in Kobo per token */
+  AI_OVERAGE_PER_TOKEN: 10, // ₦0.10 per token
 } as const;
 
 /**
@@ -176,4 +217,11 @@ export function getOveragePrice(model: string): number {
 export function calculateRemainingAllowance(tier: SubscriptionTier, periodUsage: number): number {
   const allowance = getAiAllowance(tier);
   return Math.max(0, allowance - periodUsage);
+}
+
+export interface MonthlyUsageInput {
+  deliveryCount: number;
+  aiTokenCount: number;
+  riderCount: number;
+  dispatcherCount: number;
 }

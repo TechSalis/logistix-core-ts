@@ -15,6 +15,13 @@ export interface SecurityConfig {
     readonly jwtExpiresIn: string;
     readonly jwtRefreshExpiresIn: string;
   };
+  readonly sudo: {
+    readonly tokenExpiresInMs: number;
+  };
+  readonly admin: {
+    readonly maxFailedSudoAttempts: number;
+    readonly sudoLockoutMs: number;
+  };
   readonly headers: {
     readonly [key: string]: string;
   };
@@ -49,6 +56,13 @@ const securityConfigSchema = z.object({
     jwtExpiresIn: z.string(),
     jwtRefreshExpiresIn: z.string(),
   }),
+  sudo: z.object({
+    tokenExpiresInMs: z.number().default(900_000),
+  }),
+  admin: z.object({
+    maxFailedSudoAttempts: z.number().default(5),
+    sudoLockoutMs: z.number().default(900_000),
+  }),
   headers: z.record(z.string(), z.string()),
   maliciousPatterns: z.array(z.instanceof(RegExp)),
   validation: z.object({
@@ -75,11 +89,19 @@ const rawSecurityConfig = {
     tiers: {
       [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
       [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },
+      [SubscriptionTier.ENTERPRISE]: { max: 5000, windowMs: 900_000 },
     },
   },
   jwt: {
     jwtExpiresIn: '1h',
     jwtRefreshExpiresIn: '30d',
+  },
+  sudo: {
+    tokenExpiresInMs: 900_000,
+  },
+  admin: {
+    maxFailedSudoAttempts: 5,
+    sudoLockoutMs: 900_000,
   },
   headers: {
     'X-Content-Type-Options': 'nosniff',
