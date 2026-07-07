@@ -141,51 +141,6 @@ export const companySettings = pgTable(
   ],
 );
 
-export const monthlyUsage = pgTable(
-  'monthly_usage',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    companyId: text('company_id').notNull(),
-    month: text().notNull(), // Format: 'YYYY-MM'
-    deliveryCount: integer('delivery_count').default(0).notNull(),
-    aiTokenCount: integer('ai_token_count').default(0).notNull(),
-    dispatcherCount: integer('dispatcher_count').default(0).notNull(),
-    riderCount: integer('rider_count').default(0).notNull(),
-    channelDeliveryCountLogistix: integer('channel_delivery_count_logistix').default(0).notNull(),
-    channelDeliveryCountMyChannel: integer('channel_delivery_count_my_channel')
-      .default(0)
-      .notNull(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    uniqueIndex('monthly_usage_company_id_month_key').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.month.asc().nullsLast().op('text_ops'),
-    ),
-    index('monthly_usage_company_id_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
-    index('monthly_usage_month_idx').using('btree', table.month.asc().nullsLast().op('text_ops')),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'monthly_usage_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
 export const pricingSchemes = pgTable(
   'pricing_schemes',
   {

@@ -1,12 +1,6 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
-import {
-  DATA_RETENTION,
-  OVERAGE_PRICING,
-  getAiAllowance,
-  type MonthlyUsageInput,
-} from './billing.js';
-export type { MonthlyUsageInput };
+import { DATA_RETENTION } from './billing.js';
 
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;
@@ -133,43 +127,3 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
   return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
 };
-
-/**
- * Calculate the amount of ledger balance that must be reserved
- * to cover estimated overage charges for the current month.
- * Returns amount in Kobo.
- */
-export function calculateReservedBalance(tier: SubscriptionTier, usage: MonthlyUsageInput): number {
-  const limits = getTierLimits(tier);
-  let total = 0;
-
-  const safe = {
-    deliveryCount: Math.max(0, usage.deliveryCount),
-    aiTokenCount: Math.max(0, usage.aiTokenCount),
-    riderCount: Math.max(0, usage.riderCount),
-    dispatcherCount: Math.max(0, usage.dispatcherCount),
-  };
-
-  if (safe.deliveryCount > limits.maxDeliveriesPerMonth) {
-    const overage = safe.deliveryCount - limits.maxDeliveriesPerMonth;
-    total += overage * OVERAGE_PRICING.PER_DELIVERY;
-  }
-
-  const aiAllowance = getAiAllowance(tier);
-  if (safe.aiTokenCount > aiAllowance) {
-    const overageTokens = safe.aiTokenCount - aiAllowance;
-    total += Math.ceil(overageTokens * OVERAGE_PRICING.AI_OVERAGE_PER_TOKEN);
-  }
-
-  if (safe.riderCount > limits.maxRiders) {
-    const overage = safe.riderCount - limits.maxRiders;
-    total += overage * OVERAGE_PRICING.PER_RIDER_SEAT;
-  }
-
-  if (safe.dispatcherCount > limits.maxDispatchers) {
-    const overage = safe.dispatcherCount - limits.maxDispatchers;
-    total += overage * OVERAGE_PRICING.PER_DISPATCHER_SEAT;
-  }
-
-  return total;
-}

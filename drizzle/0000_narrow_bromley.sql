@@ -220,20 +220,6 @@ CREATE TABLE "messages" (
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "monthly_usage" (
-	"id" text PRIMARY KEY NOT NULL,
-	"company_id" text NOT NULL,
-	"month" text NOT NULL,
-	"delivery_count" integer DEFAULT 0 NOT NULL,
-	"ai_token_count" integer DEFAULT 0 NOT NULL,
-	"dispatcher_count" integer DEFAULT 0 NOT NULL,
-	"rider_count" integer DEFAULT 0 NOT NULL,
-	"channel_delivery_count_logistix" integer DEFAULT 0 NOT NULL,
-	"channel_delivery_count_my_channel" integer DEFAULT 0 NOT NULL,
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "pricing_schemes" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
@@ -307,7 +293,6 @@ ALTER TABLE "escalations" ADD CONSTRAINT "escalations_conversation_id_fkey" FORE
 ALTER TABLE "escalations" ADD CONSTRAINT "escalations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "ledger_transactions" ADD CONSTRAINT "ledger_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "monthly_usage" ADD CONSTRAINT "monthly_usage_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "pricing_schemes" ADD CONSTRAINT "pricing_schemes_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "rider_location_logs" ADD CONSTRAINT "rider_location_logs_rider_id_fkey" FOREIGN KEY ("rider_id") REFERENCES "public"."riders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "riders" ADD CONSTRAINT "riders_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -372,9 +357,6 @@ CREATE INDEX "messages_external_id_idx" ON "messages" USING btree ("external_id"
 CREATE UNIQUE INDEX "messages_external_id_key" ON "messages" USING btree ("external_id" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_reply_to_external_id_idx" ON "messages" USING btree ("reply_to_external_id" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_conversation_id_is_deleted_idx" ON "messages" USING btree ("conversation_id" text_ops,"is_deleted" bool_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "monthly_usage_company_id_month_key" ON "monthly_usage" USING btree ("company_id" text_ops,"month" text_ops);--> statement-breakpoint
-CREATE INDEX "monthly_usage_company_id_idx" ON "monthly_usage" USING btree ("company_id" text_ops);--> statement-breakpoint
-CREATE INDEX "monthly_usage_month_idx" ON "monthly_usage" USING btree ("month" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "pricing_schemes_company_id_vehicle_type_key" ON "pricing_schemes" USING btree ("company_id" text_ops,"vehicle_type" enum_ops);--> statement-breakpoint
 CREATE INDEX "rider_location_logs_created_at_idx" ON "rider_location_logs" USING btree ("created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "rider_location_logs_rider_id_created_at_idx" ON "rider_location_logs" USING btree ("rider_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint

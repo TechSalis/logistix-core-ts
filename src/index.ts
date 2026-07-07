@@ -20,14 +20,12 @@ export { REGIONAL_CONFIG } from './regional.js';
 export type { RegionalConfig } from './regional.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
-export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits, calculateReservedBalance } from './limits.js';
-export type { LimitsConfig, TierLimits, MonthlyUsageInput } from './limits.js';
+export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
+export type { LimitsConfig, TierLimits } from './limits.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
   BILLING_CONFIG,
-  AI_CREDIT_CONFIG,
-  OVERAGE_PRICING,
   DATA_RETENTION,
   CHANNEL_FEES,
   getSubscriptionPrice,
@@ -36,10 +34,6 @@ export {
   shouldBillNow,
   shouldRetryPayment,
   getNextRetryDate,
-  getAiAllowance,
-  getOveragePrice,
-  calculateRemainingAllowance,
-  type AICreditConfig,
 } from './billing.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────

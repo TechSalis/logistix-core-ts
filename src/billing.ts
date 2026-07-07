@@ -2,28 +2,6 @@ import { SubscriptionTier, TransactionStatus, ChannelType, Currency } from './en
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-export interface AICreditConfig {
-  MONTHLY_ALLOWANCE: Record<SubscriptionTier, number>;
-  OVERAGE_PRICING: Record<string, number> & { default: number };
-}
-
-/**
- * Monthly included AI token allowances per tier
- */
-export const AI_CREDIT_CONFIG: AICreditConfig = {
-  MONTHLY_ALLOWANCE: {
-    [SubscriptionTier.STARTER]: 50_000,
-    [SubscriptionTier.PROFESSIONAL]: 500_000,
-    [SubscriptionTier.ENTERPRISE]: 10_000_000,
-  },
-
-  OVERAGE_PRICING: {
-    'gpt-4o': 0.000015,
-    'gpt-4o-mini': 0.000003,
-    default: 0.000003,
-  },
-};
-
 /**
  * Data retention in days per tier
  */
@@ -104,21 +82,6 @@ export const BILLING_CONFIG = {
 } as const;
 
 /**
- * Overage pricing for usage beyond tier allowances.
- * All prices in Kobo (1 Naira = 100 Kobo).
- */
-export const OVERAGE_PRICING = {
-  /** Per-delivery overage charge (beyond monthly allowance) — in Kobo */
-  PER_DELIVERY: 10000, // ₦100
-  /** Per extra dispatcher seat beyond tier allowance — in Kobo */
-  PER_DISPATCHER_SEAT: 500000, // ₦5,000
-  /** Per extra rider seat beyond tier allowance — in Kobo */
-  PER_RIDER_SEAT: 100000, // ₦1,000
-  /** Per-token AI overage charge (beyond monthly allowance) — in Kobo per token */
-  AI_OVERAGE_PER_TOKEN: 10, // ₦0.10 per token
-} as const;
-
-/**
  * Get subscription price for a tier with validation
  */
 export function getSubscriptionPrice(tier: SubscriptionTier): number {
@@ -192,36 +155,4 @@ export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): D
     nextRetryDate.getDate() + BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS,
   );
   return nextRetryDate;
-}
-
-/**
- * Get monthly AI token allowance for a company tier
- */
-export function getAiAllowance(tier: SubscriptionTier): number {
-  return (
-    AI_CREDIT_CONFIG.MONTHLY_ALLOWANCE[tier] ??
-    AI_CREDIT_CONFIG.MONTHLY_ALLOWANCE[SubscriptionTier.STARTER]
-  );
-}
-
-/**
- * Get overage price per token for a given model
- */
-export function getOveragePrice(model: string): number {
-  return AI_CREDIT_CONFIG.OVERAGE_PRICING[model] ?? AI_CREDIT_CONFIG.OVERAGE_PRICING.default;
-}
-
-/**
- * Calculate remaining AI allowance for the current period
- */
-export function calculateRemainingAllowance(tier: SubscriptionTier, periodUsage: number): number {
-  const allowance = getAiAllowance(tier);
-  return Math.max(0, allowance - periodUsage);
-}
-
-export interface MonthlyUsageInput {
-  deliveryCount: number;
-  aiTokenCount: number;
-  riderCount: number;
-  dispatcherCount: number;
 }
