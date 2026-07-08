@@ -1,8 +1,10 @@
 import { EmailService } from './services/email.service.js';
 import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
 import { submitterAckTemplate } from './templates/contact-email.js';
-import { SYSTEM_CONFIG } from './config.js';
+import { buildSystemConfig } from './config.js';
 import { fetchWithTimeout } from './fetchWithTimeout.js';
+
+const SYSTEM_CONFIG = buildSystemConfig({ domain: process.env.DOMAIN ?? '' });
 
 export interface ContactSubmission {
   email: string;

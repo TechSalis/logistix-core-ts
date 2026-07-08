@@ -1,5 +1,7 @@
-import { SYSTEM_CONFIG } from '../config.js';
+import { buildSystemConfig } from '../config.js';
 import { ContactCategory } from '../enums.js';
+
+const SYSTEM_CONFIG = buildSystemConfig({ domain: process.env.DOMAIN ?? '' });
 
 function escapeHtml(s: string): string {
   return s

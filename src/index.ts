@@ -10,6 +10,7 @@
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export * from './enums.js';
+export { ApprovalStatus as PermitStatus } from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS } from './config.js';

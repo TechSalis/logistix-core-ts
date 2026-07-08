@@ -24,10 +24,8 @@ export interface LimitsConfig {
   readonly dbBatchSize: number;
   readonly userActionConcurrency: number;
   readonly externalApiConcurrency: number;
-  readonly maxDisambiguationOptions: number;
   readonly maxQueryLimit: number; // Fallback for non-tier-aware services
   readonly locationDeduplicationRadiusMeters: number;
-  readonly disambiguationGapThreshold: number;
   readonly externalApiTimeoutMs: number;
   readonly trackingFrequencyConfig: {
     readonly baseIntervalMs: number; // Interval when close to destination (e.g. 10s)
@@ -41,10 +39,8 @@ const limitsConfigSchema = z.object({
   dbBatchSize: z.number(),
   userActionConcurrency: z.number(),
   externalApiConcurrency: z.number(),
-  maxDisambiguationOptions: z.number(),
   maxQueryLimit: z.number(),
   locationDeduplicationRadiusMeters: z.number(),
-  disambiguationGapThreshold: z.number(),
   externalApiTimeoutMs: z.number(),
   trackingFrequencyConfig: z.object({
     baseIntervalMs: z.number(),
@@ -58,10 +54,8 @@ const rawLimitsConfig = {
   dbBatchSize: 100, // Max rows per DB bulk operation for background/flush jobs (executeInBatches)
   userActionConcurrency: 10, // Chunk size for user-flow operations (chunkedPromiseAll) to avoid spiking DB connections
   externalApiConcurrency: 5, // Capped concurrency for external APIs like Google Maps to avoid rate limits
-  maxDisambiguationOptions: 3, // Max location options shown to user (UX/cognitive load)
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
   locationDeduplicationRadiusMeters: 1000, // Drop duplicate location results within this range
-  disambiguationGapThreshold: 0.2, // Gap between 1st and 2nd best search match to trigger automatic selection
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   trackingFrequencyConfig: {
     baseIntervalMs: 3000, // 3 seconds — minimum interval when very close to destination

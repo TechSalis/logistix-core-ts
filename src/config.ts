@@ -10,7 +10,7 @@ export interface SystemConfig {
   readonly domain: string;
   readonly supportEmail: string;
   readonly paymentsEmail: string;
-  readonly phoneNumber: string;
+  readonly contactPhone: string;
   readonly logoUrl: string;
   readonly faviconUrl: string;
   readonly workingHours: Record<string, { start: string; close: string }>;
@@ -20,7 +20,11 @@ export interface SystemConfigOverrides {
   domain?: string;
   supportEmail?: string;
   paymentsEmail?: string;
-  phoneNumber?: string;
+  contactPhone?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  brandName?: string;
+  workingHours?: Record<string, { start: string; close: string }>;
 }
 
 export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
@@ -32,26 +36,18 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
   Saturday: { start: '07:00', close: '19:00' },
 };
 
-const BASE_CONFIG: SystemConfig = {
-  domain: 'logistix.team',
-  brandName: 'Logistix',
-  supportEmail: 'contact@logistix.team',
-  paymentsEmail: 'payments@logistix.team',
-  phoneNumber: '',
-  logoUrl: '/pwa-512x512.png',
-  faviconUrl: '/favicon.png',
-  workingHours: DEFAULT_WORKING_HOURS,
-};
+export const SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig();
 
-export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConfig {
-  const domain = overrides?.domain ?? BASE_CONFIG.domain;
+export function buildSystemConfig(overrides: SystemConfigOverrides = {}): SystemConfig {
+  const domain = overrides.domain ?? 'logistix.team';
   return {
-    ...BASE_CONFIG,
+    brandName: overrides.brandName ?? 'Logistix',
     domain,
-    supportEmail: overrides?.supportEmail ?? `contact@${domain}`,
-    paymentsEmail: overrides?.paymentsEmail ?? `payments@${domain}`,
-    phoneNumber: overrides?.phoneNumber ?? BASE_CONFIG.phoneNumber,
+    supportEmail: overrides.supportEmail ?? `contact@${domain}`,
+    paymentsEmail: overrides.paymentsEmail ?? `payments@${domain}`,
+    contactPhone: overrides.contactPhone ?? '',
+    logoUrl: overrides.logoUrl ?? '',
+    faviconUrl: overrides.faviconUrl ?? '',
+    workingHours: overrides.workingHours ?? DEFAULT_WORKING_HOURS,
   };
 }
-
-export const SYSTEM_CONFIG: SystemConfig = BASE_CONFIG;
