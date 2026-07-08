@@ -9,6 +9,7 @@ export interface SystemConfig {
   readonly brandName: string;
   readonly domain: string;
   readonly supportEmail: string;
+  readonly paymentsEmail: string;
   readonly phoneNumber: string;
   readonly logoUrl: string;
   readonly faviconUrl: string;
@@ -18,6 +19,7 @@ export interface SystemConfig {
 export interface SystemConfigOverrides {
   domain?: string;
   supportEmail?: string;
+  paymentsEmail?: string;
   phoneNumber?: string;
 }
 
@@ -34,6 +36,7 @@ const BASE_CONFIG: SystemConfig = {
   domain: 'logistix.team',
   brandName: 'Logistix',
   supportEmail: 'contact@logistix.team',
+  paymentsEmail: 'payments@logistix.team',
   phoneNumber: '',
   logoUrl: '/pwa-512x512.png',
   faviconUrl: '/favicon.png',
@@ -46,6 +49,7 @@ export function buildSystemConfig(overrides?: SystemConfigOverrides): SystemConf
     ...BASE_CONFIG,
     domain,
     supportEmail: overrides?.supportEmail ?? `contact@${domain}`,
+    paymentsEmail: overrides?.paymentsEmail ?? `payments@${domain}`,
     phoneNumber: overrides?.phoneNumber ?? BASE_CONFIG.phoneNumber,
   };
 }

@@ -25,7 +25,7 @@ import {
   MessageStatus,
   PaymentMethod,
   PaymentProvider,
-  PermitStatus,
+  ApprovalStatus,
   RiderStatus,
   SenderType,
   SubscriptionTier,
@@ -60,7 +60,7 @@ export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatf
 export const mappingSource = pgEnum('MappingSource', enumValues(MappingSource));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
-export const permitStatus = pgEnum('PermitStatus', enumValues(PermitStatus));
+export const permitStatus = pgEnum('PermitStatus', enumValues(ApprovalStatus));
 export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
 export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
@@ -86,7 +86,9 @@ export const companies = pgTable(
     placeId: text('place_id'),
     states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').notNull(),
-    verificationStatus: permitStatus('verification_status').default(PermitStatus.PENDING).notNull(),
+    verificationStatus: permitStatus('verification_status')
+      .default(ApprovalStatus.PENDING)
+      .notNull(),
     verificationNote: text('verification_note'),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -116,6 +118,7 @@ export const companySettings = pgTable(
     lockedAt: timestamp('locked_at', { precision: 3, mode: 'date' }),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
+    enterpriseQuote: jsonb('enterprise_quote'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -377,7 +380,7 @@ export const dispatchers = pgTable(
     companyId: text('company_id'),
     fcmToken: text('fcm_token'),
     isOwner: boolean('is_owner').default(false).notNull(),
-    permitStatus: permitStatus('permit_status').default(PermitStatus.PENDING).notNull(),
+    permitStatus: permitStatus('permit_status').default(ApprovalStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -553,7 +556,7 @@ export const riders = pgTable(
     registrationNumber: text('registration_number'),
     idType: text('id_type'),
     vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
-    permitStatus: permitStatus('permit_status').default(PermitStatus.PENDING).notNull(),
+    permitStatus: permitStatus('permit_status').default(ApprovalStatus.PENDING).notNull(),
     isAccepted: boolean('is_accepted').default(false).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
