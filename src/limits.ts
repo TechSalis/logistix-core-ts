@@ -57,16 +57,16 @@ const rawLimitsConfig = {
   maxBatchSize: 50, // Max actions executed per agent turn (system protection)
   dbBatchSize: 100, // Max rows per DB bulk operation for background/flush jobs (executeInBatches)
   userActionConcurrency: 10, // Chunk size for user-flow operations (chunkedPromiseAll) to avoid spiking DB connections
-  externalApiConcurrency: 5, // Capped concurrency for external APIs like Google Maps to avoid rate limits
+  externalApiConcurrency: 2, // Capped concurrency for external APIs like Google Maps to avoid rate limits
   maxDisambiguationOptions: 3, // Max location options shown to user (UX/cognitive load)
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
   locationDeduplicationRadiusMeters: 1000, // Drop duplicate location results within this range
   disambiguationGapThreshold: 0.2, // Gap between 1st and 2nd best search match to trigger automatic selection
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   trackingFrequencyConfig: {
-    baseIntervalMs: 10000, // 10 seconds
-    farDistanceMeters: 3000, // 3km
-    farIntervalMs: 60000, // 60 seconds
+    baseIntervalMs: 3000, // 3 seconds — minimum interval when very close to destination
+    farDistanceMeters: 3000, // 3km — distance threshold to switch from close to far interval
+    farIntervalMs: 60000, // 60 seconds — maximum interval when far from destination
   },
 } as const;
 
@@ -76,7 +76,7 @@ export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsCon
  * Tier-based limits - ALL operational limits are tier-aware
  * These limits control the entire flow from drafting to synthesis
  */
-export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
+export const TIER_LIMITS: Record<SubscriptionTier, Partial<TierLimits>> = {
   [SubscriptionTier.STARTER]: {
     maxAIDeliveriesPerAction: 30,
     maxBulkDeliveries: 50,
@@ -113,17 +113,22 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxMemoryArraySize: 500,
     maxSynthesisResults: 500,
     maxDrafts: 200,
-    retentionDays: DATA_RETENTION[SubscriptionTier.ENTERPRISE],
-    maxDispatchers: 999,
-    maxRiders: 9999,
-    maxDeliveriesPerMonth: 99999,
     maxActiveDeliveries: 500,
   },
 };
 
 /**
- * Get tier-specific limits for a subscription tier
+ * Get tier-specific limits for a subscription tier.
+ * Enterprise uses per-company custom configs for account & usage limits;
+ * defaults to effectively-unlimited sentinels when not hardcoded.
  */
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
-  return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
+  const base = TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
+  return {
+    ...base,
+    maxDispatchers: base.maxDispatchers ?? Number.MAX_SAFE_INTEGER,
+    maxRiders: base.maxRiders ?? Number.MAX_SAFE_INTEGER,
+    maxDeliveriesPerMonth: base.maxDeliveriesPerMonth ?? Number.MAX_SAFE_INTEGER,
+    retentionDays: base.retentionDays ?? DATA_RETENTION[SubscriptionTier.ENTERPRISE],
+  } as TierLimits;
 };

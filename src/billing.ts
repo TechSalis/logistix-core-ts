@@ -37,7 +37,7 @@ export const BILLING_CONFIG = {
   PRICING: {
     [SubscriptionTier.STARTER]: 1_500_000, // ₦15,000
     [SubscriptionTier.PROFESSIONAL]: 3_000_000, // ₦30,000
-    [SubscriptionTier.ENTERPRISE]: 0, // Custom pricing — handled via quote flow
+    [SubscriptionTier.ENTERPRISE]: -1, // Custom pricing — handled via quote flow
   },
 
   /**
