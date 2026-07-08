@@ -119,16 +119,19 @@ export const TIER_LIMITS: Record<SubscriptionTier, Partial<TierLimits>> = {
 
 /**
  * Get tier-specific limits for a subscription tier.
- * Enterprise uses per-company custom configs for account & usage limits;
- * defaults to effectively-unlimited sentinels when not hardcoded.
+ * Enterprise account & usage limits should come from per-company custom config
+ * (bankDetails.enterpriseQuote). Fall back to generous defaults when not set.
+ *
+ * TODO: Read per-company enterprise limits from company settings and
+ *       override these defaults at the company level.
  */
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
   const base = TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
   return {
     ...base,
-    maxDispatchers: base.maxDispatchers ?? Number.MAX_SAFE_INTEGER,
-    maxRiders: base.maxRiders ?? Number.MAX_SAFE_INTEGER,
-    maxDeliveriesPerMonth: base.maxDeliveriesPerMonth ?? Number.MAX_SAFE_INTEGER,
-    retentionDays: base.retentionDays ?? DATA_RETENTION[SubscriptionTier.ENTERPRISE],
+    maxDispatchers: base.maxDispatchers ?? 999,
+    maxRiders: base.maxRiders ?? 9999,
+    maxDeliveriesPerMonth: base.maxDeliveriesPerMonth ?? 100000,
+    retentionDays: base.retentionDays ?? DATA_RETENTION[tier] ?? 365,
   } as TierLimits;
 };
