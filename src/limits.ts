@@ -76,7 +76,7 @@ export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsCon
  * Tier-based limits - ALL operational limits are tier-aware
  * These limits control the entire flow from drafting to synthesis
  */
-export const TIER_LIMITS: Record<SubscriptionTier, Partial<TierLimits>> = {
+export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   [SubscriptionTier.STARTER]: {
     maxAIDeliveriesPerAction: 30,
     maxBulkDeliveries: 50,
@@ -105,6 +105,8 @@ export const TIER_LIMITS: Record<SubscriptionTier, Partial<TierLimits>> = {
     maxDeliveriesPerMonth: 5000,
     maxActiveDeliveries: 50,
   },
+  // Enterprise limits are defaults — per-company custom config overrides
+  // via bankDetails.enterpriseQuote (maxDispatchers, maxRiders, etc.)
   [SubscriptionTier.ENTERPRISE]: {
     maxAIDeliveriesPerAction: 200,
     maxBulkDeliveries: 500,
@@ -113,25 +115,14 @@ export const TIER_LIMITS: Record<SubscriptionTier, Partial<TierLimits>> = {
     maxMemoryArraySize: 500,
     maxSynthesisResults: 500,
     maxDrafts: 200,
+    retentionDays: 365,
+    maxDispatchers: 999,
+    maxRiders: 9999,
+    maxDeliveriesPerMonth: 100000,
     maxActiveDeliveries: 500,
   },
 };
 
-/**
- * Get tier-specific limits for a subscription tier.
- * Enterprise account & usage limits should come from per-company custom config
- * (bankDetails.enterpriseQuote). Fall back to generous defaults when not set.
- *
- * TODO: Read per-company enterprise limits from company settings and
- *       override these defaults at the company level.
- */
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
-  const base = TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
-  return {
-    ...base,
-    maxDispatchers: base.maxDispatchers ?? 999,
-    maxRiders: base.maxRiders ?? 9999,
-    maxDeliveriesPerMonth: base.maxDeliveriesPerMonth ?? 100000,
-    retentionDays: base.retentionDays ?? DATA_RETENTION[tier] ?? 365,
-  } as TierLimits;
+  return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
 };
