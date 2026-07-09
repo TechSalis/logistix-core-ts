@@ -19,7 +19,7 @@ export interface DeliveryBase {
   scheduledAt: string | null;
   createdAt: string;
   rider: { id: string; fullName: string } | null;
-  pool?: boolean;
+  pool: boolean;
 }
 
 export interface RiderBase {

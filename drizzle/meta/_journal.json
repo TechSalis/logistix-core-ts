@@ -33,13 +33,6 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1785000000000,
-      "tag": "0004_add_overflow_config",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
       "when": 1786000000000,
       "tag": "0005_add_pool_column",
       "breakpoints": true
