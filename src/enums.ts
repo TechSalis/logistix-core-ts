@@ -77,6 +77,13 @@ export enum MomentoType {
   AI = 'AI',
 }
 
+export enum NodeEnv {
+  Development = 'development',
+  Production = 'production',
+  Test = 'test',
+  Staging = 'staging',
+}
+
 export enum VehicleType {
   BIKE = 'BIKE',
   CAR = 'CAR',
