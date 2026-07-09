@@ -15,6 +15,13 @@
       "when": 1783530666738,
       "tag": "0001_flawless_jasper_sitwell",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784000000000,
+      "tag": "0002_drop_customer_company_mappings",
+      "breakpoints": true
     }
   ]
 }

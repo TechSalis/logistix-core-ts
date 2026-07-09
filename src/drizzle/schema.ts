@@ -22,7 +22,6 @@ import {
   ExportRequestStatus,
   LedgerAdjustmentType,
   MappingPlatform,
-  MappingSource,
   MessageStatus,
   PaymentMethod,
   PaymentProvider,
@@ -58,7 +57,6 @@ export const ledgerAdjustmentType = pgEnum(
   enumValues(LedgerAdjustmentType),
 );
 export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatform));
-export const mappingSource = pgEnum('MappingSource', enumValues(MappingSource));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const permitStatus = pgEnum('PermitStatus', enumValues(ApprovalStatus));
@@ -884,51 +882,6 @@ export const escalations = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
-  ],
-);
-
-export const customerCompanyMappings = pgTable(
-  'customer_company_mappings',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    platformId: text('platform_id').notNull(),
-    platform: mappingPlatform().default(MappingPlatform.WHATSAPP).notNull(),
-    companyId: text('company_id').notNull(),
-    source: mappingSource().default(MappingSource.DISCOVERY).notNull(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('customer_company_mappings_company_id_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
-    index('customer_company_mappings_platform_id_idx').using(
-      'btree',
-      table.platformId.asc().nullsLast().op('text_ops'),
-    ),
-    uniqueIndex('customer_company_mappings_platform_id_platform_company_id_key').using(
-      'btree',
-      table.platformId.asc().nullsLast().op('text_ops'),
-      table.platform.asc().nullsLast().op('enum_ops'),
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
-    index('customer_company_mappings_platform_id_platform_idx').using(
-      'btree',
-      table.platformId.asc().nullsLast().op('text_ops'),
-      table.platform.asc().nullsLast().op('enum_ops'),
-    ),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'customer_company_mappings_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
   ],
 );
 

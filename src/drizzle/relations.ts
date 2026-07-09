@@ -11,7 +11,6 @@ import {
   riders,
   deliveryAllocations,
   transactions,
-  customerCompanyMappings,
   riderLocationLogs,
   escalations,
   eventLogs,
@@ -35,7 +34,6 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   dispatchers: many(dispatchers),
   deliveries: many(deliveries),
   riders: many(riders),
-  customerCompanyMappings: many(customerCompanyMappings),
   transactions: many(transactions),
   eventLogs: many(eventLogs),
   exportRequests: many(exportRequests),
@@ -118,13 +116,6 @@ export const transactionsRelations = relations(transactions, ({ one, many }) => 
     references: [companies.id],
   }),
   deliveryAllocations: many(deliveryAllocations),
-}));
-
-export const customerCompanyMappingsRelations = relations(customerCompanyMappings, ({ one }) => ({
-  company: one(companies, {
-    fields: [customerCompanyMappings.companyId],
-    references: [companies.id],
-  }),
 }));
 
 export const riderLocationLogsRelations = relations(riderLocationLogs, ({ one }) => ({
