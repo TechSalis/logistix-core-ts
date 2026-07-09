@@ -32,6 +32,7 @@ export interface LimitsConfig {
     readonly farDistanceMeters: number; // Distance threshold to consider 'far' (e.g. 2000m)
     readonly farIntervalMs: number; // Interval when far from destination (e.g. 60s)
   };
+  readonly maxRiderActiveDeliveries: number;
 }
 
 const limitsConfigSchema = z.object({
@@ -47,6 +48,7 @@ const limitsConfigSchema = z.object({
     farDistanceMeters: z.number(),
     farIntervalMs: z.number(),
   }),
+  maxRiderActiveDeliveries: z.number(),
 });
 
 const rawLimitsConfig = {
@@ -62,6 +64,7 @@ const rawLimitsConfig = {
     farDistanceMeters: 3000, // 3km — distance threshold to switch from close to far interval
     farIntervalMs: 60000, // 60 seconds — maximum interval when far from destination
   },
+  maxRiderActiveDeliveries: 5,
 } as const;
 
 export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsConfig);

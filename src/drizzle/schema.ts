@@ -470,6 +470,7 @@ export const deliveries = pgTable(
     pin: text(),
     proofOfDeliveryImagePath: text('proof_of_delivery_image_path'),
     price: doublePrecision(),
+    pool: boolean('pool').notNull().default(false),
     metadata: jsonb(),
   },
   (table) => [
@@ -503,6 +504,9 @@ export const deliveries = pgTable(
       table.status.asc().nullsLast().op('enum_ops'),
     ),
     index('deliveries_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
+    index('deliveries_pool_true_idx')
+      .using('btree', table.pool.asc().nullsLast().op('bool_ops'))
+      .where(sql`pool = true`),
     uniqueIndex('deliveries_tracking_id_key').using(
       'btree',
       table.trackingId.asc().nullsLast().op('text_ops'),
@@ -903,7 +907,6 @@ export const companyDailyMetrics = pgTable(
     awaitingPaymentCount: integer('awaiting_payment_count').notNull().default(0),
     totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
     avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
-    avgAssignmentTimeMinutes: doublePrecision('avg_assignment_time_minutes'),
     whatsappOrders: integer('whatsapp_orders').notNull().default(0),
     instagramOrders: integer('instagram_orders').notNull().default(0),
     facebookOrders: integer('facebook_orders').notNull().default(0),

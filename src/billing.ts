@@ -61,6 +61,12 @@ export const BILLING_CONFIG = {
   PAYMENT_TIMEOUT_HOURS: 24,
 
   /**
+   * Logistix's default cut (percentage) when a delivery is outsourced to
+   * a partner company via the pool. Configurable per-company in the future.
+   */
+  OUTSOURCE_DEFAULT_CUT: 10,
+
+  /**
    * Minimum balance required to avoid grace period (in Kobo)
    */
   MINIMUM_BALANCE: 1000, // ₦10.00
