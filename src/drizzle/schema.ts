@@ -796,6 +796,13 @@ export const eventLogs = pgTable(
       table.success.asc().nullsLast().op('bool_ops'),
       table.createdAt.desc().nullsLast().op('timestamp_ops'),
     ),
+    index('event_logs_company_entity_type_event_created_at_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.entityType.asc().nullsLast().op('text_ops'),
+      table.eventType.asc().nullsLast().op('text_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
   ],
 );
 

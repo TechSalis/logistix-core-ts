@@ -22,6 +22,13 @@
       "when": 1784000000000,
       "tag": "0002_drop_customer_company_mappings",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784500000000,
+      "tag": "0003_add_event_logs_composite_index",
+      "breakpoints": true
     }
   ]
 }

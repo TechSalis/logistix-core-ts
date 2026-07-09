@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "event_logs_company_entity_type_event_created_at_idx" ON "event_logs" USING btree ("company_id" text_ops,"entity_type" text_ops,"event_type" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
