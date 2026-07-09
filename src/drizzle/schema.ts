@@ -11,6 +11,7 @@ import {
   jsonb,
   doublePrecision,
   pgEnum,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import {
@@ -925,6 +926,50 @@ export const customerCompanyMappings = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: 'customer_company_mappings_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+  ],
+);
+
+export const companyDailyMetrics = pgTable(
+  'company_daily_metrics',
+  {
+    companyId: text('company_id').notNull(),
+    date: text('date').notNull(), // YYYY-MM-DD format
+    totalDeliveries: integer('total_deliveries').notNull().default(0),
+    deliveredCount: integer('delivered_count').notNull().default(0),
+    cancelledCount: integer('cancelled_count').notNull().default(0),
+    awaitingPaymentCount: integer('awaiting_payment_count').notNull().default(0),
+    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
+    avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
+    avgAssignmentTimeMinutes: doublePrecision('avg_assignment_time_minutes'),
+    whatsappOrders: integer('whatsapp_orders').notNull().default(0),
+    instagramOrders: integer('instagram_orders').notNull().default(0),
+    facebookOrders: integer('facebook_orders').notNull().default(0),
+    tiktokOrders: integer('tiktok_orders').notNull().default(0),
+    manualOrders: integer('manual_orders').notNull().default(0),
+    peakHour: integer('peak_hour'),
+    uniqueRidersActive: integer('unique_riders_active').notNull().default(0),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.companyId, table.date] }),
+    index('cdm_company_id_date_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.date.asc().nullsLast().op('text_ops'),
+    ),
+    index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('text_ops')),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'cdm_company_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
