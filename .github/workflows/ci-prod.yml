@@ -7,12 +7,6 @@ on:
       - 'v*'
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      commit_message:
-        description: "Commit message or description for manual runs"
-        required: false
-        default: "Manual Dispatch"
 
 jobs:
   test-and-migrate:
@@ -41,6 +35,7 @@ jobs:
         run: npm run build
 
       - name: Run Drizzle Migrations (Production)
+        if: github.event_name == 'push'
         env:
           DATABASE_URL: ${{ secrets.PROD_DIRECT_URL }}
         run: npx tsx scripts/migrate.ts
