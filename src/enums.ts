@@ -111,7 +111,6 @@ export enum TransactionStatus {
   FAILED = 'FAILED',
   REVERSED = 'REVERSED',
   CANCELLED = 'CANCELLED',
-  EXPIRED = 'EXPIRED',
 }
 
 export enum TransactionType {

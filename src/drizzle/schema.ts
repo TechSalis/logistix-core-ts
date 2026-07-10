@@ -35,17 +35,9 @@ import {
   VehicleType,
 } from '../enums.js';
 import { Currency } from '../enums.js';
+import { DEFAULT_WORKING_HOURS } from '../config.js';
 
 const createId = () => randomUUID();
-
-const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
-  Monday: { start: '07:00', close: '19:00' },
-  Tuesday: { start: '07:00', close: '19:00' },
-  Wednesday: { start: '07:00', close: '19:00' },
-  Thursday: { start: '07:00', close: '19:00' },
-  Friday: { start: '07:00', close: '19:00' },
-  Saturday: { start: '07:00', close: '19:00' },
-};
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
