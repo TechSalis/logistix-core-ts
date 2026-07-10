@@ -66,7 +66,7 @@ const rawAiConfig = {
   },
   memoryCacheTtl: 600_000,
   maxIterations: 2,
-  providerTimeoutMs: 20000,
+  providerTimeoutMs: 30000,
 } as const;
 
 export const AI_CONFIG: AIConfig = aiConfigSchema.parse(rawAiConfig);
