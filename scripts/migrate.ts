@@ -59,6 +59,29 @@ async function run() {
     return;
   }
 
+  // Edge case: drizzle tracking table exists but is empty (from a previous
+  // failed run where types were created before the crash). If we let
+  // migrate() re-run 0000 it'll fail on CREATE TYPE for existing enums.
+  const [{ hasDrizzleTable }] = await db.execute<{ hasDrizzleTable: boolean }>(sql`
+    SELECT EXISTS (
+      SELECT FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = '__drizzle_migrations'
+    ) AS "hasDrizzleTable"
+  `);
+
+  if (hasDrizzleTable) {
+    const [{ count }] = await db.execute<{ count: number }>(sql`
+      SELECT COUNT(*)::int AS count FROM "__drizzle_migrations"
+    `);
+    if (count === 0) {
+      console.log('[migrate] Tracking table exists but is empty — seeding from journal.');
+      await seedTrackingTable(connection);
+      console.log('[migrate] All journal entries recorded. Skipping migrate().');
+      await connection.end();
+      return;
+    }
+  }
+
   // Normal migration path — applies pending files
   console.log(`[migrate] Applying migrations from ${MIGRATIONS_FOLDER} ...`);
   await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
