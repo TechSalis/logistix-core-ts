@@ -17,8 +17,8 @@ export const DATA_RETENTION: Record<SubscriptionTier, number> = {
  * Deducted from wallet in real-time, reconciled on monthly invoice.
  */
 export const CHANNEL_FEES: Record<ChannelType, number> = {
-  [ChannelType.LOGISTIX_NETWORK]: 10000, // ₦100 — covers Logistix number + routing + AI
-  [ChannelType.MY_CHANNEL]: 5000, // ₦50  — covers AI only
+  [ChannelType.LOGISTIX_NETWORK]: 20000, // ₦200 — covers Logistix number + routing + AI
+  [ChannelType.MY_CHANNEL]: 20000, // ₦200 — covers AI only
 };
 
 /**
