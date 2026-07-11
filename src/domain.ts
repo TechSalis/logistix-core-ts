@@ -28,7 +28,7 @@ export interface RiderBase {
   email: string;
   phoneNumber: string | null;
   status: string;
-  permitStatus: string | null;
+  approvalStatus: string | null;
   isAccepted: boolean;
 }
 
@@ -37,5 +37,5 @@ export interface DispatcherBase {
   fullName: string;
   email: string;
   phoneNumber: string | null;
-  permitStatus: string | null;
+  approvalStatus: string | null;
 }

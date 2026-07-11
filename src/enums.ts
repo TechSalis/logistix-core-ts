@@ -119,6 +119,7 @@ export enum TransactionType {
   ADJUSTMENT = 'ADJUSTMENT',
   SETTLEMENT = 'SETTLEMENT',
   REFUND = 'REFUND',
+  TOPUP = 'TOPUP',
 }
 
 export enum LedgerAdjustmentType {
@@ -232,6 +233,7 @@ export enum ChatUpdateType {
 }
 
 export enum MessageStatus {
+  PENDING = 'PENDING',
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   READ = 'READ',
@@ -254,6 +256,7 @@ export enum SenderType {
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
+  AI_AGENT = 'AI_AGENT',
 }
 
 export enum ExportRequestStatus {

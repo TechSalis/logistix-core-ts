@@ -51,7 +51,7 @@ export const ledgerAdjustmentType = pgEnum(
 export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatform));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
-export const permitStatus = pgEnum('PermitStatus', enumValues(ApprovalStatus));
+export const approvalStatus = pgEnum('ApprovalStatus', enumValues(ApprovalStatus));
 export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
 export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
@@ -77,7 +77,7 @@ export const companies = pgTable(
     placeId: text('place_id'),
     states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').notNull(),
-    verificationStatus: permitStatus('verification_status')
+    verificationStatus: approvalStatus('verification_status')
       .default(ApprovalStatus.PENDING)
       .notNull(),
     verificationNote: text('verification_note'),
@@ -382,7 +382,7 @@ export const dispatchers = pgTable(
     companyId: text('company_id'),
     fcmToken: text('fcm_token'),
     isOwner: boolean('is_owner').default(false).notNull(),
-    permitStatus: permitStatus('permit_status').default(ApprovalStatus.PENDING).notNull(),
+    approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -563,7 +563,7 @@ export const riders = pgTable(
     registrationNumber: text('registration_number'),
     idType: text('id_type'),
     vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
-    permitStatus: permitStatus('permit_status').default(ApprovalStatus.PENDING).notNull(),
+    approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     isAccepted: boolean('is_accepted').default(false).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
