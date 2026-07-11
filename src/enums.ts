@@ -256,11 +256,6 @@ export enum SenderType {
   SYSTEM = 'SYSTEM',
 }
 
-export enum MappingSource {
-  MANUAL = 'MANUAL',
-  DISCOVERY = 'DISCOVERY',
-}
-
 export enum ExportRequestStatus {
   PENDING = 'PENDING',
   PROCESSING_EMAIL = 'PROCESSING_EMAIL',
