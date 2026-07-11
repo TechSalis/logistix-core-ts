@@ -36,6 +36,13 @@
       "when": 1786000000000,
       "tag": "0005_add_pool_column",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783768849469,
+      "tag": "0006_add_current_state_and_indexes",
+      "breakpoints": true
     }
   ]
 }
