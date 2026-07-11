@@ -89,6 +89,10 @@ export const companies = pgTable(
   (table) => [
     index('companies_name_idx').using('btree', table.name.asc().nullsLast().op('text_ops')),
     index('companies_states_gin_idx').using('gin', table.states),
+    index('companies_verification_status_idx').using(
+      'btree',
+      table.verificationStatus.asc().nullsLast().op('enum_ops'),
+    ),
   ],
 );
 
@@ -124,6 +128,9 @@ export const companySettings = pgTable(
     uniqueIndex('company_settings_company_code_key').using(
       'btree',
       table.companyCode.asc().nullsLast().op('text_ops'),
+    ),
+    index('company_settings_enterprise_quote_status_idx').on(
+      sql`(company_settings.enterprise_quote->>'status')`,
     ),
     foreignKey({
       columns: [table.companyId],
@@ -266,6 +273,10 @@ export const conversations = pgTable(
     index('conversations_auto_reply_disabled_idx')
       .on(table.companyId, table.lastMessageAt)
       .where(sql`auto_reply_enabled = false AND company_id IS NULL`),
+    index('conversations_channel_type_idx').using(
+      'btree',
+      table.channelType.asc().nullsLast().op('enum_ops'),
+    ),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -520,6 +531,7 @@ export const deliveries = pgTable(
       'btree',
       table.dropOffPhone.asc().nullsLast().op('text_ops'),
     ),
+    index('deliveries_pickup_state_idx').on(sql`(deliveries.metadata->>'pickupState')`),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -556,6 +568,7 @@ export const riders = pgTable(
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
     lastLng: doublePrecision('last_lng'),
+    currentState: text('current_state'),
     lastSeen: timestamp('last_seen', { precision: 3, mode: 'date' }),
     batteryLevel: integer('battery_level'),
     fcmToken: text('fcm_token'),
@@ -569,6 +582,7 @@ export const riders = pgTable(
       .notNull(),
   },
   (table) => [
+    index('riders_company_id_idx').using('btree', table.companyId.asc().nullsLast().op('text_ops')),
     index('riders_company_id_status_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
