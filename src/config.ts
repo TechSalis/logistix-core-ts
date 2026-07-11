@@ -32,7 +32,7 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
     businessBaseUrl: overrides.businessBaseUrl ?? '',
     emailDomain: overrides.emailDomain ?? '',
     supportEmail:
-      overrides.supportEmail ?? (overrides.emailDomain ? `support@${overrides.emailDomain}` : ''),
+      overrides.supportEmail ?? (overrides.emailDomain ? `contact@${overrides.emailDomain}` : ''),
     paymentsEmail:
       overrides.paymentsEmail ?? (overrides.emailDomain ? `payments@${overrides.emailDomain}` : ''),
   };

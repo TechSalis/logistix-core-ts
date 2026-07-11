@@ -31,7 +31,7 @@ describe('buildSystemConfig', () => {
     expect(config.customerBaseUrl).toBe('https://staging.logistix.team');
     expect(config.businessBaseUrl).toBe('https://business.staging.logistix.team');
     expect(config.emailDomain).toBe('logistix.team');
-    expect(config.supportEmail).toBe('support@logistix.team');
+    expect(config.supportEmail).toBe('contact@logistix.team');
     expect(config.paymentsEmail).toBe('payments@logistix.team');
   });
 
