@@ -5,26 +5,14 @@ export interface BankDetails {
   readonly accountName: string;
 }
 
+export const BRAND_NAME = 'Logistix';
+
 export interface SystemConfig {
-  readonly brandName: string;
-  readonly domain: string;
+  readonly customerBaseUrl: string;
+  readonly businessBaseUrl: string;
+  readonly emailDomain: string;
   readonly supportEmail: string;
   readonly paymentsEmail: string;
-  readonly contactPhone: string;
-  readonly logoUrl: string;
-  readonly faviconUrl: string;
-  readonly workingHours: Record<string, { start: string; close: string }>;
-}
-
-export interface SystemConfigOverrides {
-  domain?: string;
-  supportEmail?: string;
-  paymentsEmail?: string;
-  contactPhone?: string;
-  logoUrl?: string;
-  faviconUrl?: string;
-  brandName?: string;
-  workingHours?: Record<string, { start: string; close: string }>;
 }
 
 export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: string }> = {
@@ -38,16 +26,14 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
 
 export const SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig();
 
-export function buildSystemConfig(overrides: SystemConfigOverrides = {}): SystemConfig {
-  const domain = overrides.domain ?? 'logistix.team';
+export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
   return {
-    brandName: overrides.brandName ?? 'Logistix',
-    domain,
-    supportEmail: overrides.supportEmail ?? `contact@${domain}`,
-    paymentsEmail: overrides.paymentsEmail ?? `payments@${domain}`,
-    contactPhone: overrides.contactPhone ?? '',
-    logoUrl: overrides.logoUrl ?? '',
-    faviconUrl: overrides.faviconUrl ?? '',
-    workingHours: overrides.workingHours ?? DEFAULT_WORKING_HOURS,
+    customerBaseUrl: overrides.customerBaseUrl ?? '',
+    businessBaseUrl: overrides.businessBaseUrl ?? '',
+    emailDomain: overrides.emailDomain ?? '',
+    supportEmail:
+      overrides.supportEmail ?? (overrides.emailDomain ? `support@${overrides.emailDomain}` : ''),
+    paymentsEmail:
+      overrides.paymentsEmail ?? (overrides.emailDomain ? `payments@${overrides.emailDomain}` : ''),
   };
 }

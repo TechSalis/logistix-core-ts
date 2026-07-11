@@ -1,41 +1,63 @@
 import { describe, it, expect } from 'vitest';
-import { buildSystemConfig, SYSTEM_CONFIG } from '../src/config.js';
+import { buildSystemConfig, SYSTEM_CONFIG, BRAND_NAME } from '../src/config.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {
     const config = buildSystemConfig();
-    expect(config.brandName).toBe('Logistix');
-    expect(config.domain).toBe('logistix.team');
-    expect(config.supportEmail).toBe('contact@logistix.team');
+    expect(config.customerBaseUrl).toBe('');
+    expect(config.businessBaseUrl).toBe('');
+    expect(config.emailDomain).toBe('');
+    expect(config.supportEmail).toBe('');
+    expect(config.paymentsEmail).toBe('');
   });
 
-  it('overrides domain', () => {
-    const config = buildSystemConfig({ domain: 'staging.logistix.team' });
-    expect(config.domain).toBe('staging.logistix.team');
-    expect(config.supportEmail).toBe('contact@staging.logistix.team');
+  it('sets customerBaseUrl and businessBaseUrl', () => {
+    const config = buildSystemConfig({
+      customerBaseUrl: 'https://logistix.team',
+      businessBaseUrl: 'https://business.logistix.team',
+    });
+    expect(config.customerBaseUrl).toBe('https://logistix.team');
+    expect(config.businessBaseUrl).toBe('https://business.logistix.team');
+    expect(config.emailDomain).toBe('');
+    expect(config.supportEmail).toBe('');
+  });
+
+  it('derives supportEmail and paymentsEmail from emailDomain', () => {
+    const config = buildSystemConfig({
+      customerBaseUrl: 'https://staging.logistix.team',
+      businessBaseUrl: 'https://business.staging.logistix.team',
+      emailDomain: 'logistix.team',
+    });
+    expect(config.customerBaseUrl).toBe('https://staging.logistix.team');
+    expect(config.businessBaseUrl).toBe('https://business.staging.logistix.team');
+    expect(config.emailDomain).toBe('logistix.team');
+    expect(config.supportEmail).toBe('support@logistix.team');
+    expect(config.paymentsEmail).toBe('payments@logistix.team');
   });
 
   it('overrides supportEmail explicitly', () => {
     const config = buildSystemConfig({ supportEmail: 'help@logistix.team' });
     expect(config.supportEmail).toBe('help@logistix.team');
-    expect(config.domain).toBe('logistix.team');
   });
 
-  it('keeps brandName hardcoded', () => {
-    const config = buildSystemConfig({ domain: 'other.com' });
-    expect(config.brandName).toBe('Logistix');
+  it('overrides paymentsEmail explicitly', () => {
+    const config = buildSystemConfig({ paymentsEmail: 'billing@logistix.team' });
+    expect(config.paymentsEmail).toBe('billing@logistix.team');
+  });
+});
+
+describe('BRAND_NAME constant', () => {
+  it('is Logistix', () => {
+    expect(BRAND_NAME).toBe('Logistix');
   });
 });
 
 describe('SYSTEM_CONFIG singleton', () => {
-  it('has all required properties', () => {
-    expect(SYSTEM_CONFIG.brandName).toBe('Logistix');
-    expect(SYSTEM_CONFIG.domain).toBe('logistix.team');
-    expect(SYSTEM_CONFIG.supportEmail).toBe('contact@logistix.team');
-    expect(SYSTEM_CONFIG.workingHours['Monday']).toEqual({ start: '07:00', close: '19:00' });
+  it('has customerBaseUrl property', () => {
+    expect(SYSTEM_CONFIG).toHaveProperty('customerBaseUrl');
   });
 
-  it('does not include Sunday in DEFAULT_WORKING_HOURS', () => {
-    expect(SYSTEM_CONFIG.workingHours['Sunday']).toBeUndefined();
+  it('has businessBaseUrl property', () => {
+    expect(SYSTEM_CONFIG).toHaveProperty('businessBaseUrl');
   });
 });

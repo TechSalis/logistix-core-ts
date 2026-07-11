@@ -21,14 +21,6 @@ export enum DeliveryStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export function isDeliveryActive(status: DeliveryStatus): boolean {
-  return (
-    status === DeliveryStatus.PENDING ||
-    status === DeliveryStatus.ASSIGNED ||
-    status === DeliveryStatus.IN_TRANSIT
-  );
-}
-
 export function isDeliveryTerminal(status: DeliveryStatus): boolean {
   return status === DeliveryStatus.DELIVERED || status === DeliveryStatus.CANCELLED;
 }
@@ -70,11 +62,6 @@ export enum MappingPlatform {
   INSTAGRAM = 'INSTAGRAM',
   FACEBOOK = 'FACEBOOK',
   TIKTOK = 'TIKTOK',
-}
-
-export enum MomentoType {
-  MAIN = 'MAIN',
-  AI = 'AI',
 }
 
 export enum NodeEnv {
@@ -203,15 +190,6 @@ export enum NotificationPriority {
   NORMAL = 'NORMAL',
   HIGH = 'HIGH',
   URGENT = 'URGENT',
-}
-
-export enum AuditAction {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  LOGIN = 'LOGIN',
-  LOGOUT = 'LOGOUT',
-  ACCESS = 'ACCESS',
 }
 
 export enum UserAuditAction {

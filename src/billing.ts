@@ -1,6 +1,4 @@
-import { SubscriptionTier, TransactionStatus, ChannelType, Currency } from './enums.js';
-
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
+import { SubscriptionTier, ChannelType, Currency } from './enums.js';
 
 /**
  * Data retention in days per tier
@@ -8,7 +6,7 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 export const DATA_RETENTION: Record<SubscriptionTier, number> = {
   [SubscriptionTier.STARTER]: 45,
   [SubscriptionTier.PROFESSIONAL]: 90,
-  [SubscriptionTier.ENTERPRISE]: -1, // Custom — per-company config
+  [SubscriptionTier.ENTERPRISE]: 365,
 };
 
 /**
@@ -95,13 +93,6 @@ export function getSubscriptionPrice(tier: SubscriptionTier): number {
 }
 
 /**
- * Check if a tier is billable
- */
-export function isBillableTier(tier: SubscriptionTier): boolean {
-  return getSubscriptionPrice(tier) > 0;
-}
-
-/**
  * Format amount from Kobo to Naira string
  */
 export function formatAmount(kobo: number): string {
@@ -110,46 +101,48 @@ export function formatAmount(kobo: number): string {
 }
 
 /**
- * Check if we should bill based on last billing date
- * More reliable than checking activation date
+ * Check if a tier is billable (has a positive subscription price)
+ */
+export function isBillableTier(tier: SubscriptionTier): boolean {
+  return getSubscriptionPrice(tier) > 0;
+}
+
+/**
+ * Check if we should bill based on last billing date.
+ * First billing triggers after BILLING_CYCLE_DAYS from activation.
+ * Subsequent billings trigger after BILLING_CYCLE_DAYS from last billing.
  */
 export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date): boolean {
-  // First billing - check if enough time has passed since activation
-  if (!lastBillingDate) {
-    const daysSinceActivation = Math.floor((Date.now() - activationDate.getTime()) / MS_PER_DAY);
-    return daysSinceActivation >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
-  }
-
-  // Subsequent billings - check if enough time has passed since last billing
-  const daysSinceLastBilling = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
-  return daysSinceLastBilling >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
+  const referenceDate = lastBillingDate || activationDate;
+  const daysSinceReference = Math.floor(
+    (Date.now() - referenceDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return daysSinceReference >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
 }
 
 /**
  * Check if we should retry a failed payment.
- * Daily retry: retries every day for up to MAX_ATTEMPTS days.
+ * Retries daily up to MAX_ATTEMPTS times.
  */
 export function shouldRetryPayment(
   lastBillingDate: Date,
-  lastBillingStatus: TransactionStatus,
+  lastBillingStatus: string,
   retryAttempt: number,
 ): boolean {
-  if (lastBillingStatus !== TransactionStatus.FAILED) {
-    return false;
-  }
-
   if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
     return false;
   }
 
-  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
+  const daysSinceLastAttempt = Math.floor(
+    (Date.now() - lastBillingDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   return daysSinceLastAttempt >= BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS;
 }
 
 /**
- * Get next retry date for a failed payment.
- * Retries every day after the last attempt.
+ * Get the next retry date for a failed payment.
+ * Returns null if max retry attempts have been exhausted.
  */
 export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): Date | null {
   if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
