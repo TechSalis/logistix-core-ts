@@ -192,10 +192,6 @@ export const companyIntegrations = pgTable(
       .notNull(),
   },
   (table) => [
-    index('company_integrations_company_id_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
     index('company_integrations_is_active_idx').using(
       'btree',
       table.isActive.asc().nullsLast().op('bool_ops'),
@@ -317,14 +313,6 @@ export const messages = pgTable(
       'btree',
       table.conversationId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    index('messages_conversation_id_idx').using(
-      'btree',
-      table.conversationId.asc().nullsLast().op('text_ops'),
-    ),
-    index('messages_external_id_idx').using(
-      'btree',
-      table.externalId.asc().nullsLast().op('text_ops'),
     ),
     uniqueIndex('messages_external_id_key').using(
       'btree',
@@ -641,17 +629,9 @@ export const transactions = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
-    index('payment_transactions_company_id_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
     index('payment_transactions_type_idx').using(
       'btree',
       table.type.asc().nullsLast().op('enum_ops'),
-    ),
-    index('payment_transactions_reference_idx').using(
-      'btree',
-      table.reference.asc().nullsLast().op('text_ops'),
     ),
     uniqueIndex('payment_transactions_reference_key').using(
       'btree',
@@ -690,10 +670,6 @@ export const deliveryAllocations = pgTable(
       'btree',
       table.deliveryId.asc().nullsLast().op('text_ops'),
       table.transactionId.asc().nullsLast().op('text_ops'),
-    ),
-    index('delivery_allocations_delivery_id_idx').using(
-      'btree',
-      table.deliveryId.asc().nullsLast().op('text_ops'),
     ),
     index('delivery_allocations_transaction_id_idx').using(
       'btree',
@@ -739,10 +715,6 @@ export const ledgerTransactions = pgTable(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    index('ledger_transactions_reference_idx').using(
-      'btree',
-      table.reference.asc().nullsLast().op('text_ops'),
     ),
     uniqueIndex('ledger_transactions_reference_key').using(
       'btree',
