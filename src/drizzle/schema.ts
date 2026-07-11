@@ -116,6 +116,7 @@ export const companySettings = pgTable(
     enterpriseQuote: jsonb('enterprise_quote'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
+    welcomeMessage: text('welcome_message'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
