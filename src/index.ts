@@ -37,7 +37,6 @@ export {
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export { EmailService } from './services/email.service.js';
-export type { SendEmailOptions } from './services/email.service.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';
@@ -51,7 +50,6 @@ export { AI_CONFIG } from './ai.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetch-with-timeout.js';
-export type { FetchWithTimeoutOptions } from './fetch-with-timeout.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export { sendContactSubmissionAck } from './contact.js';
