@@ -70,7 +70,7 @@ async function run() {
 
   // Create a sample dispatcher
   await db.execute(
-    `INSERT INTO dispatchers (id, user_id, email, full_name, company_id, is_owner, permit_status, created_at)
+    `INSERT INTO dispatchers (id, user_id, email, full_name, company_id, is_owner, approval_status, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
     [
       randomUUID(),
@@ -85,7 +85,7 @@ async function run() {
 
   // Create a sample rider
   await db.execute(
-    `INSERT INTO riders (id, user_id, email, full_name, phone_number, vehicle_type, permit_status, status, company_id, created_at, updated_at)
+    `INSERT INTO riders (id, user_id, email, full_name, phone_number, vehicle_type, approval_status, status, company_id, created_at, updated_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
     [
       randomUUID(),

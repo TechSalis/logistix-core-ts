@@ -15,10 +15,10 @@
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { readFileSync, existsSync } from 'fs';
-import { createHash } from 'crypto';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {

@@ -54,7 +54,7 @@ async function run() {
     'MessageStatus',
     'PaymentMethod',
     'PaymentProvider',
-    'PermitStatus',
+    'ApprovalStatus',
     'RiderStatus',
     'SenderType',
     'SubscriptionStatus',

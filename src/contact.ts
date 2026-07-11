@@ -2,7 +2,7 @@ import { EmailService } from './services/email.service.js';
 import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
 import { submitterAckTemplate } from './templates/contact-email.js';
 import { buildSystemConfig } from './config.js';
-import { fetchWithTimeout } from './fetchWithTimeout.js';
+import { fetchWithTimeout } from './fetch-with-timeout.js';
 
 const SYSTEM_CONFIG = buildSystemConfig({ domain: process.env.DOMAIN ?? '' });
 

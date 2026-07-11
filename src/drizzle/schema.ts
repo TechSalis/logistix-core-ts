@@ -32,9 +32,9 @@ import {
   SubscriptionStatus,
   TransactionStatus,
   TransactionType,
+  Currency,
   VehicleType,
 } from '../enums.js';
-import { Currency } from '../enums.js';
 import { DEFAULT_WORKING_HOURS } from '../config.js';
 
 const createId = () => randomUUID();

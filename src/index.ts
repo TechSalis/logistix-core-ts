@@ -49,8 +49,8 @@ export { AI_CONFIG, QUEUES } from './ai.js';
 export type { AIConfig } from './ai.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-export { fetchWithTimeout } from './fetchWithTimeout.js';
-export type { FetchWithTimeoutOptions } from './fetchWithTimeout.js';
+export { fetchWithTimeout } from './fetch-with-timeout.js';
+export type { FetchWithTimeoutOptions } from './fetch-with-timeout.js';
 export * from './services/email.service.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
