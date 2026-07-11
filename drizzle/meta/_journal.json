@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1783457186222,
-      "tag": "0000_narrow_bromley",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1783530666738,
-      "tag": "0001_flawless_jasper_sitwell",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1784000000000,
-      "tag": "0002_drop_customer_company_mappings",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1784500000000,
-      "tag": "0003_add_event_logs_composite_index",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1786000000000,
-      "tag": "0005_add_pool_column",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1783768849469,
-      "tag": "0006_add_current_state_and_indexes",
+      "when": 1730000000000,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]

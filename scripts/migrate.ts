@@ -4,13 +4,13 @@
  * Uses postgres-js (same driver as the app) — avoids drizzle-kit's
  * built-in pg driver which has SSL/connectivity issues with Supabase.
  *
- * Handles two scenarios:
+ * Handles three scenarios:
  *  - Fresh database: migrate applies 0000_initial.sql normally.
  *  - Existing database (previously managed by `drizzle-kit push`):
  *    app tables exist → seed the tracking table with all journal
  *    entries so that only incremental migrations run from here on.
- *    This covers both a missing tracking table and a partially-
- *    populated one from a previous failed migrate() call.
+ *  - Squashed journal (migrations merged into one):
+ *    resets tracking table to match the new single-entry journal.
  */
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -108,6 +108,11 @@ async function seedTrackingTable(connection: postgres.Sql) {
       created_at BIGINT
     )
   `);
+
+  // Clear existing tracking entries — handles journal squash where old
+  // entries (e.g. from 6 separate migrations) must be replaced by a
+  // single squashed entry.
+  await connection.unsafe(`DELETE FROM "__drizzle_migrations"`);
 
   for (const entry of journal.entries) {
     const sqlPath = resolve(MIGRATIONS_FOLDER, `${entry.tag}.sql`);
