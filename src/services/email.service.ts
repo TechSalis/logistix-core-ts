@@ -1,9 +1,15 @@
+export interface EmailAttachment {
+  filename: string;
+  content: string;
+}
+
 export interface SendEmailOptions {
   from: string;
   to: string | string[];
   subject: string;
   html: string;
   text?: string;
+  attachments?: EmailAttachment[];
 }
 
 export class EmailService {
@@ -29,6 +35,7 @@ export class EmailService {
         subject: options.subject,
         html: options.html,
         text: options.text,
+        attachments: options.attachments,
       }),
     });
 

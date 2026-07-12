@@ -36,7 +36,7 @@ export {
 } from './billing.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
-export { EmailService } from './services/email.service.js';
+export { EmailService, type EmailAttachment } from './services/email.service.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';

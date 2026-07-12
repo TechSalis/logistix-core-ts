@@ -27,13 +27,12 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
 export const SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig();
 
 export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
+  const emailDomain = overrides.emailDomain ?? '';
   return {
     customerBaseUrl: overrides.customerBaseUrl ?? '',
     businessBaseUrl: overrides.businessBaseUrl ?? '',
-    emailDomain: overrides.emailDomain ?? '',
-    supportEmail:
-      overrides.supportEmail ?? (overrides.emailDomain ? `contact@${overrides.emailDomain}` : ''),
-    paymentsEmail:
-      overrides.paymentsEmail ?? (overrides.emailDomain ? `payments@${overrides.emailDomain}` : ''),
+    emailDomain,
+    supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ''),
+    paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ''),
   };
 }
