@@ -29,6 +29,13 @@
       "when": 1783804148610,
       "tag": "0003_bitter_leech",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783854571897,
+      "tag": "0004_dizzy_stone_men",
+      "breakpoints": true
     }
   ]
 }

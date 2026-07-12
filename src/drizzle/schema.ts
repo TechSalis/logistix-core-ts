@@ -301,6 +301,7 @@ export const messages = pgTable(
     externalId: text('external_id'),
     replyToExternalId: text('reply_to_external_id'),
     status: messageStatus().default(MessageStatus.SENT).notNull(),
+    actionType: text('action_type'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -322,6 +323,7 @@ export const messages = pgTable(
       'btree',
       table.replyToExternalId.asc().nullsLast().op('text_ops'),
     ),
+    index('messages_action_type_idx').using('btree', table.actionType.asc().nullsLast()),
     index('messages_conversation_id_is_deleted_idx').using(
       'btree',
       table.conversationId.asc().nullsLast().op('text_ops'),
