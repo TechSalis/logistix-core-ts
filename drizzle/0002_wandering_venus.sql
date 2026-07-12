@@ -1,1 +1,0 @@
-ALTER TABLE "company_settings" ADD COLUMN "welcome_message" text;

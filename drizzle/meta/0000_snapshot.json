@@ -1,6 +1,6 @@
 {
-  "id": "00000000-0000-0000-0000-000000000001",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "a467c330-5fa9-4241-aaab-d04dec077c2e",
+  "prevId": "169945cc-b577-4aae-981e-33a16e15b36e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -231,7 +231,7 @@
         },
         "verification_status": {
           "name": "verification_status",
-          "type": "PermitStatus",
+          "type": "ApprovalStatus",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -554,22 +554,6 @@
         }
       },
       "indexes": {
-        "company_integrations_company_id_idx": {
-          "name": "company_integrations_company_id_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "company_integrations_is_active_idx": {
           "name": "company_integrations_is_active_idx",
           "columns": [
@@ -755,6 +739,12 @@
         },
         "company_code": {
           "name": "company_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "welcome_message": {
+          "name": "welcome_message",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1609,22 +1599,6 @@
           "method": "btree",
           "with": {}
         },
-        "delivery_allocations_delivery_id_idx": {
-          "name": "delivery_allocations_delivery_id_idx",
-          "columns": [
-            {
-              "expression": "delivery_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "delivery_allocations_transaction_id_idx": {
           "name": "delivery_allocations_transaction_id_idx",
           "columns": [
@@ -1723,9 +1697,9 @@
           "notNull": true,
           "default": false
         },
-        "permit_status": {
-          "name": "permit_status",
-          "type": "PermitStatus",
+        "approval_status": {
+          "name": "approval_status",
+          "type": "ApprovalStatus",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -2446,22 +2420,6 @@
           "method": "btree",
           "with": {}
         },
-        "ledger_transactions_reference_idx": {
-          "name": "ledger_transactions_reference_idx",
-          "columns": [
-            {
-              "expression": "reference",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "ledger_transactions_reference_key": {
           "name": "ledger_transactions_reference_key",
           "columns": [
@@ -2574,6 +2532,12 @@
           "notNull": true,
           "default": "'SENT'"
         },
+        "action_type": {
+          "name": "action_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
@@ -2613,38 +2577,6 @@
           "method": "btree",
           "with": {}
         },
-        "messages_conversation_id_idx": {
-          "name": "messages_conversation_id_idx",
-          "columns": [
-            {
-              "expression": "conversation_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "messages_external_id_idx": {
-          "name": "messages_external_id_idx",
-          "columns": [
-            {
-              "expression": "external_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "messages_external_id_key": {
           "name": "messages_external_id_key",
           "columns": [
@@ -2670,6 +2602,21 @@
               "asc": true,
               "nulls": "last",
               "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "messages_action_type_idx": {
+          "name": "messages_action_type_idx",
+          "columns": [
+            {
+              "expression": "action_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -2980,9 +2927,9 @@
           "notNull": true,
           "default": "'BIKE'"
         },
-        "permit_status": {
-          "name": "permit_status",
-          "type": "PermitStatus",
+        "approval_status": {
+          "name": "approval_status",
+          "type": "ApprovalStatus",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -3331,22 +3278,6 @@
           "method": "btree",
           "with": {}
         },
-        "payment_transactions_company_id_idx": {
-          "name": "payment_transactions_company_id_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "payment_transactions_type_idx": {
           "name": "payment_transactions_type_idx",
           "columns": [
@@ -3356,22 +3287,6 @@
               "asc": true,
               "nulls": "last",
               "opclass": "enum_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "payment_transactions_reference_idx": {
-          "name": "payment_transactions_reference_idx",
-          "columns": [
-            {
-              "expression": "reference",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
             }
           ],
           "isUnique": false,
@@ -3435,6 +3350,17 @@
     }
   },
   "enums": {
+    "public.ApprovalStatus": {
+      "name": "ApprovalStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "PENDING_REVIEW",
+        "APPROVED",
+        "REJECTED",
+        "SUSPENDED"
+      ]
+    },
     "public.ChannelType": {
       "name": "ChannelType",
       "schema": "public",
@@ -3509,6 +3435,7 @@
       "name": "MessageStatus",
       "schema": "public",
       "values": [
+        "PENDING",
         "SENT",
         "DELIVERED",
         "READ",
@@ -3531,17 +3458,6 @@
         "SYSTEM"
       ]
     },
-    "public.PermitStatus": {
-      "name": "PermitStatus",
-      "schema": "public",
-      "values": [
-        "PENDING",
-        "PENDING_REVIEW",
-        "APPROVED",
-        "REJECTED",
-        "SUSPENDED"
-      ]
-    },
     "public.RiderStatus": {
       "name": "RiderStatus",
       "schema": "public",
@@ -3558,7 +3474,8 @@
         "CUSTOMER",
         "AGENT",
         "DISPATCHER",
-        "SYSTEM"
+        "SYSTEM",
+        "AI_AGENT"
       ]
     },
     "public.SubscriptionStatus": {
@@ -3600,7 +3517,8 @@
         "SUBSCRIPTION",
         "ADJUSTMENT",
         "SETTLEMENT",
-        "REFUND"
+        "REFUND",
+        "TOPUP"
       ]
     },
     "public.VehicleType": {
