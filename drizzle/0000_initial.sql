@@ -92,7 +92,6 @@ CREATE TABLE "company_settings" (
 	"working_hours" jsonb DEFAULT '{"Monday":{"start":"07:00","close":"19:00"},"Tuesday":{"start":"07:00","close":"19:00"},"Wednesday":{"start":"07:00","close":"19:00"},"Thursday":{"start":"07:00","close":"19:00"},"Friday":{"start":"07:00","close":"19:00"},"Saturday":{"start":"07:00","close":"19:00"}}'::jsonb NOT NULL,
 	"bank_details" jsonb,
 	"enterprise_quote" jsonb,
-	"welcome_message" text,
 	"ledger_balance" double precision DEFAULT 0 NOT NULL,
 	"company_code" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
