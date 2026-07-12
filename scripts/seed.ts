@@ -1,4 +1,3 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { randomUUID } from 'node:crypto';
 
@@ -16,13 +15,12 @@ async function run() {
     connect_timeout: 30,
     ssl: isLocal ? false : { rejectUnauthorized: false },
   });
-  const db = drizzle(connection);
 
   // Check if seed already applied (check if any companies exist)
-  const [{ count }] = await db.execute<{ count: number }>(
+  const [row] = await connection.unsafe<{ count: number }[]>(
     'SELECT COUNT(*)::int AS count FROM companies',
   );
-  if (count > 0) {
+  if (row.count > 0) {
     console.log('[seed] Data already exists, skipping seed');
     await connection.end();
     return;
@@ -32,16 +30,16 @@ async function run() {
 
   // Create a sample company
   const companyId = randomUUID();
-  await db.execute(
+  await connection.unsafe(
     `INSERT INTO companies (id, name, contact_phone, interstate_deliveries, verification_status, created_at)
-     VALUES ($1, $2, $3, $4, $5, NOW())`,
+     VALUES ($1, $2, $3, $4, $5::"ApprovalStatus", NOW())`,
     [companyId, 'Demo Logistics Ltd', '+2348000000001', true, 'APPROVED'],
   );
 
   // Create company settings with default pricing
-  await db.execute(
+  await connection.unsafe(
     `INSERT INTO company_settings (id, company_id, tier, subscription_status, period_start, period_end, ledger_balance, created_at)
-     VALUES ($1, $2, $3, $4, NOW(), NOW() + INTERVAL '30 days', 0, NOW())`,
+     VALUES ($1, $2, $3, $4::"SubscriptionStatus", NOW(), NOW() + INTERVAL '30 days', 0, NOW())`,
     [randomUUID(), companyId, 'PROFESSIONAL', 'ACTIVE'],
   );
 
@@ -54,9 +52,9 @@ async function run() {
     { baseFare: 8000, perKmRate: 900, minFare: 8000 },
   ];
   for (let i = 0; i < vehicles.length; i++) {
-    await db.execute(
+    await connection.unsafe(
       `INSERT INTO pricing_schemes (id, company_id, vehicle_type, base_fare, per_km_rate, min_fare, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+       VALUES ($1, $2, $3::"VehicleType", $4, $5, $6, NOW())`,
       [
         randomUUID(),
         companyId,
@@ -69,9 +67,9 @@ async function run() {
   }
 
   // Create a sample dispatcher
-  await db.execute(
+  await connection.unsafe(
     `INSERT INTO dispatchers (id, user_id, email, full_name, company_id, is_owner, approval_status, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+     VALUES ($1, $2, $3, $4, $5, $6, $7::"ApprovalStatus", NOW())`,
     [
       randomUUID(),
       randomUUID(),
@@ -84,9 +82,9 @@ async function run() {
   );
 
   // Create a sample rider
-  await db.execute(
+  await connection.unsafe(
     `INSERT INTO riders (id, user_id, email, full_name, phone_number, vehicle_type, approval_status, status, company_id, created_at, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+     VALUES ($1, $2, $3, $4, $5, $6::"VehicleType", $7::"ApprovalStatus", $8::"RiderStatus", $9, NOW(), NOW())`,
     [
       randomUUID(),
       randomUUID(),
