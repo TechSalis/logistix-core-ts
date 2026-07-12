@@ -349,7 +349,7 @@ export enum JwtTokenType {
 export enum ContactCategory {
   SUPPORT = 'Support',
   PARTNERSHIP = 'Become a Partner',
-  BUSINESS = 'Use Logistix for Business',
+  BUSINESS = 'Use Logistix AI for Business',
 }
 
 // Categories that should generate leads in external CRM/Sheets

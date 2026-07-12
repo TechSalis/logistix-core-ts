@@ -15,7 +15,7 @@ export const DATA_RETENTION: Record<SubscriptionTier, number> = {
  * Deducted from wallet in real-time, reconciled on monthly invoice.
  */
 export const CHANNEL_FEES: Record<ChannelType, number> = {
-  [ChannelType.LOGISTIX_NETWORK]: 20000, // ₦200 — covers Logistix number + routing + AI
+  [ChannelType.LOGISTIX_NETWORK]: 20000, // ₦200 — covers Logistix AI number + routing + AI
   [ChannelType.MY_CHANNEL]: 20000, // ₦200 — covers AI only
 };
 
@@ -59,7 +59,7 @@ export const BILLING_CONFIG = {
   PAYMENT_TIMEOUT_HOURS: 24,
 
   /**
-   * Logistix's default cut (percentage) when a delivery is outsourced to
+   * Logistix AI's default cut (percentage) when a delivery is outsourced to
    * a partner company via the pool. Configurable per-company in the future.
    */
   OUTSOURCE_DEFAULT_CUT: 10,

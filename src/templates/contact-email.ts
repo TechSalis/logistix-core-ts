@@ -46,7 +46,7 @@ export function submitterAckTemplate(
       <div class="header">
         <table><tr>
           <td><div class="logo"><span class="logo-text">L</span></div></td>
-          <td><span class="brand">Logistix</span></td>
+          <td><span class="brand">Logistix AI</span></td>
         </tr></table>
       </div>
       <div class="body-content">
@@ -67,7 +67,7 @@ export function submitterAckTemplate(
       </div>
     </div>
     <div class="footer">
-      <p class="footer-text">Logistix Inc. &bull; Lagos, Nigeria</p>
+      <p class="footer-text">Logistix AI Inc. &bull; Lagos, Nigeria</p>
     </div>
   </div>
 </body></html>`;

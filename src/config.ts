@@ -5,7 +5,7 @@ export interface BankDetails {
   readonly accountName: string;
 }
 
-export const BRAND_NAME = 'Logistix';
+export const BRAND_NAME = 'Logistix AI';
 
 export interface SystemConfig {
   readonly customerBaseUrl: string;

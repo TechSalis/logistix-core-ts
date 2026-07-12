@@ -47,8 +47,8 @@ describe('buildSystemConfig', () => {
 });
 
 describe('BRAND_NAME constant', () => {
-  it('is Logistix', () => {
-    expect(BRAND_NAME).toBe('Logistix');
+  it('is Logistix AI', () => {
+    expect(BRAND_NAME).toBe('Logistix AI');
   });
 });
 
