@@ -724,12 +724,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "enterprise_quote": {
-          "name": "enterprise_quote",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "ledger_balance": {
           "name": "ledger_balance",
           "type": "double precision",
@@ -780,21 +774,6 @@
             }
           ],
           "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "company_settings_enterprise_quote_status_idx": {
-          "name": "company_settings_enterprise_quote_status_idx",
-          "columns": [
-            {
-              "expression": "(company_settings.enterprise_quote->>'status')",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -3488,8 +3467,7 @@
       "schema": "public",
       "values": [
         "STARTER",
-        "PROFESSIONAL",
-        "ENTERPRISE"
+        "PROFESSIONAL"
       ]
     },
     "public.TransactionStatus": {
