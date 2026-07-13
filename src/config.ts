@@ -8,6 +8,7 @@ export interface BankDetails {
 export const BRAND_NAME = 'Logistix AI';
 
 export interface SystemConfig {
+  readonly domain: string;
   readonly customerBaseUrl: string;
   readonly businessBaseUrl: string;
   readonly emailDomain: string;
@@ -34,6 +35,7 @@ export const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemCon
 export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
   const emailDomain = overrides.emailDomain ?? '';
   return {
+    domain: overrides.domain ?? 'logistix.team',
     customerBaseUrl: overrides.customerBaseUrl ?? '',
     businessBaseUrl: overrides.businessBaseUrl ?? '',
     emailDomain,
