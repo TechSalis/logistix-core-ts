@@ -52,7 +52,7 @@ const rawAiConfig = {
     cooldownSeconds: 300,
   },
   synthesis: {
-    temperature: 0.9,
+    temperature: 0.7,
     maxTokens: 4096,
     cooldownSeconds: 300,
   },
