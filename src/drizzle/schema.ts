@@ -242,6 +242,7 @@ export const conversations = pgTable(
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
     scratchpad: jsonb(),
     customerName: text('customer_name'),
+    timezone: text('timezone'),
   },
   (table) => [
     index('conversations_company_id_idx').using(

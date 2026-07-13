@@ -108,7 +108,8 @@ CREATE TABLE "conversations" (
 	"channel_type" "ChannelType" DEFAULT 'LOGISTIX_NETWORK' NOT NULL,
 	"last_customer_message_at" timestamp (3),
 	"scratchpad" jsonb,
-	"customer_name" text
+	"customer_name" text,
+	"timezone" text
 );
 --> statement-breakpoint
 CREATE TABLE "deliveries" (
