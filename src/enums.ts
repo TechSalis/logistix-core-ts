@@ -306,6 +306,7 @@ export enum SseEventType {
 export enum JwtTokenType {
   ACCESS = 'access',
   REFRESH = 'refresh',
+  SSE = 'sse',
 }
 
 export enum ContactCategory {
