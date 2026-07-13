@@ -50,29 +50,6 @@ async function run() {
     [randomUUID(), companyId, SubscriptionTier.PROFESSIONAL, SubscriptionStatus.ACTIVE],
   );
 
-  // Seed default pricing schemes
-  const vehicleTypes = [VehicleType.BIKE, VehicleType.CAR, VehicleType.VAN, VehicleType.TRUCK];
-  const schemes = [
-    { baseFare: 1500, perKmRate: 200, minFare: 1500 },
-    { baseFare: 3000, perKmRate: 400, minFare: 3000 },
-    { baseFare: 5000, perKmRate: 600, minFare: 5000 },
-    { baseFare: 8000, perKmRate: 900, minFare: 8000 },
-  ];
-  for (let i = 0; i < vehicleTypes.length; i++) {
-    await connection.unsafe(
-      `INSERT INTO pricing_schemes (id, company_id, vehicle_type, base_fare, per_km_rate, min_fare, created_at)
-       VALUES ($1, $2, $3::"VehicleType", $4, $5, $6, NOW())`,
-      [
-        randomUUID(),
-        companyId,
-        vehicleTypes[i],
-        schemes[i].baseFare,
-        schemes[i].perKmRate,
-        schemes[i].minFare,
-      ],
-    );
-  }
-
   // Create a sample dispatcher
   await connection.unsafe(
     `INSERT INTO dispatchers (id, user_id, email, full_name, company_id, is_owner, approval_status, created_at)

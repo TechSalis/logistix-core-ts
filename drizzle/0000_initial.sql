@@ -234,16 +234,6 @@ CREATE TABLE "messages" (
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "pricing_schemes" (
-	"id" text PRIMARY KEY NOT NULL,
-	"company_id" text NOT NULL,
-	"vehicle_type" "VehicleType" DEFAULT 'BIKE' NOT NULL,
-	"base_fare" double precision DEFAULT 1000 NOT NULL,
-	"per_km_rate" double precision DEFAULT 150 NOT NULL,
-	"min_fare" double precision DEFAULT 1000 NOT NULL,
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "rider_location_logs" (
 	"id" text PRIMARY KEY NOT NULL,
 	"rider_id" text NOT NULL,
@@ -308,7 +298,6 @@ ALTER TABLE "escalations" ADD CONSTRAINT "escalations_conversation_id_fkey" FORE
 ALTER TABLE "escalations" ADD CONSTRAINT "escalations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "ledger_transactions" ADD CONSTRAINT "ledger_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "messages_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "pricing_schemes" ADD CONSTRAINT "pricing_schemes_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "rider_location_logs" ADD CONSTRAINT "rider_location_logs_rider_id_fkey" FOREIGN KEY ("rider_id") REFERENCES "public"."riders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "riders" ADD CONSTRAINT "riders_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "payment_transactions" ADD CONSTRAINT "payment_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
@@ -372,7 +361,6 @@ CREATE UNIQUE INDEX "messages_external_id_key" ON "messages" USING btree ("exter
 CREATE INDEX "messages_reply_to_external_id_idx" ON "messages" USING btree ("reply_to_external_id" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_conversation_id_is_deleted_idx" ON "messages" USING btree ("conversation_id" text_ops,"is_deleted" bool_ops);--> statement-breakpoint
 CREATE INDEX "messages_action_type_idx" ON "messages" USING btree ("action_type" text_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "pricing_schemes_company_id_vehicle_type_key" ON "pricing_schemes" USING btree ("company_id" text_ops,"vehicle_type" enum_ops);--> statement-breakpoint
 CREATE INDEX "rider_location_logs_created_at_idx" ON "rider_location_logs" USING btree ("created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "rider_location_logs_rider_id_created_at_idx" ON "rider_location_logs" USING btree ("rider_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "riders_company_id_idx" ON "riders" USING btree ("company_id" text_ops);--> statement-breakpoint

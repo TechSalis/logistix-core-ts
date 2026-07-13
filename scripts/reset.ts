@@ -40,7 +40,6 @@ async function run() {
   await sql.unsafe(`DROP TABLE IF EXISTS "riders" CASCADE`);
   await sql.unsafe(`DROP TABLE IF EXISTS "blocked_ips" CASCADE`);
   await sql.unsafe(`DROP TABLE IF EXISTS "admins" CASCADE`);
-  await sql.unsafe(`DROP TABLE IF EXISTS "pricing_schemes" CASCADE`);
   await sql.unsafe(`DROP TABLE IF EXISTS "company_integrations" CASCADE`);
   await sql.unsafe(`DROP TABLE IF EXISTS "company_daily_metrics" CASCADE`);
   await sql.unsafe(`DROP TABLE IF EXISTS "company_settings" CASCADE`);

@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm/relations';
 import {
   companies,
   companySettings,
-  pricingSchemes,
   companyIntegrations,
   conversations,
   messages,
@@ -28,7 +27,6 @@ export const companySettingsRelations = relations(companySettings, ({ one }) => 
 
 export const companiesRelations = relations(companies, ({ many, one }) => ({
   companySettings: one(companySettings),
-  pricingSchemes: many(pricingSchemes),
   companyIntegrations: many(companyIntegrations),
   conversations: many(conversations),
   dispatchers: many(dispatchers),
@@ -40,13 +38,6 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   escalations: many(escalations),
   ledgerTransactions: many(ledgerTransactions),
   companyDailyMetrics: many(companyDailyMetrics),
-}));
-
-export const pricingSchemesRelations = relations(pricingSchemes, ({ one }) => ({
-  company: one(companies, {
-    fields: [pricingSchemes.companyId],
-    references: [companies.id],
-  }),
 }));
 
 export const companyIntegrationsRelations = relations(companyIntegrations, ({ one }) => ({

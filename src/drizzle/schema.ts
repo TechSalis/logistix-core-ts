@@ -140,38 +140,6 @@ export const companySettings = pgTable(
   ],
 );
 
-export const pricingSchemes = pgTable(
-  'pricing_schemes',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    companyId: text('company_id').notNull(),
-    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
-    baseFare: doublePrecision('base_fare').default(1000).notNull(),
-    perKmRate: doublePrecision('per_km_rate').default(150).notNull(),
-    minFare: doublePrecision('min_fare').default(1000).notNull(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    uniqueIndex('pricing_schemes_company_id_vehicle_type_key').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.vehicleType.asc().nullsLast().op('enum_ops'),
-    ),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'pricing_schemes_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
 export const companyIntegrations = pgTable(
   'company_integrations',
   {
