@@ -1,12 +1,8 @@
 import { EmailService } from './services/email.service.js';
 import { ContactCategory, LEAD_CATEGORIES } from './enums.js';
 import { submitterAckTemplate } from './templates/contact-email.js';
-import { buildSystemConfig } from './config.js';
+import { SHARED_SYSTEM_CONFIG } from './config.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
-
-const SYSTEM_CONFIG = buildSystemConfig(
-  process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {},
-);
 
 export interface ContactSubmission {
   email: string;
@@ -26,7 +22,7 @@ export async function sendContactSubmissionAck(
   options: ContactNotifierOptions,
 ): Promise<void> {
   const { email, name, category, message } = submission;
-  const { resendApiKey, googleLeadsUrl, fromEmail = SYSTEM_CONFIG.supportEmail } = options;
+  const { resendApiKey, googleLeadsUrl, fromEmail = SHARED_SYSTEM_CONFIG.supportEmail } = options;
 
   const emailService = new EmailService(resendApiKey);
 

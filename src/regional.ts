@@ -13,6 +13,7 @@ const regionalConfigSchema = z.object({
 });
 
 const rawRegionalConfig = {
+  // Phone dialing code (ITU-T E.164), NOT ISO 3166-1 alpha-2 country code
   defaultCountryCode: '234',
   timeZone: 'Africa/Lagos',
   states: [

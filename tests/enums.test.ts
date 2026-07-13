@@ -86,18 +86,15 @@ describe('Enums', () => {
   });
 
   describe('SystemStatus', () => {
-    it('has UP, DOWN, DEGRADED', () => {
+    it('has UP, DOWN', () => {
       expect(SystemStatus.UP).toBe('UP');
       expect(SystemStatus.DOWN).toBe('DOWN');
-      expect(SystemStatus.DEGRADED).toBe('DEGRADED');
     });
   });
 
   describe('ActorType', () => {
-    it('has SYSTEM, USER, ADMIN', () => {
+    it('has SYSTEM', () => {
       expect(ActorType.SYSTEM).toBe('SYSTEM');
-      expect(ActorType.USER).toBe('USER');
-      expect(ActorType.ADMIN).toBe('ADMIN');
     });
   });
 

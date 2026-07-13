@@ -89,7 +89,6 @@ const rawSecurityConfig = {
     tiers: {
       [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
       [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },
-      [SubscriptionTier.ENTERPRISE]: { max: 5000, windowMs: 900_000 },
     },
   },
   jwt: {

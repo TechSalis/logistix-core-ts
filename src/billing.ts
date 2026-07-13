@@ -1,12 +1,23 @@
 import { SubscriptionTier, ChannelType, Currency } from './enums.js';
 
 /**
+ * 1 Naira = 100 Kobo.
+ * Use this constant for ALL kobo ↔ naira conversions.
+ */
+export const KOBO_PER_NAIRA = 100;
+
+/**
+ * Milliseconds in one day.
+ * Use this constant for ALL day-in-ms calculations.
+ */
+export const MS_PER_DAY = 86_400_000;
+
+/**
  * Data retention in days per tier
  */
 export const DATA_RETENTION: Record<SubscriptionTier, number> = {
   [SubscriptionTier.STARTER]: 45,
   [SubscriptionTier.PROFESSIONAL]: 90,
-  [SubscriptionTier.ENTERPRISE]: 365,
 };
 
 /**
@@ -35,7 +46,6 @@ export const BILLING_CONFIG = {
   PRICING: {
     [SubscriptionTier.STARTER]: 1_500_000, // ₦15,000
     [SubscriptionTier.PROFESSIONAL]: 3_000_000, // ₦30,000
-    [SubscriptionTier.ENTERPRISE]: -1, // Custom pricing — handled via quote flow
   },
 
   /**
@@ -70,6 +80,11 @@ export const BILLING_CONFIG = {
   MINIMUM_BALANCE: 1000, // ₦10.00
 
   /**
+   * Per-delivery overage charge when monthly limit exceeded (in Kobo)
+   */
+  OVERAGE_PRICE_PER_DELIVERY_KOBO: 5_000, // ₦50
+
+  /**
    * Maximum ledger deduction attempts before locking
    */
   MAX_LEDGER_DEDUCTION_ATTEMPTS: 3,
@@ -96,7 +111,7 @@ export function getSubscriptionPrice(tier: SubscriptionTier): number {
  * Format amount from Kobo to Naira string
  */
 export function formatAmount(kobo: number): string {
-  const value = kobo / 100;
+  const value = kobo / KOBO_PER_NAIRA;
   return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
@@ -114,9 +129,7 @@ export function isBillableTier(tier: SubscriptionTier): boolean {
  */
 export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date): boolean {
   const referenceDate = lastBillingDate || activationDate;
-  const daysSinceReference = Math.floor(
-    (Date.now() - referenceDate.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const daysSinceReference = Math.floor((Date.now() - referenceDate.getTime()) / MS_PER_DAY);
   return daysSinceReference >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
 }
 
@@ -126,16 +139,14 @@ export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date
  */
 export function shouldRetryPayment(
   lastBillingDate: Date,
-  lastBillingStatus: string,
+  _lastBillingStatus: string,
   retryAttempt: number,
 ): boolean {
   if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
     return false;
   }
 
-  const daysSinceLastAttempt = Math.floor(
-    (Date.now() - lastBillingDate.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
   return daysSinceLastAttempt >= BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS;
 }

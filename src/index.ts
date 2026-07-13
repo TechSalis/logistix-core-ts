@@ -27,6 +27,8 @@ export {
   BILLING_CONFIG,
   DATA_RETENTION,
   CHANNEL_FEES,
+  KOBO_PER_NAIRA,
+  MS_PER_DAY,
   getSubscriptionPrice,
   formatAmount,
   isBillableTier,

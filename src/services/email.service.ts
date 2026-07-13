@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../fetch-with-timeout.js';
+
 export interface EmailAttachment {
   filename: string;
   content: string;
@@ -23,7 +25,7 @@ export class EmailService {
   }
 
   async sendEmail(options: SendEmailOptions) {
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetchWithTimeout('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.apiKey}`,

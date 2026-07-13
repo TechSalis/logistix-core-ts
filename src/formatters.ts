@@ -1,6 +1,6 @@
 import { DeliveryStatus } from './enums.js';
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_LABELS: Record<DeliveryStatus, string> = {
   [DeliveryStatus.AWAITING_PAYMENT]: 'Awaiting Payment',
   [DeliveryStatus.PENDING]: 'Pending',
   [DeliveryStatus.ASSIGNED]: 'Assigned',
@@ -26,7 +26,7 @@ function splitEnum(value: string): string {
 
 export function formatDeliveryStatus(status: string | undefined | null): string {
   if (!status) return 'Unknown';
-  return STATUS_LABELS[status] ?? splitEnum(status);
+  return STATUS_LABELS[status as DeliveryStatus] ?? splitEnum(status);
 }
 
 export function formatEnumToTitleCase(value: string | undefined | null): string {

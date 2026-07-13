@@ -1,9 +1,5 @@
-import { buildSystemConfig } from '../config.js';
+import { SHARED_SYSTEM_CONFIG } from '../config.js';
 import { ContactCategory } from '../enums.js';
-
-const SYSTEM_CONFIG = buildSystemConfig(
-  process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {},
-);
 
 function escapeHtml(s: string): string {
   return s
@@ -63,7 +59,7 @@ export function submitterAckTemplate(
         <p style="font-size:14px;color:#64748b;">Our team will review your request and get back to you shortly.</p>
 
         <div class="divider"></div>
-        <p style="font-size:13px;color:#64748b;margin:0;">In the meantime, visit our <a href="${SYSTEM_CONFIG.customerBaseUrl}" style="color:#7c3aed;text-decoration:none;font-weight:600;">help center</a> for answers to common questions.</p>
+        <p style="font-size:13px;color:#64748b;margin:0;">In the meantime, visit our <a href="${SHARED_SYSTEM_CONFIG.customerBaseUrl}" style="color:#7c3aed;text-decoration:none;font-weight:600;">help center</a> for answers to common questions.</p>
       </div>
     </div>
     <div class="footer">

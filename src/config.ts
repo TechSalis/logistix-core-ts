@@ -26,6 +26,11 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
 
 export const SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig();
 
+/** Shared instance built from env (used by contact/email modules). */
+export const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig(
+  process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {},
+);
+
 export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
   const emailDomain = overrides.emailDomain ?? '';
   return {

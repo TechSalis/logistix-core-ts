@@ -2,19 +2,19 @@ CREATE TYPE "public"."ChannelType" AS ENUM('LOGISTIX_NETWORK', 'MY_CHANNEL');-->
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('AWAITING_PAYMENT', 'PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'HIJACKED');--> statement-breakpoint
-CREATE TYPE "public"."ExportRequestStatus" AS ENUM('PENDING', 'PROCESSING_EMAIL', 'COMPLETED', 'FAILED');--> statement-breakpoint
-CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'REFUND', 'AI_USAGE', 'CHANNEL_FEE', 'OVERAGE');--> statement-breakpoint
+CREATE TYPE "public"."ExportRequestStatus" AS ENUM('PENDING', 'COMPLETED', 'FAILED');--> statement-breakpoint
+CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'REFUND', 'CHANNEL_FEE', 'OVERAGE');--> statement-breakpoint
 CREATE TYPE "public"."MappingPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
-CREATE TYPE "public"."MessageStatus" AS ENUM('PENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
+CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> statement-breakpoint
 CREATE TYPE "public"."PaymentProvider" AS ENUM('SQUAD', 'SYSTEM');--> statement-breakpoint
 CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'PENDING_REVIEW', 'APPROVED', 'REJECTED', 'SUSPENDED');--> statement-breakpoint
 CREATE TYPE "public"."RiderStatus" AS ENUM('ONLINE', 'OFFLINE', 'BUSY');--> statement-breakpoint
-CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM', 'AI_AGENT');--> statement-breakpoint
+CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM');--> statement-breakpoint
 CREATE TYPE "public"."SubscriptionStatus" AS ENUM('PENDING', 'ACTIVE', 'GRACE', 'LOCKED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."SubscriptionTier" AS ENUM('STARTER', 'PROFESSIONAL', 'ENTERPRISE');--> statement-breakpoint
-CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED', 'CANCELLED');--> statement-breakpoint
-CREATE TYPE "public"."TransactionType" AS ENUM('DELIVERY_PAYMENT', 'SUBSCRIPTION', 'ADJUSTMENT', 'SETTLEMENT', 'REFUND', 'TOPUP');--> statement-breakpoint
+CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED');--> statement-breakpoint
+CREATE TYPE "public"."TransactionType" AS ENUM('DELIVERY_PAYMENT', 'SUBSCRIPTION', 'ADJUSTMENT', 'SETTLEMENT', 'REFUND');--> statement-breakpoint
 CREATE TYPE "public"."VehicleType" AS ENUM('BIKE', 'CAR', 'VAN', 'TRUCK');--> statement-breakpoint
 CREATE TABLE "admins" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -91,7 +91,6 @@ CREATE TABLE "company_settings" (
 	"locked_at" timestamp (3),
 	"working_hours" jsonb DEFAULT '{"Monday":{"start":"07:00","close":"19:00"},"Tuesday":{"start":"07:00","close":"19:00"},"Wednesday":{"start":"07:00","close":"19:00"},"Thursday":{"start":"07:00","close":"19:00"},"Friday":{"start":"07:00","close":"19:00"},"Saturday":{"start":"07:00","close":"19:00"}}'::jsonb NOT NULL,
 	"bank_details" jsonb,
-	"enterprise_quote" jsonb,
 	"ledger_balance" double precision DEFAULT 0 NOT NULL,
 	"company_code" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -327,7 +326,7 @@ CREATE UNIQUE INDEX "company_integrations_platform_company_id_key" ON "company_i
 CREATE UNIQUE INDEX "company_integrations_platform_platform_id_key" ON "company_integrations" USING btree ("platform" enum_ops,"platform_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_settings_company_id_key" ON "company_settings" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_settings_company_code_key" ON "company_settings" USING btree ("company_code" text_ops);--> statement-breakpoint
-CREATE INDEX "company_settings_enterprise_quote_status_idx" ON "company_settings" USING btree ((company_settings.enterprise_quote->>'status'));--> statement-breakpoint
+
 CREATE INDEX "conversations_company_id_idx" ON "conversations" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_company_id_last_message_at_idx" ON "conversations" USING btree ("company_id" text_ops,"last_message_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "conversations_platform_id_platform_idx" ON "conversations" USING btree ("platform_id" text_ops,"platform" enum_ops);--> statement-breakpoint

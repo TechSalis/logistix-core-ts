@@ -113,7 +113,7 @@ export const companySettings = pgTable(
     lockedAt: timestamp('locked_at', { precision: 3, mode: 'date' }),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
-    enterpriseQuote: jsonb('enterprise_quote'),
+
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -129,9 +129,7 @@ export const companySettings = pgTable(
       'btree',
       table.companyCode.asc().nullsLast().op('text_ops'),
     ),
-    index('company_settings_enterprise_quote_status_idx').on(
-      sql`(company_settings.enterprise_quote->>'status')`,
-    ),
+
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],

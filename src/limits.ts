@@ -102,22 +102,6 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxDeliveriesPerMonth: 5000,
     maxActiveDeliveries: 50,
   },
-  // Enterprise limits — per-company custom config overrides
-  // via bankDetails.enterpriseQuote (maxDispatchers, maxRiders, etc.)
-  [SubscriptionTier.ENTERPRISE]: {
-    maxAIDeliveriesPerAction: 200,
-    maxBulkDeliveries: 500,
-    maxQueryLimit: 500,
-    maxTrackingHistory: 500,
-    maxMemoryArraySize: 500,
-    maxSynthesisResults: 500,
-    maxDrafts: 200,
-    retentionDays: DATA_RETENTION[SubscriptionTier.ENTERPRISE],
-    maxDispatchers: 999,
-    maxRiders: 9999,
-    maxDeliveriesPerMonth: 100000,
-    maxActiveDeliveries: 500,
-  },
 };
 
 export const getTierLimits = (tier: SubscriptionTier): TierLimits => {

@@ -1,5 +1,12 @@
 import postgres from 'postgres';
 import { randomUUID } from 'node:crypto';
+import {
+  ApprovalStatus,
+  SubscriptionTier,
+  SubscriptionStatus,
+  VehicleType,
+  RiderStatus,
+} from '../src/enums.js';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -33,32 +40,32 @@ async function run() {
   await connection.unsafe(
     `INSERT INTO companies (id, name, contact_phone, interstate_deliveries, verification_status, created_at)
      VALUES ($1, $2, $3, $4, $5::"ApprovalStatus", NOW())`,
-    [companyId, 'Demo Logistics Ltd', '+2348000000001', true, 'APPROVED'],
+    [companyId, 'Demo Logistics Ltd', '+2348000000001', true, ApprovalStatus.APPROVED],
   );
 
   // Create company settings with default pricing
   await connection.unsafe(
     `INSERT INTO company_settings (id, company_id, tier, subscription_status, period_start, period_end, ledger_balance, created_at)
      VALUES ($1, $2, $3, $4::"SubscriptionStatus", NOW(), NOW() + INTERVAL '30 days', 0, NOW())`,
-    [randomUUID(), companyId, 'PROFESSIONAL', 'ACTIVE'],
+    [randomUUID(), companyId, SubscriptionTier.PROFESSIONAL, SubscriptionStatus.ACTIVE],
   );
 
   // Seed default pricing schemes
-  const vehicles = ['BIKE', 'CAR', 'VAN', 'TRUCK'];
+  const vehicleTypes = [VehicleType.BIKE, VehicleType.CAR, VehicleType.VAN, VehicleType.TRUCK];
   const schemes = [
     { baseFare: 1500, perKmRate: 200, minFare: 1500 },
     { baseFare: 3000, perKmRate: 400, minFare: 3000 },
     { baseFare: 5000, perKmRate: 600, minFare: 5000 },
     { baseFare: 8000, perKmRate: 900, minFare: 8000 },
   ];
-  for (let i = 0; i < vehicles.length; i++) {
+  for (let i = 0; i < vehicleTypes.length; i++) {
     await connection.unsafe(
       `INSERT INTO pricing_schemes (id, company_id, vehicle_type, base_fare, per_km_rate, min_fare, created_at)
        VALUES ($1, $2, $3::"VehicleType", $4, $5, $6, NOW())`,
       [
         randomUUID(),
         companyId,
-        vehicles[i],
+        vehicleTypes[i],
         schemes[i].baseFare,
         schemes[i].perKmRate,
         schemes[i].minFare,
@@ -77,7 +84,7 @@ async function run() {
       'Demo Dispatcher',
       companyId,
       true,
-      'APPROVED',
+      ApprovalStatus.APPROVED,
     ],
   );
 
@@ -91,9 +98,9 @@ async function run() {
       'rider@demo.com',
       'Demo Rider',
       '+2348000000002',
-      'BIKE',
-      'APPROVED',
-      'ONLINE',
+      VehicleType.BIKE,
+      ApprovalStatus.APPROVED,
+      RiderStatus.ONLINE,
       companyId,
     ],
   );
