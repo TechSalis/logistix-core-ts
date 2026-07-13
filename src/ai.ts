@@ -43,7 +43,7 @@ const aiConfigSchema = z.object({
   }),
   memoryCacheTtl: z.number().default(600_000),
   maxIterations: z.number().default(2),
-  providerTimeoutMs: z.number().default(20000),
+  providerTimeoutMs: z.number().default(30000),
 });
 
 const rawAiConfig = {
