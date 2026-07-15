@@ -336,3 +336,19 @@ export const LEAD_CATEGORIES: ReadonlySet<ContactCategory> = new Set([
   ContactCategory.PARTNERSHIP,
   ContactCategory.BUSINESS,
 ]);
+
+/**
+ * Safely look up an enum value by its string representation.
+ * Returns `undefined` instead of crashing on unknown values.
+ *
+ * @example
+ * safeEnumValue(DeliveryStatus, 'inTransit') // DeliveryStatus.IN_TRANSIT
+ * safeEnumValue(DeliveryStatus, 'UNKNOWN')   // undefined
+ */
+export function safeEnumValue<T extends Record<string, string>>(
+  enumObj: T,
+  value: string,
+): T[keyof T] | undefined {
+  const values = Object.values(enumObj) as string[];
+  return values.includes(value) ? (value as T[keyof T]) : undefined;
+}

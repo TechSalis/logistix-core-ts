@@ -97,6 +97,11 @@ export const BILLING_CONFIG = {
   MAX_LEDGER_DEDUCTION_ATTEMPTS: 3,
 
   /**
+   * HTTP timeout (ms) for Squad API calls.
+   */
+  SQUAD_HTTP_TIMEOUT: 30_000,
+
+  /**
    * Retry configuration for failed payments.
    * Retries daily for up to MAX_ATTEMPTS days.
    * If all retries fail, deduct from ledger. If insufficient, lock.

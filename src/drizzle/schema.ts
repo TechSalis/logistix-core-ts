@@ -794,6 +794,13 @@ export const exportRequests = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'export_requests_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
   ],
 );
 

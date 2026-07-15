@@ -55,6 +55,7 @@ export {
   ContactCategory,
   DayOfWeek,
   isDeliveryTerminal,
+  safeEnumValue,
 } from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
