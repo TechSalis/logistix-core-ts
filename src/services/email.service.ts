@@ -14,6 +14,8 @@ export interface SendEmailOptions {
   attachments?: EmailAttachment[];
 }
 
+const RESEND_API_URL = 'https://api.resend.com/emails';
+
 export class EmailService {
   private readonly apiKey: string;
 
@@ -25,7 +27,7 @@ export class EmailService {
   }
 
   async sendEmail(options: SendEmailOptions) {
-    const res = await fetchWithTimeout('https://api.resend.com/emails', {
+    const res = await fetchWithTimeout(RESEND_API_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.apiKey}`,

@@ -40,6 +40,7 @@ export enum ApprovalStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   SUSPENDED = 'SUSPENDED',
+  DISABLED = 'DISABLED',
 }
 
 export enum EntityType {
