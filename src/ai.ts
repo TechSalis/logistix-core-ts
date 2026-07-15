@@ -69,4 +69,5 @@ const rawAiConfig = {
   providerTimeoutMs: 30000,
 } as const;
 
+// Runtime validation guard — keeps config in sync with schema
 export const AI_CONFIG: AIConfig = aiConfigSchema.parse(rawAiConfig);

@@ -26,9 +26,16 @@ export const DATA_RETENTION: Record<SubscriptionTier, number> = {
  * Deducted from wallet in real-time, reconciled on monthly invoice.
  */
 export const CHANNEL_FEES: Record<ChannelType, number> = {
-  [ChannelType.LOGISTIX_NETWORK]: 20000, // ₦200 — covers Logistix AI number + routing + AI
-  [ChannelType.MY_CHANNEL]: 20000, // ₦200 — covers AI only
+  [ChannelType.LOGISTIX_NETWORK]: 200_00, // ₦200 — covers network number + routing + AI
+  [ChannelType.MY_CHANNEL]: 200_00, // ₦200 — covers AI only
 };
+
+/**
+ * Tiers that get a dedicated Squad virtual settlement account AND can
+ * provision their own dedicated communication channels (MY_CHANNEL type).
+ * STARTER uses the shared platform number and ledger.
+ */
+export const DEDICATED_TIERS: SubscriptionTier[] = [SubscriptionTier.PROFESSIONAL];
 
 /**
  * Billing configuration constants

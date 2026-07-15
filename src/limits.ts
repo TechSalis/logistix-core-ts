@@ -67,6 +67,7 @@ const rawLimitsConfig = {
   maxRiderActiveDeliveries: 5,
 } as const;
 
+// Runtime validation guard — keeps config in sync with schema
 export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsConfig);
 
 /**
@@ -104,6 +105,6 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   },
 };
 
-export const getTierLimits = (tier: SubscriptionTier): TierLimits => {
+export function getTierLimits(tier: SubscriptionTier): TierLimits {
   return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
-};
+}

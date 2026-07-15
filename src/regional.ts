@@ -57,4 +57,5 @@ const rawRegionalConfig = {
   ],
 } as const;
 
+// Runtime validation guard — keeps config in sync with schema
 export const REGIONAL_CONFIG: RegionalConfig = regionalConfigSchema.parse(rawRegionalConfig);

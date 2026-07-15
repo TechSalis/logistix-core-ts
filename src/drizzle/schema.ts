@@ -787,6 +787,13 @@ export const exportRequests = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
     ),
+    foreignKey({
+      columns: [table.riderId],
+      foreignColumns: [riders.id],
+      name: 'export_requests_rider_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('set null'),
   ],
 );
 

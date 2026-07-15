@@ -127,4 +127,5 @@ const rawSecurityConfig = {
   },
 } as const;
 
+// Runtime validation guard — keeps config in sync with schema
 export const SECURITY_CONFIG: SecurityConfig = securityConfigSchema.parse(rawSecurityConfig);

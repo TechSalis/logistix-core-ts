@@ -7,6 +7,7 @@ describe('buildSystemConfig', () => {
     expect(config.customerBaseUrl).toBe('');
     expect(config.businessBaseUrl).toBe('');
     expect(config.emailDomain).toBe('');
+    expect(config.jwtIssuer).toBe('');
     expect(config.supportEmail).toBe('');
     expect(config.paymentsEmail).toBe('');
   });

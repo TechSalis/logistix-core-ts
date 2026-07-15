@@ -41,7 +41,7 @@ export function submitterAckTemplate(
     <div class="card">
       <div class="header">
         <table><tr>
-          <td><div class="logo"><span class="logo-text">L</span></div></td>
+          <td><div class="logo"><span class="logo-text">${BRAND_NAME.charAt(0)}</span></div></td>
           <td><span class="brand">${BRAND_NAME}</span></td>
         </tr></table>
       </div>

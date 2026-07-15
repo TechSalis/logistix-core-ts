@@ -317,7 +317,17 @@ export enum JwtTokenType {
 export enum ContactCategory {
   SUPPORT = 'Support',
   PARTNERSHIP = 'Become a Partner',
-  BUSINESS = 'Use Logistix AI for Business',
+  BUSINESS = 'Use AI for Business',
+}
+
+export enum DayOfWeek {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
 }
 
 // Categories that should generate leads in external CRM/Sheets
