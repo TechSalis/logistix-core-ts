@@ -1,4 +1,4 @@
-import { SHARED_SYSTEM_CONFIG } from '../config.js';
+import { BRAND_NAME, SHARED_SYSTEM_CONFIG } from '../config.js';
 import { ContactCategory } from '../enums.js';
 
 function escapeHtml(s: string): string {
@@ -42,7 +42,7 @@ export function submitterAckTemplate(
       <div class="header">
         <table><tr>
           <td><div class="logo"><span class="logo-text">L</span></div></td>
-          <td><span class="brand">Logistix AI</span></td>
+          <td><span class="brand">${BRAND_NAME}</span></td>
         </tr></table>
       </div>
       <div class="body-content">
@@ -63,7 +63,7 @@ export function submitterAckTemplate(
       </div>
     </div>
     <div class="footer">
-      <p class="footer-text">Logistix AI Inc. &bull; Lagos, Nigeria</p>
+      <p class="footer-text">${BRAND_NAME} Inc. &bull; Lagos, Nigeria</p>
     </div>
   </div>
 </body></html>`;
