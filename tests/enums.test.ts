@@ -10,7 +10,7 @@ import {
   ErrorCode,
   SystemStatus,
   ActorType,
-  MappingPlatform,
+  ChannelPlatform,
   LogLevel,
 } from '../src/enums.js';
 
@@ -98,10 +98,10 @@ describe('Enums', () => {
     });
   });
 
-  describe('MappingPlatform', () => {
+  describe('ChannelPlatform', () => {
     it('includes social platforms', () => {
-      expect(MappingPlatform.WHATSAPP).toBe('WHATSAPP');
-      expect(MappingPlatform.INSTAGRAM).toBe('INSTAGRAM');
+      expect(ChannelPlatform.WHATSAPP).toBe('WHATSAPP');
+      expect(ChannelPlatform.INSTAGRAM).toBe('INSTAGRAM');
     });
   });
 

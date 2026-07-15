@@ -43,6 +43,7 @@ export enum ApprovalStatus {
 }
 
 export enum EntityType {
+  USER = 'USER',
   DELIVERY = 'DELIVERY',
   RIDER = 'RIDER',
   COMPANY = 'COMPANY',
@@ -52,7 +53,7 @@ export enum EntityType {
   COMPANY_INTEGRATION = 'COMPANY_INTEGRATION',
 }
 
-export enum MappingPlatform {
+export enum ChannelPlatform {
   WHATSAPP = 'WHATSAPP',
   INSTAGRAM = 'INSTAGRAM',
   FACEBOOK = 'FACEBOOK',
@@ -91,6 +92,7 @@ export enum TransactionStatus {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
   REVERSED = 'REVERSED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum TransactionType {
@@ -160,6 +162,7 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
+  LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
 export enum NotificationEventType {
@@ -183,6 +186,7 @@ export enum ChatUpdateType {
 }
 
 export enum MessageStatus {
+  PENDING = 'PENDING',
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   READ = 'READ',
@@ -205,6 +209,7 @@ export enum SenderType {
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
+  AI_AGENT = 'AI_AGENT',
 }
 
 export enum ExportRequestStatus {
