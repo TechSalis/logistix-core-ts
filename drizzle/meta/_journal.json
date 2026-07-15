@@ -15,6 +15,27 @@
             "when": 1752633600000,
             "tag": "0001_add_escalated_to_company_settings",
             "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "7",
+            "when": 1752720000000,
+            "tag": "0002_rename_integrations_to_channels",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "7",
+            "when": 1752806400000,
+            "tag": "0003_company_daily_metrics_date_to_timestamp",
+            "breakpoints": true
+        },
+        {
+            "idx": 4,
+            "version": "7",
+            "when": 1752892800000,
+            "tag": "0004_rename_enum_mapping_platform_to_channel_platform",
+            "breakpoints": true
         }
     ]
 }

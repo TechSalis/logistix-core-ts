@@ -137,11 +137,7 @@ export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date
  * Check if we should retry a failed payment.
  * Retries daily up to MAX_ATTEMPTS times.
  */
-export function shouldRetryPayment(
-  lastBillingDate: Date,
-  _lastBillingStatus: string,
-  retryAttempt: number,
-): boolean {
+export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number): boolean {
   if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
     return false;
   }

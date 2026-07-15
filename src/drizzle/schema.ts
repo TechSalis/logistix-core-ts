@@ -34,6 +34,9 @@ import {
   TransactionType,
   Currency,
   VehicleType,
+  EventType,
+  EntityType,
+  ActorType,
 } from '../enums.js';
 import { DEFAULT_WORKING_HOURS } from '../config.js';
 
@@ -48,7 +51,7 @@ export const ledgerAdjustmentType = pgEnum(
   'LedgerAdjustmentType',
   enumValues(LedgerAdjustmentType),
 );
-export const mappingPlatform = pgEnum('MappingPlatform', enumValues(ChannelPlatform));
+export const channelPlatform = pgEnum('ChannelPlatform', enumValues(ChannelPlatform));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const approvalStatus = pgEnum('ApprovalStatus', enumValues(ApprovalStatus));
@@ -63,6 +66,10 @@ export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(Subscr
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
 export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
 export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
+export const eventType = pgEnum('EventType', enumValues(EventType));
+export const entityType = pgEnum('EntityType', enumValues(EntityType));
+export const actorType = pgEnum('ActorType', enumValues(ActorType));
+export const currencyEnum = pgEnum('Currency', enumValues(Currency));
 
 export const companies = pgTable(
   'companies',
@@ -150,7 +157,7 @@ export const companyChannels = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    platform: mappingPlatform().notNull(),
+    platform: channelPlatform().notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id').notNull(),
     isActive: boolean('is_active').default(false).notNull(),
@@ -196,7 +203,7 @@ export const conversations = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    platform: mappingPlatform().default(ChannelPlatform.WHATSAPP).notNull(),
+    platform: channelPlatform().default(ChannelPlatform.WHATSAPP).notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id'),
     lastMessageAt: timestamp('last_message_at', { precision: 3, mode: 'date' })
@@ -457,10 +464,6 @@ export const deliveries = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.createdAt.desc().nullsLast().op('timestamp_ops'),
     ),
-    index('deliveries_created_at_idx').using(
-      'btree',
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
     index('deliveries_rider_id_status_idx').using(
       'btree',
       table.riderId.asc().nullsLast().op('text_ops'),
@@ -478,10 +481,6 @@ export const deliveries = pgTable(
       'btree',
       table.trackingId.asc().nullsLast().op('text_ops'),
       table.pin.asc().nullsLast().op('text_ops'),
-    ),
-    index('deliveries_created_by_idx').using(
-      'btree',
-      table.createdBy.asc().nullsLast().op('text_ops'),
     ),
     index('deliveries_pickup_phone_idx').using(
       'btree',
@@ -580,7 +579,7 @@ export const transactions = pgTable(
     companyId: text('company_id').notNull(),
     type: transactionType('type').notNull(),
     amount: doublePrecision().notNull(),
-    currency: text().default(Currency.NGN).notNull(),
+    currency: currencyEnum().default(Currency.NGN).notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
     provider: paymentProvider('provider'),
@@ -708,11 +707,11 @@ export const eventLogs = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    eventType: text('event_type').notNull(),
-    entityType: text('entity_type').notNull(),
+    eventType: eventType('event_type').notNull(),
+    entityType: entityType('entity_type').notNull(),
     entityId: text('entity_id').notNull(),
     actorId: text('actor_id'),
-    actorType: text('actor_type'),
+    actorType: actorType('actor_type'),
     companyId: text('company_id'),
     payload: jsonb(),
     traceId: text('trace_id'),
@@ -741,20 +740,20 @@ export const eventLogs = pgTable(
     ),
     index('event_logs_event_type_created_at_idx').using(
       'btree',
-      table.eventType.asc().nullsLast().op('text_ops'),
+      table.eventType.asc().nullsLast().op('enum_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
     index('event_logs_event_type_success_created_at_idx').using(
       'btree',
-      table.eventType.asc().nullsLast().op('text_ops'),
+      table.eventType.asc().nullsLast().op('enum_ops'),
       table.success.asc().nullsLast().op('bool_ops'),
       table.createdAt.desc().nullsLast().op('timestamp_ops'),
     ),
     index('event_logs_company_entity_type_event_created_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
-      table.entityType.asc().nullsLast().op('text_ops'),
-      table.eventType.asc().nullsLast().op('text_ops'),
+      table.entityType.asc().nullsLast().op('enum_ops'),
+      table.eventType.asc().nullsLast().op('enum_ops'),
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
   ],
@@ -847,7 +846,7 @@ export const companyDailyMetrics = pgTable(
   'company_daily_metrics',
   {
     companyId: text('company_id').notNull(),
-    date: text('date').notNull(), // YYYY-MM-DD format
+    date: text('date').notNull(),
     totalDeliveries: integer('total_deliveries').notNull().default(0),
     deliveredCount: integer('delivered_count').notNull().default(0),
     cancelledCount: integer('cancelled_count').notNull().default(0),
@@ -870,11 +869,6 @@ export const companyDailyMetrics = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.companyId, table.date] }),
-    index('cdm_company_id_date_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.date.asc().nullsLast().op('text_ops'),
-    ),
     index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('text_ops')),
     foreignKey({
       columns: [table.companyId],
