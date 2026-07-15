@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSystemConfig, SYSTEM_CONFIG, BRAND_NAME } from '../src/config.js';
+import { buildSystemConfig, SHARED_SYSTEM_CONFIG, BRAND_NAME } from '../src/config.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {
@@ -52,12 +52,12 @@ describe('BRAND_NAME constant', () => {
   });
 });
 
-describe('SYSTEM_CONFIG singleton', () => {
+describe('SHARED_SYSTEM_CONFIG singleton', () => {
   it('has customerBaseUrl property', () => {
-    expect(SYSTEM_CONFIG).toHaveProperty('customerBaseUrl');
+    expect(SHARED_SYSTEM_CONFIG).toHaveProperty('customerBaseUrl');
   });
 
   it('has businessBaseUrl property', () => {
-    expect(SYSTEM_CONFIG).toHaveProperty('businessBaseUrl');
+    expect(SHARED_SYSTEM_CONFIG).toHaveProperty('businessBaseUrl');
   });
 });

@@ -5,7 +5,7 @@
  * across logistix-backend, logistix-workers, and logistix-web.
  *
  * Usage:
- *   import { UserRole, SYSTEM_CONFIG } from 'logistix-core-ts';
+ *   import { UserRole, REGIONAL_CONFIG } from 'logistix-core-ts';
  */
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export * from './enums.js';
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {
   buildSystemConfig,
-  SYSTEM_CONFIG,
+  SHARED_SYSTEM_CONFIG,
   DEFAULT_WORKING_HOURS,
   BRAND_NAME,
   DELETED_USER_SENTINEL,

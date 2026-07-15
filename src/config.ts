@@ -28,17 +28,16 @@ export const DEFAULT_WORKING_HOURS: Record<string, { start: string; close: strin
   Saturday: { start: '07:00', close: '19:00' },
 };
 
-export const SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig();
-
 /** Shared instance built from env (used by contact/email modules). */
-export const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig(
-  process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {},
-);
+export const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig({
+  ...(process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {}),
+  ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
+});
 
 export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
   const emailDomain = overrides.emailDomain ?? '';
   return {
-    domain: overrides.domain ?? 'logistix.team',
+    domain: overrides.domain ?? '',
     customerBaseUrl: overrides.customerBaseUrl ?? '',
     businessBaseUrl: overrides.businessBaseUrl ?? '',
     emailDomain,
