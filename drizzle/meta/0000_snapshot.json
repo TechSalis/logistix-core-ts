@@ -3238,7 +3238,8 @@
         "PENDING_REVIEW",
         "APPROVED",
         "REJECTED",
-        "SUSPENDED"
+        "SUSPENDED",
+        "DISABLED"
       ]
     },
     "public.ChannelType": {

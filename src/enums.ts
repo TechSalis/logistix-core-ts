@@ -36,7 +36,6 @@ export enum RiderStatus {
 
 export enum ApprovalStatus {
   PENDING = 'PENDING',
-  PENDING_REVIEW = 'PENDING_REVIEW',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   SUSPENDED = 'SUSPENDED',
@@ -44,7 +43,6 @@ export enum ApprovalStatus {
 }
 
 export enum EntityType {
-  USER = 'USER',
   DELIVERY = 'DELIVERY',
   RIDER = 'RIDER',
   COMPANY = 'COMPANY',
@@ -93,7 +91,6 @@ export enum TransactionStatus {
   SUCCESS = 'SUCCESS',
   FAILED = 'FAILED',
   REVERSED = 'REVERSED',
-  CANCELLED = 'CANCELLED',
 }
 
 export enum TransactionType {
@@ -134,7 +131,6 @@ export enum EventType {
   DELIVERY_STATUS_CHANGED = 'DELIVERY_STATUS_CHANGED',
   DELIVERY_DELETED = 'DELIVERY_DELETED',
   RIDER_LOCATION_UPDATED = 'RIDER_LOCATION_UPDATED',
-  RIDER_ASSIGNED = 'RIDER_ASSIGNED',
   RIDER_ACCEPTED = 'RIDER_ACCEPTED',
   RIDER_DELETED = 'RIDER_DELETED',
   USER_PURGED = 'USER_PURGED',
@@ -163,7 +159,6 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
-  LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
 export enum NotificationEventType {
@@ -183,14 +178,10 @@ export enum UserAuditAction {
 export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
   TYPING = 'TYPING',
-  STATUS = 'STATUS',
 }
 
 export enum MessageStatus {
-  PENDING = 'PENDING',
   SENT = 'SENT',
-  DELIVERED = 'DELIVERED',
-  READ = 'READ',
   FAILED = 'FAILED',
 }
 
@@ -210,7 +201,6 @@ export enum SenderType {
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
-  AI_AGENT = 'AI_AGENT',
 }
 
 export enum ExportRequestStatus {
@@ -328,7 +318,6 @@ export enum DayOfWeek {
   THURSDAY = 'Thursday',
   FRIDAY = 'Friday',
   SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
 }
 
 // Categories that should generate leads in external CRM/Sheets

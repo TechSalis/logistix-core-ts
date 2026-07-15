@@ -3,7 +3,7 @@
 > Shared TypeScript types, enums, config, and utilities — single source of truth for all Logistix services.
 
 Consumed by:
-- `logistix-backend` (NestJS API)
+- `logistix-backend`
 - `logistix-workers` (background jobs)
 - `logistix-web` (SvelteKit dashboards)
 
@@ -46,8 +46,8 @@ console.log(SHARED_SYSTEM_CONFIG.brandName);     // 'Logistix AI' (or env overri
 | `CUSTOMER_BASE_URL` | (none)               | Customer portal base URL     |
 | `BUSINESS_BASE_URL` | (none)               | Business portal base URL     |
 | `EMAIL_DOMAIN`      | (none)               | Email-sending domain         |
-| `SUPPORT_EMAIL`     | (none)               | Support email address        |
-| `PAYMENTS_EMAIL`    | (none)               | Payments email address       |
+| `supportEmail`      | (none)               | Support email (function param) |
+| `paymentsEmail`     | (none)               | Payments email (function param) |
 
 In **SvelteKit** (browser), use `buildSystemConfig()` with your PUBLIC env map:
 
@@ -82,7 +82,7 @@ npm test         # run unit tests
 | Export                  | Type              | Description                                  |
 |-------------------------|-------------------|----------------------------------------------|
 | `UserRole`              | `enum`            | ADMIN, COMPANY, DISPATCHER, RIDER, CUSTOMER  |
-| `DeliveryStatus`        | `enum`            | PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED |
+| `DeliveryStatus`        | `enum`            | PENDING, AWAITING_PAYMENT, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED |
 | `RiderStatus`           | `enum`            | ONLINE, OFFLINE, BUSY                        |
 | `PaymentMethod`         | `enum`            | PREPAID, POD                                 |
 | `EventType`             | `enum`            | All system event types                       |

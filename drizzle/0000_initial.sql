@@ -11,7 +11,7 @@ CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOO
 CREATE TYPE "public"."MessageStatus" AS ENUM('PENDING', 'SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> statement-breakpoint
 CREATE TYPE "public"."PaymentProvider" AS ENUM('SQUAD', 'SYSTEM');--> statement-breakpoint
-CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'PENDING_REVIEW', 'APPROVED', 'REJECTED', 'SUSPENDED');--> statement-breakpoint
+CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'PENDING_REVIEW', 'APPROVED', 'REJECTED', 'SUSPENDED', 'DISABLED');--> statement-breakpoint
 CREATE TYPE "public"."RiderStatus" AS ENUM('ONLINE', 'OFFLINE', 'BUSY');--> statement-breakpoint
 CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM', 'AI_AGENT');--> statement-breakpoint
 CREATE TYPE "public"."SubscriptionStatus" AS ENUM('PENDING', 'ACTIVE', 'GRACE', 'LOCKED', 'CANCELLED');--> statement-breakpoint
@@ -101,7 +101,8 @@ CREATE TABLE "company_settings" (
 	"ledger_balance" double precision DEFAULT 0 NOT NULL,
 	"company_code" text,
 	"escalated_to" "EscalatedTo" DEFAULT 'ADMIN' NOT NULL,
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"auto_accept_team" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "conversations" (
