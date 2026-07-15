@@ -129,6 +129,8 @@ export const companySettings = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    autoAcceptDispatchers: boolean('auto_accept_dispatchers').default(false).notNull(),
+    autoAcceptRiders: boolean('auto_accept_riders').default(false).notNull(),
   },
   (table) => [
     uniqueIndex('company_settings_company_id_key').using(
