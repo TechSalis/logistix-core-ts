@@ -12,7 +12,13 @@
 export * from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-export { buildSystemConfig, SYSTEM_CONFIG, DEFAULT_WORKING_HOURS, BRAND_NAME } from './config.js';
+export {
+  buildSystemConfig,
+  SYSTEM_CONFIG,
+  DEFAULT_WORKING_HOURS,
+  BRAND_NAME,
+  DELETED_USER_SENTINEL,
+} from './config.js';
 export type { SystemConfig, BankDetails } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────

@@ -7,6 +7,9 @@ export interface BankDetails {
 
 export const BRAND_NAME = 'Logistix AI';
 
+/** Sentinel value used when a user record is purged but references remain. */
+export const DELETED_USER_SENTINEL = 'DELETED_USER';
+
 export interface SystemConfig {
   readonly domain: string;
   readonly customerBaseUrl: string;
