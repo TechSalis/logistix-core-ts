@@ -38,7 +38,11 @@ export {
 } from './billing.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
-export { EmailService, type EmailAttachment } from './services/email.service.js';
+export {
+  EmailService,
+  type EmailAttachment,
+  type SendEmailOptions,
+} from './services/email.service.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';
@@ -54,7 +58,11 @@ export { AI_CONFIG } from './ai.js';
 export { fetchWithTimeout } from './fetch-with-timeout.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
-export { sendContactSubmissionAck } from './contact.js';
+export {
+  sendContactSubmissionAck,
+  type ContactSubmission,
+  type ContactNotifierOptions,
+} from './contact.js';
 
 // ─── Offline / Local-First ────────────────────────────────────────────────────
 export { OFFLINE_DB_NAME } from './offline.js';

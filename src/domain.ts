@@ -6,10 +6,12 @@
  * App-specific consumers should extend these with their own fields.
  */
 
+import type { ApprovalStatus, DeliveryStatus, RiderStatus } from './enums.js';
+
 export interface DeliveryBase {
   id: string;
   trackingId: string;
-  status: string;
+  status: DeliveryStatus;
   pickupAddress: string | null;
   dropOffAddress: string;
   pickupPhone: string | null;
@@ -27,8 +29,8 @@ export interface RiderBase {
   fullName: string;
   email: string;
   phoneNumber: string | null;
-  status: string;
-  approvalStatus: string | null;
+  status: RiderStatus;
+  approvalStatus: ApprovalStatus | null;
   isAccepted: boolean;
 }
 
@@ -36,6 +38,5 @@ export interface DispatcherBase {
   id: string;
   fullName: string;
   email: string;
-  phoneNumber: string | null;
-  approvalStatus: string | null;
+  approvalStatus: ApprovalStatus | null;
 }

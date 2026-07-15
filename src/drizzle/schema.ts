@@ -21,7 +21,7 @@ import {
   EscalationStatus,
   ExportRequestStatus,
   LedgerAdjustmentType,
-  MappingPlatform,
+  ChannelPlatform,
   MessageStatus,
   PaymentMethod,
   PaymentProvider,
@@ -48,7 +48,7 @@ export const ledgerAdjustmentType = pgEnum(
   'LedgerAdjustmentType',
   enumValues(LedgerAdjustmentType),
 );
-export const mappingPlatform = pgEnum('MappingPlatform', enumValues(MappingPlatform));
+export const mappingPlatform = pgEnum('MappingPlatform', enumValues(ChannelPlatform));
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const approvalStatus = pgEnum('ApprovalStatus', enumValues(ApprovalStatus));
@@ -61,6 +61,8 @@ export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
 export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
+export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
+export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
 
 export const companies = pgTable(
   'companies',
@@ -116,6 +118,7 @@ export const companySettings = pgTable(
 
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
+    escalatedTo: escalatedTo('escalated_to').default(EscalatedTo.ADMIN).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -140,8 +143,8 @@ export const companySettings = pgTable(
   ],
 );
 
-export const companyIntegrations = pgTable(
-  'company_integrations',
+export const companyChannels = pgTable(
+  'company_channels',
   {
     id: text()
       .primaryKey()
@@ -157,21 +160,21 @@ export const companyIntegrations = pgTable(
       .notNull(),
   },
   (table) => [
-    index('company_integrations_is_active_idx').using(
+    index('company_channels_is_active_idx').using(
       'btree',
       table.isActive.asc().nullsLast().op('bool_ops'),
     ),
-    index('company_integrations_company_id_is_active_idx').using(
+    index('company_channels_company_id_is_active_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
       table.isActive.asc().nullsLast().op('bool_ops'),
     ),
-    uniqueIndex('company_integrations_platform_company_id_key').using(
+    uniqueIndex('company_channels_platform_company_id_key').using(
       'btree',
       table.platform.asc().nullsLast().op('enum_ops'),
       table.companyId.asc().nullsLast().op('text_ops'),
     ),
-    uniqueIndex('company_integrations_platform_platform_id_key').using(
+    uniqueIndex('company_channels_platform_platform_id_key').using(
       'btree',
       table.platform.asc().nullsLast().op('enum_ops'),
       table.platformId.asc().nullsLast().op('text_ops'),
@@ -179,7 +182,7 @@ export const companyIntegrations = pgTable(
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
-      name: 'company_integrations_company_id_fkey',
+      name: 'company_channels_company_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
@@ -193,7 +196,7 @@ export const conversations = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    platform: mappingPlatform().default(MappingPlatform.WHATSAPP).notNull(),
+    platform: mappingPlatform().default(ChannelPlatform.WHATSAPP).notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id'),
     lastMessageAt: timestamp('last_message_at', { precision: 3, mode: 'date' })
@@ -787,9 +790,6 @@ export const exportRequests = pgTable(
     ),
   ],
 );
-
-export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
-export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
 
 export const escalations = pgTable(
   'escalations',

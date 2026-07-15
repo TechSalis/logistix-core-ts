@@ -83,9 +83,9 @@ const rawSecurityConfig = {
     global: { max: 1000, windowMs: 60_000 },
     auth: { max: 15, windowMs: 900_000 },
     api: { max: 100, windowMs: 60_000 },
-    login: { max: 10, windowMs: 300 },
-    register: { max: 3, windowMs: 3600 },
-    otp: { max: 5, windowMs: 3600 },
+    login: { max: 10, windowMs: 300_000 },
+    register: { max: 3, windowMs: 3_600_000 },
+    otp: { max: 5, windowMs: 3_600_000 },
     tiers: {
       [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
       [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },

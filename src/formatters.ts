@@ -1,14 +1,3 @@
-import { DeliveryStatus } from './enums.js';
-
-const STATUS_LABELS: Record<DeliveryStatus, string> = {
-  [DeliveryStatus.AWAITING_PAYMENT]: 'Awaiting Payment',
-  [DeliveryStatus.PENDING]: 'Pending',
-  [DeliveryStatus.ASSIGNED]: 'Assigned',
-  [DeliveryStatus.IN_TRANSIT]: 'In Transit',
-  [DeliveryStatus.DELIVERED]: 'Delivered',
-  [DeliveryStatus.CANCELLED]: 'Cancelled',
-};
-
 /**
  * Canonical delivery status formatter.
  * Converts enum keys to human-readable title case.
@@ -26,7 +15,7 @@ function splitEnum(value: string): string {
 
 export function formatDeliveryStatus(status: string | undefined | null): string {
   if (!status) return 'Unknown';
-  return STATUS_LABELS[status as DeliveryStatus] ?? splitEnum(status);
+  return splitEnum(status);
 }
 
 export function formatEnumToTitleCase(value: string | undefined | null): string {
