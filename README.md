@@ -28,30 +28,26 @@ npm install git+https://github.com/TechSalis/logistix-core-ts.git#v1.0.0
 ## Usage
 
 ```ts
-import { UserRole, DeliveryStatus, SYSTEM_CONFIG, localParse } from 'logistix-core-ts';
+import { UserRole, DeliveryStatus, SHARED_SYSTEM_CONFIG } from 'logistix-core-ts';
 
-console.log(UserRole.DISPATCHER);       // 'DISPATCHER'
-console.log(SYSTEM_CONFIG.brandName);   // 'Logistix' (or env override)
-
-const deliveries = localParse(rawText);
+console.log(UserRole.DISPATCHER);                // 'DISPATCHER'
+console.log(SHARED_SYSTEM_CONFIG.brandName);     // 'Logistix AI' (or env override)
 ```
 
 ---
 
 ## Configuration via Environment Variables
 
-`SYSTEM_CONFIG` is auto-populated from environment variables. Override any default:
+`SHARED_SYSTEM_CONFIG` is built from environment variables via `buildSystemConfig()`:
 
-| Env Variable            | Default              | Description                  |
-|-------------------------|----------------------|------------------------------|
-| `BRAND_NAME`            | `Logistix`           | Public brand name            |
-| `BRAND_DOMAIN`          | `logistix.team`      | Primary domain               |
-| `BRAND_SUPPORT_EMAIL`   | `contact@{domain}`   | Support email                |
-| `BRAND_PHONE_NUMBER`    | `09069184604`        | Support phone number         |
-| `BRAND_LOGO_URL`        | `/icon_transparent.png` | Logo URL                  |
-| `BRAND_FAVICON_URL`     | `/favicon.png`       | Favicon URL                  |
-| `ENABLE_TRACKING_CODES` | `true`               | Enable delivery tracking     |
-| `BRAND_TRACKING_LINK`   | `https://{domain}/track` | Tracking page URL        |
+| Env Variable        | Default              | Description                  |
+|---------------------|----------------------|------------------------------|
+| `BRAND_NAME`        | `Logistix AI`        | Public brand name            |
+| `CUSTOMER_BASE_URL` | (none)               | Customer portal base URL     |
+| `BUSINESS_BASE_URL` | (none)               | Business portal base URL     |
+| `EMAIL_DOMAIN`      | (none)               | Email-sending domain         |
+| `SUPPORT_EMAIL`     | (none)               | Support email address        |
+| `PAYMENTS_EMAIL`    | (none)               | Payments email address       |
 
 In **SvelteKit** (browser), use `buildSystemConfig()` with your PUBLIC env map:
 
@@ -59,10 +55,12 @@ In **SvelteKit** (browser), use `buildSystemConfig()` with your PUBLIC env map:
 import { buildSystemConfig } from 'logistix-core-ts';
 import { env } from '$env/dynamic/public';
 
-export const SYSTEM_CONFIG = buildSystemConfig({
-  BRAND_NAME: env.PUBLIC_BRAND_NAME,
-  BRAND_DOMAIN: env.PUBLIC_BRAND_DOMAIN,
-  // ...
+export const config = buildSystemConfig({
+  customerBaseUrl: env.PUBLIC_CUSTOMER_PORTAL_URL,
+  businessBaseUrl: env.PUBLIC_BUSINESS_PORTAL_URL,
+  emailDomain: env.PUBLIC_EMAIL_DOMAIN,
+  supportEmail: env.PUBLIC_SUPPORT_EMAIL,
+  ...(env.PUBLIC_BRAND_NAME ? { brandName: env.PUBLIC_BRAND_NAME } : {}),
 });
 ```
 
@@ -83,14 +81,14 @@ npm test         # run unit tests
 
 | Export                  | Type              | Description                                  |
 |-------------------------|-------------------|----------------------------------------------|
-| `UserRole`              | `enum`            | ADMIN, COMPANY, DISPATCHER, RIDER            |
+| `UserRole`              | `enum`            | ADMIN, COMPANY, DISPATCHER, RIDER, CUSTOMER  |
 | `DeliveryStatus`        | `enum`            | PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED |
 | `RiderStatus`           | `enum`            | ONLINE, OFFLINE, BUSY                        |
 | `PaymentMethod`         | `enum`            | PREPAID, POD                                 |
 | `EventType`             | `enum`            | All system event types                       |
 | `ErrorCode`             | `enum`            | Standardized error codes                     |
 | *(+ many more)*         | `enum`            | See `src/enums.ts`                           |
-| `SYSTEM_CONFIG`         | `SystemConfig`    | Auto-built from environment variables        |
+| `SHARED_SYSTEM_CONFIG`  | `SystemConfig`    | Auto-built from environment variables        |
 | `buildSystemConfig()`   | `function`        | Factory for browser/custom env contexts      |
-| `localParse()`          | `function`        | Parse delivery text templates locally        |
 | `fetchWithTimeout()`    | `function`        | Fetch with configurable timeout              |
+| `DEFAULT_TIMEOUT_MS`    | `constant`        | Default timeout for fetchWithTimeout         |
