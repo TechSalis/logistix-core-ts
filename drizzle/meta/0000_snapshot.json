@@ -2307,7 +2307,34 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "export_requests_rider_id_fkey": {
+          "name": "export_requests_rider_id_fkey",
+          "tableFrom": "export_requests",
+          "tableTo": "riders",
+          "columnsFrom": [
+            "rider_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "export_requests_company_id_fkey": {
+          "name": "export_requests_company_id_fkey",
+          "tableFrom": "export_requests",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -3235,7 +3262,6 @@
       "schema": "public",
       "values": [
         "PENDING",
-        "PENDING_REVIEW",
         "APPROVED",
         "REJECTED",
         "SUSPENDED",
@@ -3316,10 +3342,7 @@
       "name": "MessageStatus",
       "schema": "public",
       "values": [
-        "PENDING",
         "SENT",
-        "DELIVERED",
-        "READ",
         "FAILED"
       ]
     },
@@ -3355,8 +3378,7 @@
         "CUSTOMER",
         "AGENT",
         "DISPATCHER",
-        "SYSTEM",
-        "AI_AGENT"
+        "SYSTEM"
       ]
     },
     "public.SubscriptionStatus": {
@@ -3385,8 +3407,7 @@
         "PENDING",
         "SUCCESS",
         "FAILED",
-        "REVERSED",
-        "CANCELLED"
+        "REVERSED"
       ]
     },
     "public.TransactionType": {

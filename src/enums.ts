@@ -43,6 +43,7 @@ export enum ApprovalStatus {
 }
 
 export enum EntityType {
+  USER = 'USER',
   DELIVERY = 'DELIVERY',
   RIDER = 'RIDER',
   COMPANY = 'COMPANY',
@@ -131,6 +132,7 @@ export enum EventType {
   DELIVERY_STATUS_CHANGED = 'DELIVERY_STATUS_CHANGED',
   DELIVERY_DELETED = 'DELIVERY_DELETED',
   RIDER_LOCATION_UPDATED = 'RIDER_LOCATION_UPDATED',
+  RIDER_ASSIGNED = 'RIDER_ASSIGNED',
   RIDER_ACCEPTED = 'RIDER_ACCEPTED',
   RIDER_DELETED = 'RIDER_DELETED',
   USER_PURGED = 'USER_PURGED',
@@ -308,7 +310,7 @@ export enum JwtTokenType {
 export enum ContactCategory {
   SUPPORT = 'Support',
   PARTNERSHIP = 'Become a Partner',
-  BUSINESS = 'Use AI for Business',
+  BUSINESS = 'For Business',
 }
 
 export enum DayOfWeek {
