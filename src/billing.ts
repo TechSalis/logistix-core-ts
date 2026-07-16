@@ -128,6 +128,14 @@ export function formatAmount(kobo: number): string {
 }
 
 /**
+ * Format a Naira amount (already in Naira, not kobo) to a display string.
+ * Use this for values already converted from kobo, or raw naira amounts.
+ */
+export function formatNaira(amount: number, decimals = 2): string {
+  return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+}
+
+/**
  * Check if a tier is billable (has a positive subscription price)
  */
 export function isBillableTier(tier: SubscriptionTier): boolean {

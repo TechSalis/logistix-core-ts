@@ -86,6 +86,7 @@ export {
   MS_PER_DAY,
   getSubscriptionPrice,
   formatAmount,
+  formatNaira,
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
@@ -113,6 +114,7 @@ export type { AIConfig } from './ai.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetch-with-timeout.js';
+export { extractErrorMessage } from './error-utils.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export {
