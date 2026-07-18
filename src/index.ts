@@ -135,11 +135,6 @@ export {
   type BreachIncident,
   type SettlementReceiptData,
 } from './notifications.js';
-export {
-  getSeverityLabel,
-  formatDuration,
-  settlementReceiptEmailTemplate,
-} from './templates/notification-emails.js';
 
 // ─── Offline / Local-First ────────────────────────────────────────────────────
 export { OFFLINE_DB_NAME } from './offline.js';

@@ -36,13 +36,6 @@ export interface BreachIncident {
   affectedDataTypes: string[];
 }
 
-// Re-export template helpers for consumers that need them
-export {
-  getSeverityLabel,
-  formatDuration,
-  settlementReceiptEmailTemplate,
-} from './templates/notification-emails.js';
-
 /**
  * Minimal Drizzle database interface used by notification queries.
  * Compatible with both `drizzle-orm/node-postgres` and `drizzle-orm/postgres-js`.
