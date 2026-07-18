@@ -5,3 +5,6 @@ staged=$(git diff --staged --name-only | grep -E '\.ts$' || true)
 if [ -n "$staged" ]; then
   npx --no-install tsc --noEmit || exit $?
 fi
+
+# Rebuild dist so committed output is never stale
+npx --no-install tsup src/index.ts --format esm,cjs --dts --clean || exit $?
