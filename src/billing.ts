@@ -1,4 +1,5 @@
 import { SubscriptionTier, ChannelType, Currency } from './enums.js';
+import { REGIONAL_CONFIG } from './regional.js';
 
 /**
  * 1 Naira = 100 Kobo.
@@ -71,9 +72,14 @@ export const BILLING_CONFIG = {
   PURGE_AFTER_LOCKED_DAYS: 30,
 
   /**
+   * Message retention in days (archived after this period)
+   */
+  MESSAGE_RETENTION_DAYS: 30,
+
+  /**
    * Payment timeout for AWAITING_PAYMENT deliveries (in hours)
    */
-  PAYMENT_TIMEOUT_HOURS: 24,
+  PAYMENT_TIMEOUT_HOURS: 0.5,
 
   /**
    * Logistix AI's default cut (percentage) when a delivery is outsourced to
@@ -95,6 +101,11 @@ export const BILLING_CONFIG = {
    * Maximum ledger deduction attempts before locking
    */
   MAX_LEDGER_DEDUCTION_ATTEMPTS: 3,
+
+  /**
+   * Number of days after purchase within which a refund may be requested.
+   */
+  REFUND_WINDOW_DAYS: 14,
 
   /**
    * HTTP timeout (ms) for Squad API calls.
@@ -124,7 +135,7 @@ export function getSubscriptionPrice(tier: SubscriptionTier): number {
  */
 export function formatAmount(kobo: number): string {
   const value = kobo / KOBO_PER_NAIRA;
-  return `₦${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${REGIONAL_CONFIG.currencySymbol}${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
@@ -132,7 +143,7 @@ export function formatAmount(kobo: number): string {
  * Use this for values already converted from kobo, or raw naira amounts.
  */
 export function formatNaira(amount: number, decimals = 2): string {
-  return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+  return `${REGIONAL_CONFIG.currencySymbol}${amount.toLocaleString('en-NG', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
 }
 
 /**
@@ -181,4 +192,57 @@ export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): D
     nextRetryDate.getDate() + BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS,
   );
   return nextRetryDate;
+}
+
+/**
+ * Input for a single delivery's allocation calculation.
+ */
+export interface AllocationDeliveryInput {
+  id: string;
+  price: number | null;
+}
+
+/**
+ * Result of allocation: a target with delivery ID and amount to apply.
+ */
+export interface AllocationTarget {
+  deliveryId: string;
+  amountToApply: number;
+}
+
+/**
+ * Pure allocation algorithm: splits `remainingAmount` across deliveries
+ * sorted by createdAt (oldest first), filling outstanding balances greedily.
+ *
+ * Returns the allocation targets and any fully-paid delivery IDs.
+ * Does NOT perform DB writes — callers handle persistence.
+ */
+export function computeAllocationTargets(
+  deliveryRows: AllocationDeliveryInput[],
+  paidAmounts: Map<string, number>,
+  remainingAmount: number,
+): { targets: AllocationTarget[]; fullyPaidIds: string[]; leftover: number } {
+  const targets: AllocationTarget[] = [];
+  const fullyPaidIds: string[] = [];
+  let leftover = remainingAmount;
+
+  for (const delivery of deliveryRows) {
+    if (leftover <= 0) break;
+
+    const price = delivery.price ?? 0;
+    const alreadyPaid = paidAmounts.get(delivery.id) || 0;
+    const outstanding = Math.max(0, price - alreadyPaid);
+
+    if (outstanding <= 0) continue;
+
+    const amountToApply = Math.min(leftover, outstanding);
+    leftover -= amountToApply;
+    targets.push({ deliveryId: delivery.id, amountToApply });
+
+    if (alreadyPaid + amountToApply >= price) {
+      fullyPaidIds.push(delivery.id);
+    }
+  }
+
+  return { targets, fullyPaidIds, leftover };
 }

@@ -3,12 +3,16 @@ import { z } from 'zod';
 export interface RegionalConfig {
   readonly defaultCountryCode: string;
   readonly timeZone: string;
+  readonly currencySymbol: string;
+  readonly currencyCode: string;
   readonly states: readonly string[];
 }
 
 const regionalConfigSchema = z.object({
   defaultCountryCode: z.string(),
   timeZone: z.string(),
+  currencySymbol: z.string(),
+  currencyCode: z.string(),
   states: z.array(z.string()),
 });
 
@@ -16,6 +20,8 @@ const rawRegionalConfig = {
   // Phone dialing code (ITU-T E.164), NOT ISO 3166-1 alpha-2 country code
   defaultCountryCode: '234',
   timeZone: 'Africa/Lagos',
+  currencySymbol: '₦',
+  currencyCode: 'NGN',
   states: [
     'Abia',
     'Adamawa',

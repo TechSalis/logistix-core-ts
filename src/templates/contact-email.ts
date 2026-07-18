@@ -6,7 +6,8 @@ function escapeHtml(s: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 const style = `
@@ -33,7 +34,6 @@ export function submitterAckTemplate(
   category: ContactCategory,
   message: string,
 ): string {
-  const enc = (s: string) => escapeHtml(s);
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>${style}</style></head>
 <body>
@@ -48,13 +48,13 @@ export function submitterAckTemplate(
       <div class="body-content">
         <div class="check">✓</div>
         <h2 style="margin:0 0 4px;font-size:20px;color:#0f172a;">We received your request</h2>
-        <p style="margin:0 0 24px;font-size:14px;color:#64748b;">Thanks for reaching out, ${enc(name)}. Here's what we got:</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#64748b;">Thanks for reaching out, ${escapeHtml(name)}. Here's what we got:</p>
 
         <div class="label">Category</div>
-        <div class="value">${enc(category)}</div>
+        <div class="value">${escapeHtml(category)}</div>
 
         <div class="label">Your message</div>
-        <div class="message-box">${enc(message).replace(/\n/g, '<br>')}</div>
+        <div class="message-box">${escapeHtml(message).replace(/\n/g, '<br>')}</div>
 
         <p style="font-size:14px;color:#64748b;">Our team will review your request and get back to you shortly.</p>
 

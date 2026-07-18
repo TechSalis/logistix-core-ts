@@ -5,10 +5,7 @@ import { DATA_RETENTION } from './billing.js';
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;
   readonly maxBulkDeliveries: number;
-  readonly maxQueryLimit: number;
   readonly maxTrackingHistory: number;
-  readonly maxMemoryArraySize: number;
-  readonly maxSynthesisResults: number;
   readonly maxDrafts: number;
   readonly retentionDays: number;
 
@@ -28,11 +25,12 @@ export interface LimitsConfig {
   readonly locationDeduplicationRadiusMeters: number;
   readonly externalApiTimeoutMs: number;
   readonly trackingFrequencyConfig: {
-    readonly baseIntervalMs: number; // Interval when close to destination (e.g. 10s)
-    readonly farDistanceMeters: number; // Distance threshold to consider 'far' (e.g. 2000m)
+    readonly baseIntervalMs: number; // Interval when close to destination (e.g. 3s)
+    readonly farDistanceMeters: number; // Distance threshold to consider 'far' (e.g. 3km)
     readonly farIntervalMs: number; // Interval when far from destination (e.g. 60s)
   };
   readonly maxRiderActiveDeliveries: number;
+  readonly maxSearchQueryLength: number;
 }
 
 const limitsConfigSchema = z.object({
@@ -49,6 +47,7 @@ const limitsConfigSchema = z.object({
     farIntervalMs: z.number(),
   }),
   maxRiderActiveDeliveries: z.number(),
+  maxSearchQueryLength: z.number(),
 });
 
 const rawLimitsConfig = {
@@ -57,7 +56,7 @@ const rawLimitsConfig = {
   userActionConcurrency: 10, // Chunk size for user-flow operations (chunkedPromiseAll) to avoid spiking DB connections
   externalApiConcurrency: 5, // Capped concurrency for external APIs like Google Maps to avoid rate limits
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
-  locationDeduplicationRadiusMeters: 1000, // Drop duplicate location results within this range
+  locationDeduplicationRadiusMeters: 200, // Drop duplicate location results within this range
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   trackingFrequencyConfig: {
     baseIntervalMs: 3000, // 3 seconds — minimum interval when very close to destination
@@ -65,6 +64,7 @@ const rawLimitsConfig = {
     farIntervalMs: 60000, // 60 seconds — maximum interval when far from destination
   },
   maxRiderActiveDeliveries: 5,
+  maxSearchQueryLength: 100,
 } as const;
 
 // Runtime validation guard — keeps config in sync with schema
@@ -76,12 +76,9 @@ export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsCon
  */
 export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   [SubscriptionTier.STARTER]: {
-    maxAIDeliveriesPerAction: 30,
-    maxBulkDeliveries: 50,
-    maxQueryLimit: 50,
+    maxAIDeliveriesPerAction: 20,
+    maxBulkDeliveries: 20,
     maxTrackingHistory: 50,
-    maxMemoryArraySize: 50,
-    maxSynthesisResults: 50,
     maxDrafts: 30,
     retentionDays: DATA_RETENTION[SubscriptionTier.STARTER],
     maxDispatchers: 2,
@@ -92,10 +89,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
   [SubscriptionTier.PROFESSIONAL]: {
     maxAIDeliveriesPerAction: 50,
     maxBulkDeliveries: 100,
-    maxQueryLimit: 100,
     maxTrackingHistory: 100,
-    maxMemoryArraySize: 100,
-    maxSynthesisResults: 100,
     maxDrafts: 50,
     retentionDays: DATA_RETENTION[SubscriptionTier.PROFESSIONAL],
     maxDispatchers: 10,

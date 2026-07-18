@@ -5,10 +5,8 @@ export interface SecurityConfig {
   readonly rateLimits: {
     readonly global: { readonly max: number; readonly windowMs: number };
     readonly auth: { readonly max: number; readonly windowMs: number };
-    readonly api: { readonly max: number; readonly windowMs: number };
     readonly login: { readonly max: number; readonly windowMs: number };
     readonly register: { readonly max: number; readonly windowMs: number };
-    readonly otp: { readonly max: number; readonly windowMs: number };
     readonly tiers: Record<SubscriptionTier, { readonly max: number; readonly windowMs: number }>;
   };
   readonly jwt: {
@@ -43,10 +41,8 @@ const securityConfigSchema = z.object({
   rateLimits: z.object({
     global: z.object({ max: z.number(), windowMs: z.number() }),
     auth: z.object({ max: z.number(), windowMs: z.number() }),
-    api: z.object({ max: z.number(), windowMs: z.number() }),
     login: z.object({ max: z.number(), windowMs: z.number() }),
     register: z.object({ max: z.number(), windowMs: z.number() }),
-    otp: z.object({ max: z.number(), windowMs: z.number() }),
     tiers: z.record(
       z.nativeEnum(SubscriptionTier),
       z.object({ max: z.number(), windowMs: z.number() }),
@@ -82,10 +78,8 @@ const rawSecurityConfig = {
   rateLimits: {
     global: { max: 1000, windowMs: 60_000 },
     auth: { max: 15, windowMs: 900_000 },
-    api: { max: 100, windowMs: 60_000 },
     login: { max: 10, windowMs: 300_000 },
     register: { max: 3, windowMs: 3_600_000 },
-    otp: { max: 5, windowMs: 3_600_000 },
     tiers: {
       [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
       [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },

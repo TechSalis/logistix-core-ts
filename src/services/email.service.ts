@@ -16,6 +16,10 @@ export interface SendEmailOptions {
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
+export interface SendEmailResult {
+  id: string;
+}
+
 export class EmailService {
   private readonly apiKey: string;
 
@@ -26,7 +30,7 @@ export class EmailService {
     this.apiKey = apiKey;
   }
 
-  async sendEmail(options: SendEmailOptions) {
+  async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
     const res = await fetchWithTimeout(RESEND_API_URL, {
       method: 'POST',
       headers: {
@@ -48,6 +52,6 @@ export class EmailService {
       throw new Error(`Failed to send email: ${res.statusText} - ${JSON.stringify(errorData)}`);
     }
 
-    return res.json();
+    return res.json() as Promise<SendEmailResult>;
   }
 }

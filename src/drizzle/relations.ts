@@ -146,8 +146,11 @@ export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
     fields: [exportRequests.companyId],
     references: [companies.id],
   }),
-  rider: one(riders, {
-    fields: [exportRequests.riderId],
-    references: [riders.id],
+}));
+
+export const ledgerTransactionsRelations = relations(ledgerTransactions, ({ one }) => ({
+  company: one(companies, {
+    fields: [ledgerTransactions.companyId],
+    references: [companies.id],
   }),
 }));

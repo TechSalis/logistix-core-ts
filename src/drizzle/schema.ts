@@ -36,7 +36,6 @@ import {
   VehicleType,
   EventType,
   EntityType,
-  ActorType,
 } from '../enums.js';
 import { DEFAULT_WORKING_HOURS } from '../config.js';
 
@@ -68,7 +67,6 @@ export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
 export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
-export const actorType = pgEnum('ActorType', enumValues(ActorType));
 export const currencyEnum = pgEnum('Currency', enumValues(Currency));
 
 export const companies = pgTable(
@@ -78,18 +76,14 @@ export const companies = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    name: text().notNull(),
-    logoUrl: text('logo_url'),
-    cac: text(),
+    name: text(),
     contactPhone: text('contact_phone'),
-    address: text(),
-    placeId: text('place_id'),
     states: text().array().default([]),
-    interstateDeliveries: boolean('interstate_deliveries').notNull(),
+    interstateDeliveries: boolean('interstate_deliveries').default(false).notNull(),
     verificationStatus: approvalStatus('verification_status')
       .default(ApprovalStatus.PENDING)
       .notNull(),
-    verificationNote: text('verification_note'),
+    metadata: jsonb(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -97,7 +91,6 @@ export const companies = pgTable(
   },
   (table) => [
     index('companies_name_idx').using('btree', table.name.asc().nullsLast().op('text_ops')),
-    index('companies_states_gin_idx').using('gin', table.states),
     index('companies_verification_status_idx').using(
       'btree',
       table.verificationStatus.asc().nullsLast().op('enum_ops'),
@@ -122,6 +115,7 @@ export const companySettings = pgTable(
     lockedAt: timestamp('locked_at', { precision: 3, mode: 'date' }),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
+    virtualAccountNumber: text('virtual_account_number'),
 
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
@@ -130,6 +124,8 @@ export const companySettings = pgTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     autoAcceptTeam: boolean('auto_accept_team').default(false).notNull(),
+    states: text().array().default([]),
+    interstateDeliveries: boolean('interstate_deliveries').default(false).notNull(),
   },
   (table) => [
     uniqueIndex('company_settings_company_id_key').using(
@@ -140,6 +136,7 @@ export const companySettings = pgTable(
       'btree',
       table.companyCode.asc().nullsLast().op('text_ops'),
     ),
+    index('company_settings_virtual_account_number_idx').on(table.virtualAccountNumber),
 
     foreignKey({
       columns: [table.companyId],
@@ -418,11 +415,9 @@ export const deliveries = pgTable(
     riderId: text('rider_id'),
     status: deliveryStatus().notNull(),
     pickupAddress: text('pickup_address').notNull(),
-    pickupPlaceId: text('pickup_place_id'),
     pickupLat: doublePrecision('pickup_lat'),
     pickupLng: doublePrecision('pickup_lng'),
     dropOffAddress: text('drop_off_address').notNull(),
-    dropOffPlaceId: text('drop_off_place_id'),
     dropOffLat: doublePrecision('drop_off_lat'),
     dropOffLng: doublePrecision('drop_off_lng'),
     pickupPhone: text('pickup_phone'),
@@ -439,10 +434,11 @@ export const deliveries = pgTable(
       .notNull(),
     trackingId: text('tracking_id').notNull(),
     pin: text(),
-    proofOfDeliveryImagePath: text('proof_of_delivery_image_path'),
     price: doublePrecision(),
     pool: boolean('pool').notNull().default(false),
     metadata: jsonb(),
+    pickupState: text('pickup_state'),
+    creatorPlatform: text('creator_platform'),
   },
   (table) => [
     index('deliveries_company_id_status_idx').using(
@@ -474,6 +470,14 @@ export const deliveries = pgTable(
     index('deliveries_pool_true_idx')
       .using('btree', table.pool.asc().nullsLast().op('bool_ops'))
       .where(sql`pool = true`),
+    index('deliveries_pool_status_rider_idx')
+      .using(
+        'btree',
+        table.pool.asc().nullsLast().op('bool_ops'),
+        table.status.asc().nullsLast().op('enum_ops'),
+        table.riderId.asc().nullsLast().op('text_ops'),
+      )
+      .where(sql`pool = true`),
     uniqueIndex('deliveries_tracking_id_key').using(
       'btree',
       table.trackingId.asc().nullsLast().op('text_ops'),
@@ -491,7 +495,8 @@ export const deliveries = pgTable(
       'btree',
       table.dropOffPhone.asc().nullsLast().op('text_ops'),
     ),
-    index('deliveries_pickup_state_idx').on(sql`(deliveries.metadata->>'pickupState')`),
+    index('deliveries_pickup_state_idx').on(table.pickupState),
+    index('deliveries_creator_platform_idx').on(table.creatorPlatform),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -519,20 +524,16 @@ export const riders = pgTable(
     userId: text('user_id').notNull(),
     email: text().notNull(),
     fullName: text('full_name').notNull(),
-    phoneNumber: text('phone_number'),
-    registrationNumber: text('registration_number'),
-    idType: text('id_type'),
     vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     isAccepted: boolean('is_accepted').default(false).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
     lastLng: doublePrecision('last_lng'),
-    currentState: text('current_state'),
     lastSeen: timestamp('last_seen', { precision: 3, mode: 'date' }),
-    batteryLevel: integer('battery_level'),
     fcmToken: text('fcm_token'),
     companyId: text('company_id'),
+    metadata: jsonb(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -548,6 +549,9 @@ export const riders = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.status.asc().nullsLast().op('enum_ops'),
     ),
+    index('riders_company_id_is_accepted_idx')
+      .using('btree', table.companyId.asc().nullsLast().op('text_ops'))
+      .where(sql`is_accepted = true`),
     index('riders_company_id_updated_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
@@ -589,6 +593,7 @@ export const transactions = pgTable(
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
     description: text(),
     metadata: jsonb(),
+    gatewayReference: text('gateway_reference'),
     processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -612,6 +617,7 @@ export const transactions = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
     ),
+    index('payment_transactions_gateway_reference_idx').on(table.gatewayReference),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -712,12 +718,8 @@ export const eventLogs = pgTable(
     entityType: entityType('entity_type').notNull(),
     entityId: text('entity_id').notNull(),
     actorId: text('actor_id'),
-    actorType: actorType('actor_type'),
     companyId: text('company_id'),
     payload: jsonb(),
-    traceId: text('trace_id'),
-    ipAddress: text('ip_address'),
-    userAgent: text('user_agent'),
     success: boolean().default(true).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -768,12 +770,8 @@ export const exportRequests = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     companyId: text('company_id').notNull(),
-    userEmail: text('user_email').notNull(),
     status: exportRequestStatus().default(ExportRequestStatus.PENDING).notNull(),
-    requestedBy: text('requested_by').notNull(),
-    targetMonth: text('target_month'),
-    riderId: text('rider_id'),
-    downloadUrl: text('download_url'),
+    metadata: jsonb(),
     requestedAt: timestamp('requested_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -788,13 +786,6 @@ export const exportRequests = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
     ),
-    foreignKey({
-      columns: [table.riderId],
-      foreignColumns: [riders.id],
-      name: 'export_requests_rider_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('set null'),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -815,12 +806,8 @@ export const escalations = pgTable(
     conversationId: text('conversation_id').notNull(),
     companyId: text('company_id'),
     escalatedTo: escalatedTo('escalated_to').notNull(),
-    reason: text(),
     status: escalationStatus().default(EscalationStatus.OPEN).notNull(),
-    resolvedBy: text('resolved_by'),
-    hijackedBy: text('hijacked_by'),
-    hijackedAt: timestamp('hijacked_at', { precision: 3, mode: 'date' }),
-    resolvedAt: timestamp('resolved_at', { precision: 3, mode: 'date' }),
+    resolution: jsonb(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -865,14 +852,11 @@ export const companyDailyMetrics = pgTable(
     totalDeliveries: integer('total_deliveries').notNull().default(0),
     deliveredCount: integer('delivered_count').notNull().default(0),
     cancelledCount: integer('cancelled_count').notNull().default(0),
+    failedCount: integer('failed_count').notNull().default(0),
     awaitingPaymentCount: integer('awaiting_payment_count').notNull().default(0),
     totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
     avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
-    whatsappOrders: integer('whatsapp_orders').notNull().default(0),
-    instagramOrders: integer('instagram_orders').notNull().default(0),
-    facebookOrders: integer('facebook_orders').notNull().default(0),
-    tiktokOrders: integer('tiktok_orders').notNull().default(0),
-    manualOrders: integer('manual_orders').notNull().default(0),
+    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
     peakHour: integer('peak_hour'),
     uniqueRidersActive: integer('unique_riders_active').notNull().default(0),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })

@@ -11,7 +11,6 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export {
   UserRole,
-  ActorType,
   DeliveryStatus,
   PaymentMethod,
   RiderStatus,
@@ -53,7 +52,6 @@ export {
   SseEventType,
   JwtTokenType,
   ContactCategory,
-  DayOfWeek,
   isDeliveryTerminal,
   safeEnumValue,
 } from './enums.js';
@@ -61,7 +59,6 @@ export {
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {
   buildSystemConfig,
-  SHARED_SYSTEM_CONFIG,
   DEFAULT_WORKING_HOURS,
   BRAND_NAME,
   DELETED_USER_SENTINEL,
@@ -91,7 +88,9 @@ export {
   shouldBillNow,
   shouldRetryPayment,
   getNextRetryDate,
+  computeAllocationTargets,
 } from './billing.js';
+export type { AllocationDeliveryInput, AllocationTarget } from './billing.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export {
@@ -122,6 +121,19 @@ export {
   type ContactSubmission,
   type ContactNotifierOptions,
 } from './contact.js';
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+export {
+  fetchActiveCompanyRecipients,
+  sendMaintenanceNotification,
+  sendBreachNotification,
+  logBreachIncident,
+  type BreachSeverity,
+  type CompanyRecipient,
+  type MaintenanceWindow,
+  type BreachIncident,
+} from './notifications.js';
+export { getSeverityLabel, formatDuration } from './templates/notification-emails.js';
 
 // ─── Offline / Local-First ────────────────────────────────────────────────────
 export { OFFLINE_DB_NAME } from './offline.js';

@@ -9,7 +9,6 @@ import {
   EventType,
   ErrorCode,
   SystemStatus,
-  ActorType,
   ChannelPlatform,
   LogLevel,
 } from '../src/enums.js';
@@ -37,6 +36,7 @@ describe('Enums', () => {
       expect(DeliveryStatus.IN_TRANSIT).toBe('IN_TRANSIT');
       expect(DeliveryStatus.DELIVERED).toBe('DELIVERED');
       expect(DeliveryStatus.CANCELLED).toBe('CANCELLED');
+      expect(DeliveryStatus.FAILED).toBe('FAILED');
     });
   });
 
@@ -93,16 +93,11 @@ describe('Enums', () => {
     });
   });
 
-  describe('ActorType', () => {
-    it('has SYSTEM', () => {
-      expect(ActorType.SYSTEM).toBe('SYSTEM');
-    });
-  });
-
   describe('ChannelPlatform', () => {
-    it('includes social platforms', () => {
+    it('includes social platforms and business', () => {
       expect(ChannelPlatform.WHATSAPP).toBe('WHATSAPP');
       expect(ChannelPlatform.INSTAGRAM).toBe('INSTAGRAM');
+      expect(ChannelPlatform.BUSINESS).toBe('BUSINESS');
     });
   });
 

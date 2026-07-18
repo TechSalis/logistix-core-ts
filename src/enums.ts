@@ -6,10 +6,6 @@ export enum UserRole {
   CUSTOMER = 'CUSTOMER',
 }
 
-export enum ActorType {
-  SYSTEM = 'SYSTEM',
-}
-
 export enum DeliveryStatus {
   AWAITING_PAYMENT = 'AWAITING_PAYMENT',
   PENDING = 'PENDING',
@@ -17,10 +13,15 @@ export enum DeliveryStatus {
   IN_TRANSIT = 'IN_TRANSIT',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
+  FAILED = 'FAILED',
 }
 
 export function isDeliveryTerminal(status: DeliveryStatus): boolean {
-  return status === DeliveryStatus.DELIVERED || status === DeliveryStatus.CANCELLED;
+  return (
+    status === DeliveryStatus.DELIVERED ||
+    status === DeliveryStatus.CANCELLED ||
+    status === DeliveryStatus.FAILED
+  );
 }
 
 export enum PaymentMethod {
@@ -58,6 +59,7 @@ export enum ChannelPlatform {
   INSTAGRAM = 'INSTAGRAM',
   FACEBOOK = 'FACEBOOK',
   TIKTOK = 'TIKTOK',
+  BUSINESS = 'BUSINESS',
 }
 
 export enum NodeEnv {
@@ -161,6 +163,7 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
+  LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
 export enum NotificationEventType {
@@ -320,6 +323,7 @@ export enum DayOfWeek {
   THURSDAY = 'Thursday',
   FRIDAY = 'Friday',
   SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
 }
 
 // Categories that should generate leads in external CRM/Sheets
@@ -334,7 +338,7 @@ export const LEAD_CATEGORIES: ReadonlySet<ContactCategory> = new Set([
  * Returns `undefined` instead of crashing on unknown values.
  *
  * @example
- * safeEnumValue(DeliveryStatus, 'inTransit') // DeliveryStatus.IN_TRANSIT
+ * safeEnumValue(DeliveryStatus, 'IN_TRANSIT') // DeliveryStatus.IN_TRANSIT
  * safeEnumValue(DeliveryStatus, 'UNKNOWN')   // undefined
  */
 export function safeEnumValue<T extends Record<string, string>>(

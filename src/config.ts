@@ -34,6 +34,7 @@ const rawDefaultWorkingHours = {
   [DayOfWeek.THURSDAY]: { start: '07:00', close: '19:00' },
   [DayOfWeek.FRIDAY]: { start: '07:00', close: '19:00' },
   [DayOfWeek.SATURDAY]: { start: '07:00', close: '19:00' },
+  // Sunday intentionally omitted — closed
 } as const;
 
 // Runtime validation guard — keeps config in sync with schema

@@ -1,6 +1,6 @@
 {
-  "id": "a467c330-5fa9-4241-aaab-d04dec077c2e",
-  "prevId": "169945cc-b577-4aae-981e-33a16e15b36e",
+  "id": "c2ab06e3-4a07-47d2-89c1-854634bac106",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -184,34 +184,10 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
-        },
-        "logo_url": {
-          "name": "logo_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cac": {
-          "name": "cac",
-          "type": "text",
-          "primaryKey": false,
           "notNull": false
         },
         "contact_phone": {
           "name": "contact_phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "address": {
-          "name": "address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "place_id": {
-          "name": "place_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -227,7 +203,8 @@
           "name": "interstate_deliveries",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": false
         },
         "verification_status": {
           "name": "verification_status",
@@ -237,9 +214,9 @@
           "notNull": true,
           "default": "'PENDING'"
         },
-        "verification_note": {
-          "name": "verification_note",
-          "type": "text",
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -274,21 +251,6 @@
           "method": "btree",
           "with": {}
         },
-        "companies_states_gin_idx": {
-          "name": "companies_states_gin_idx",
-          "columns": [
-            {
-              "expression": "states",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "gin",
-          "with": {}
-        },
         "companies_verification_status_idx": {
           "name": "companies_verification_status_idx",
           "columns": [
@@ -307,6 +269,164 @@
         }
       },
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.company_channels": {
+      "name": "company_channels",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "platform": {
+          "name": "platform",
+          "type": "ChannelPlatform",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "platform_id": {
+          "name": "platform_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "company_channels_is_active_idx": {
+          "name": "company_channels_is_active_idx",
+          "columns": [
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_channels_company_id_is_active_idx": {
+          "name": "company_channels_company_id_is_active_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_channels_platform_company_id_key": {
+          "name": "company_channels_platform_company_id_key",
+          "columns": [
+            {
+              "expression": "platform",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            },
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_channels_platform_platform_id_key": {
+          "name": "company_channels_platform_platform_id_key",
+          "columns": [
+            {
+              "expression": "platform",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            },
+            {
+              "expression": "platform_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "company_channels_company_id_fkey": {
+          "name": "company_channels_company_id_fkey",
+          "tableFrom": "company_channels",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -350,6 +470,13 @@
           "notNull": true,
           "default": 0
         },
+        "failed_count": {
+          "name": "failed_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "awaiting_payment_count": {
           "name": "awaiting_payment_count",
           "type": "integer",
@@ -370,40 +497,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "whatsapp_orders": {
-          "name": "whatsapp_orders",
-          "type": "integer",
+        "channel_breakdown": {
+          "name": "channel_breakdown",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
-        },
-        "instagram_orders": {
-          "name": "instagram_orders",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "facebook_orders": {
-          "name": "facebook_orders",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "tiktok_orders": {
-          "name": "tiktok_orders",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "manual_orders": {
-          "name": "manual_orders",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
+          "default": "'{}'::jsonb"
         },
         "peak_hour": {
           "name": "peak_hour",
@@ -434,29 +533,6 @@
         }
       },
       "indexes": {
-        "cdm_company_id_date_idx": {
-          "name": "cdm_company_id_date_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "cdm_date_idx": {
           "name": "cdm_date_idx",
           "columns": [
@@ -498,164 +574,6 @@
           ]
         }
       },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.company_integrations": {
-      "name": "company_integrations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "platform": {
-          "name": "platform",
-          "type": "MappingPlatform",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "platform_id": {
-          "name": "platform_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "company_integrations_is_active_idx": {
-          "name": "company_integrations_is_active_idx",
-          "columns": [
-            {
-              "expression": "is_active",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "bool_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "company_integrations_company_id_is_active_idx": {
-          "name": "company_integrations_company_id_is_active_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "is_active",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "bool_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "company_integrations_platform_company_id_key": {
-          "name": "company_integrations_platform_company_id_key",
-          "columns": [
-            {
-              "expression": "platform",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            },
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "company_integrations_platform_platform_id_key": {
-          "name": "company_integrations_platform_platform_id_key",
-          "columns": [
-            {
-              "expression": "platform",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            },
-            {
-              "expression": "platform_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "company_integrations_company_id_fkey": {
-          "name": "company_integrations_company_id_fkey",
-          "tableFrom": "company_integrations",
-          "tableTo": "companies",
-          "columnsFrom": [
-            "company_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -724,6 +642,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "virtual_account_number": {
+          "name": "virtual_account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "ledger_balance": {
           "name": "ledger_balance",
           "type": "double precision",
@@ -737,12 +661,41 @@
           "primaryKey": false,
           "notNull": false
         },
+        "escalated_to": {
+          "name": "escalated_to",
+          "type": "EscalatedTo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ADMIN'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "auto_accept_team": {
+          "name": "auto_accept_team",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "states": {
+          "name": "states",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'"
+        },
+        "interstate_deliveries": {
+          "name": "interstate_deliveries",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {
@@ -774,6 +727,21 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_settings_virtual_account_number_idx": {
+          "name": "company_settings_virtual_account_number_idx",
+          "columns": [
+            {
+              "expression": "virtual_account_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -812,7 +780,7 @@
         },
         "platform": {
           "name": "platform",
-          "type": "MappingPlatform",
+          "type": "ChannelPlatform",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -1085,12 +1053,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "pickup_place_id": {
-          "name": "pickup_place_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "pickup_lat": {
           "name": "pickup_lat",
           "type": "double precision",
@@ -1108,12 +1070,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "drop_off_place_id": {
-          "name": "drop_off_place_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "drop_off_lat": {
           "name": "drop_off_lat",
@@ -1190,12 +1146,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "proof_of_delivery_image_path": {
-          "name": "proof_of_delivery_image_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "price": {
           "name": "price",
           "type": "double precision",
@@ -1212,6 +1162,18 @@
         "metadata": {
           "name": "metadata",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pickup_state": {
+          "name": "pickup_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creator_platform": {
+          "name": "creator_platform",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -1309,22 +1271,6 @@
           "method": "btree",
           "with": {}
         },
-        "deliveries_created_at_idx": {
-          "name": "deliveries_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "deliveries_rider_id_status_idx": {
           "name": "deliveries_rider_id_status_idx",
           "columns": [
@@ -1381,6 +1327,37 @@
           "method": "btree",
           "with": {}
         },
+        "deliveries_pool_status_rider_idx": {
+          "name": "deliveries_pool_status_rider_idx",
+          "columns": [
+            {
+              "expression": "pool",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bool_ops"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            },
+            {
+              "expression": "rider_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "where": "pool = true",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "deliveries_tracking_id_key": {
           "name": "deliveries_tracking_id_key",
           "columns": [
@@ -1409,22 +1386,6 @@
             },
             {
               "expression": "pin",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "deliveries_created_by_idx": {
-          "name": "deliveries_created_by_idx",
-          "columns": [
-            {
-              "expression": "created_by",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -1472,9 +1433,24 @@
           "name": "deliveries_pickup_state_idx",
           "columns": [
             {
-              "expression": "(deliveries.metadata->>'pickupState')",
+              "expression": "pickup_state",
+              "isExpression": false,
               "asc": true,
-              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_creator_platform_idx": {
+          "name": "deliveries_creator_platform_idx",
+          "columns": [
+            {
+              "expression": "creator_platform",
+              "isExpression": false,
+              "asc": true,
               "nulls": "last"
             }
           ],
@@ -1798,12 +1774,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "status": {
           "name": "status",
           "type": "EscalationStatus",
@@ -1812,27 +1782,9 @@
           "notNull": true,
           "default": "'OPEN'"
         },
-        "resolved_by": {
-          "name": "resolved_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hijacked_by": {
-          "name": "hijacked_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hijacked_at": {
-          "name": "hijacked_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "resolved_at": {
-          "name": "resolved_at",
-          "type": "timestamp (3)",
+        "resolution": {
+          "name": "resolution",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -1963,13 +1915,15 @@
         },
         "event_type": {
           "name": "event_type",
-          "type": "text",
+          "type": "EventType",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "entity_type": {
           "name": "entity_type",
-          "type": "text",
+          "type": "EntityType",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -1985,12 +1939,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "actor_type": {
-          "name": "actor_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "company_id": {
           "name": "company_id",
           "type": "text",
@@ -2000,24 +1948,6 @@
         "payload": {
           "name": "payload",
           "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "trace_id": {
-          "name": "trace_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_agent": {
-          "name": "user_agent",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -2114,7 +2044,7 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "text_ops"
+              "opclass": "enum_ops"
             },
             {
               "expression": "created_at",
@@ -2137,7 +2067,7 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "text_ops"
+              "opclass": "enum_ops"
             },
             {
               "expression": "success",
@@ -2174,14 +2104,14 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "text_ops"
+              "opclass": "enum_ops"
             },
             {
               "expression": "event_type",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "text_ops"
+              "opclass": "enum_ops"
             },
             {
               "expression": "created_at",
@@ -2220,12 +2150,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "user_email": {
-          "name": "user_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "status": {
           "name": "status",
           "type": "ExportRequestStatus",
@@ -2234,27 +2158,9 @@
           "notNull": true,
           "default": "'PENDING'"
         },
-        "requested_by": {
-          "name": "requested_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_month": {
-          "name": "target_month",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rider_id": {
-          "name": "rider_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "download_url": {
-          "name": "download_url",
-          "type": "text",
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -2308,19 +2214,6 @@
         }
       },
       "foreignKeys": {
-        "export_requests_rider_id_fkey": {
-          "name": "export_requests_rider_id_fkey",
-          "tableFrom": "export_requests",
-          "tableTo": "riders",
-          "columnsFrom": [
-            "rider_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
         "export_requests_company_id_fkey": {
           "name": "export_requests_company_id_fkey",
           "tableFrom": "export_requests",
@@ -2808,24 +2701,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "phone_number": {
-          "name": "phone_number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "registration_number": {
-          "name": "registration_number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "id_type": {
-          "name": "id_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "vehicle_type": {
           "name": "vehicle_type",
           "type": "VehicleType",
@@ -2868,21 +2743,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "current_state": {
-          "name": "current_state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "last_seen": {
           "name": "last_seen",
           "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "battery_level": {
-          "name": "battery_level",
-          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -2895,6 +2758,12 @@
         "company_id": {
           "name": "company_id",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -2955,6 +2824,23 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "riders_company_id_is_accepted_idx": {
+          "name": "riders_company_id_is_accepted_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "where": "is_accepted = true",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -3090,7 +2976,8 @@
         },
         "currency": {
           "name": "currency",
-          "type": "text",
+          "type": "Currency",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'NGN'"
@@ -3144,6 +3031,12 @@
         "metadata": {
           "name": "metadata",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gateway_reference": {
+          "name": "gateway_reference",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -3232,6 +3125,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "payment_transactions_gateway_reference_idx": {
+          "name": "payment_transactions_gateway_reference_idx",
+          "columns": [
+            {
+              "expression": "gateway_reference",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3257,6 +3165,18 @@
     }
   },
   "enums": {
+    "public.ActorType": {
+      "name": "ActorType",
+      "schema": "public",
+      "values": [
+        "SYSTEM",
+        "ADMIN",
+        "COMPANY",
+        "DISPATCHER",
+        "RIDER",
+        "CUSTOMER"
+      ]
+    },
     "public.ApprovalStatus": {
       "name": "ApprovalStatus",
       "schema": "public",
@@ -3268,12 +3188,30 @@
         "DISABLED"
       ]
     },
+    "public.ChannelPlatform": {
+      "name": "ChannelPlatform",
+      "schema": "public",
+      "values": [
+        "WHATSAPP",
+        "INSTAGRAM",
+        "FACEBOOK",
+        "TIKTOK",
+        "BUSINESS"
+      ]
+    },
     "public.ChannelType": {
       "name": "ChannelType",
       "schema": "public",
       "values": [
         "LOGISTIX_NETWORK",
         "MY_CHANNEL"
+      ]
+    },
+    "public.Currency": {
+      "name": "Currency",
+      "schema": "public",
+      "values": [
+        "NGN"
       ]
     },
     "public.DeliveryStatus": {
@@ -3285,7 +3223,22 @@
         "ASSIGNED",
         "IN_TRANSIT",
         "DELIVERED",
-        "CANCELLED"
+        "CANCELLED",
+        "FAILED"
+      ]
+    },
+    "public.EntityType": {
+      "name": "EntityType",
+      "schema": "public",
+      "values": [
+        "USER",
+        "DELIVERY",
+        "RIDER",
+        "COMPANY",
+        "DISPATCHER",
+        "SYSTEM",
+        "MESSAGE",
+        "COMPANY_CHANNEL"
       ]
     },
     "public.EscalatedTo": {
@@ -3305,12 +3258,43 @@
         "HIJACKED"
       ]
     },
+    "public.EventType": {
+      "name": "EventType",
+      "schema": "public",
+      "values": [
+        "DELIVERY_ASSIGNED",
+        "DELIVERY_UPDATED",
+        "DELIVERY_CREATED",
+        "DELIVERY_STATUS_CHANGED",
+        "DELIVERY_DELETED",
+        "RIDER_LOCATION_UPDATED",
+        "RIDER_ASSIGNED",
+        "RIDER_ACCEPTED",
+        "RIDER_DELETED",
+        "USER_PURGED",
+        "MESSAGE_SENT",
+        "CHANNEL_SETUP",
+        "CHANNEL_ACTIVATED",
+        "CHANNEL_DEACTIVATED",
+        "MESSAGE_DELETED",
+        "DISPATCHER_DELETED",
+        "DOWNGRADE",
+        "CANCELLED_PAYMENT_TIMEOUT",
+        "AI_EXECUTION",
+        "SECURITY_INCIDENT",
+        "COMPANY_ACTIVATED",
+        "COMPANY_DEACTIVATED",
+        "COMPANY_TIER_CHANGED",
+        "SUBSCRIPTION_STATUS_CHANGED",
+        "COMPANY_VERIFIED",
+        "COMPANY_VERIFICATION_REJECTED"
+      ]
+    },
     "public.ExportRequestStatus": {
       "name": "ExportRequestStatus",
       "schema": "public",
       "values": [
         "PENDING",
-        "PROCESSING_EMAIL",
         "COMPLETED",
         "FAILED"
       ]
@@ -3323,19 +3307,8 @@
         "DEBIT",
         "CORRECTION",
         "REFUND",
-        "AI_USAGE",
         "CHANNEL_FEE",
         "OVERAGE"
-      ]
-    },
-    "public.MappingPlatform": {
-      "name": "MappingPlatform",
-      "schema": "public",
-      "values": [
-        "WHATSAPP",
-        "INSTAGRAM",
-        "FACEBOOK",
-        "TIKTOK"
       ]
     },
     "public.MessageStatus": {
@@ -3418,8 +3391,7 @@
         "SUBSCRIPTION",
         "ADJUSTMENT",
         "SETTLEMENT",
-        "REFUND",
-        "TOPUP"
+        "REFUND"
       ]
     },
     "public.VehicleType": {
