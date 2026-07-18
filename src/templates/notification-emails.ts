@@ -106,3 +106,31 @@ export function formatDuration(start: Date, end: Date): string {
   if (minutes === 0) return `${hours} hour${hours > 1 ? 's' : ''}`;
   return `${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minutes`;
 }
+
+export function settlementReceiptEmailTemplate(
+  companyName: string,
+  amount: string,
+  reference: string,
+  narration: string,
+  remainingBalance: string,
+  processedAt: string,
+  bankLast4: string,
+): string {
+  return `<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+    <h2 style="color: #16a34a;">Withdrawal Successful</h2>
+    <p>Hi <b>${companyName}</b>,</p>
+    <p>Your withdrawal has been processed successfully. The funds have been sent to your registered bank account.</p>
+    <div style="${CARD_STYLE}">
+      <p style="margin: 0 0 8px;"><b>Amount:</b> ${amount}</p>
+      <p style="margin: 0 0 8px;"><b>Reference:</b> ${reference}</p>
+      <p style="margin: 0 0 8px;"><b>Description:</b> ${narration}</p>
+      <p style="margin: 0 0 8px;"><b>Destination:</b> ****${bankLast4}</p>
+      <p style="margin: 0 0 8px;"><b>Processed:</b> ${processedAt}</p>
+      <p style="margin: 0;"><b>Remaining Balance:</b> ${remainingBalance}</p>
+    </div>
+    <p style="color: #6b7280; font-size: 12px;">
+      If you did not initiate this withdrawal, please contact support immediately.
+    </p>
+    <p style="${FOOTER_STYLE}">${BRAND_NAME} Team</p>
+  </div>`;
+}

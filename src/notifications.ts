@@ -14,6 +14,7 @@ import type { SystemConfig } from './config.js';
 import {
   maintenanceEmailTemplate,
   breachEmailTemplate,
+  settlementReceiptEmailTemplate,
   getSeverityLabel,
   formatDuration,
 } from './templates/notification-emails.js';
@@ -43,13 +44,17 @@ export interface BreachIncident {
 }
 
 // Re-export template helpers for consumers that need them
-export { getSeverityLabel, formatDuration } from './templates/notification-emails.js';
+export {
+  getSeverityLabel,
+  formatDuration,
+  settlementReceiptEmailTemplate,
+} from './templates/notification-emails.js';
 
 /**
  * Minimal Drizzle database interface used by notification queries.
  * Compatible with both `drizzle-orm/node-postgres` and `drizzle-orm/postgres-js`.
  */
- 
+
 type DrizzleDB = { select: any; insert: any };
 
 // ─── DB Queries ───────────────────────────────────────────────────────────────
@@ -167,6 +172,40 @@ export async function sendBreachNotification(
       incident.affectedDataTypes,
       incident.description,
       config.supportEmail,
+    ),
+  });
+}
+
+// ─── Settlement Receipt ───────────────────────────────────────────────────────
+
+export interface SettlementReceiptData {
+  companyName: string;
+  contactEmail: string;
+  amount: string;
+  reference: string;
+  narration: string;
+  remainingBalance: string;
+  processedAt: string;
+  bankLast4: string;
+}
+
+export async function sendSettlementReceipt(
+  emailService: EmailService,
+  config: SystemConfig,
+  data: SettlementReceiptData,
+): Promise<void> {
+  await emailService.sendEmail({
+    from: `${BRAND_NAME} Team <${config.supportEmail}>`,
+    to: [data.contactEmail],
+    subject: `Withdrawal Confirmation — ${BRAND_NAME}`,
+    html: settlementReceiptEmailTemplate(
+      data.companyName,
+      data.amount,
+      data.reference,
+      data.narration,
+      data.remainingBalance,
+      data.processedAt,
+      data.bankLast4,
     ),
   });
 }
