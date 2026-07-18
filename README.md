@@ -28,17 +28,17 @@ npm install git+https://github.com/TechSalis/logistix-core-ts.git#v1.0.0
 ## Usage
 
 ```ts
-import { UserRole, DeliveryStatus, SHARED_SYSTEM_CONFIG } from 'logistix-core-ts';
+import { UserRole, DeliveryStatus, buildSystemConfig } from 'logistix-core-ts';
 
 console.log(UserRole.DISPATCHER);                // 'DISPATCHER'
-console.log(SHARED_SYSTEM_CONFIG.brandName);     // 'Logistix AI' (or env override)
+const config = buildSystemConfig({ customerBaseUrl: 'https://...' });
 ```
 
 ---
 
 ## Configuration via Environment Variables
 
-`SHARED_SYSTEM_CONFIG` is built from environment variables via `buildSystemConfig()`:
+`buildSystemConfig()` creates a `SystemConfig` from environment variables:
 
 | Env Variable        | Default              | Description                  |
 |---------------------|----------------------|------------------------------|
@@ -88,7 +88,5 @@ npm test         # run unit tests
 | `EventType`             | `enum`            | All system event types                       |
 | `ErrorCode`             | `enum`            | Standardized error codes                     |
 | *(+ many more)*         | `enum`            | See `src/enums.ts`                           |
-| `SHARED_SYSTEM_CONFIG`  | `SystemConfig`    | Auto-built from environment variables        |
 | `buildSystemConfig()`   | `function`        | Factory for browser/custom env contexts      |
 | `fetchWithTimeout()`    | `function`        | Fetch with configurable timeout              |
-| `DEFAULT_TIMEOUT_MS`    | `constant`        | Default timeout for fetchWithTimeout         |

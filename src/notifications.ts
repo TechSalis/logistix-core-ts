@@ -1,15 +1,8 @@
 import { eq } from 'drizzle-orm';
-import {
-  BRAND_NAME,
-  EmailService,
-  EntityType,
-  EventType,
-  SubscriptionStatus,
-  companies,
-  companySettings,
-  dispatchers,
-  eventLogs,
-} from './index.js';
+import { BRAND_NAME } from './config.js';
+import { EmailService } from './services/email.service.js';
+import { EntityType, EventType, SubscriptionStatus } from './enums.js';
+import { companies, companySettings, dispatchers, eventLogs } from './drizzle/index.js';
 import type { SystemConfig } from './config.js';
 import {
   maintenanceEmailTemplate,

@@ -1,6 +1,5 @@
 import { BRAND_NAME } from '../config.js';
-
-type BreachSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+import type { BreachSeverity } from '../notifications.js';
 
 const FOOTER_STYLE = 'margin-top: 16px; color: #6b7280; font-size: 12px;';
 const CARD_STYLE = 'background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 16px 0;';
