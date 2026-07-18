@@ -45,8 +45,8 @@ export async function sendContactSubmissionAck(
           action: 'contact_request',
         }),
       });
-    } catch {
-      // Google Leads is a best-effort downstream — failure must not block the acknowledgement email
+    } catch (e) {
+      console.debug('[Contact] Google Leads submission failed (non-blocking):', e);
     }
   }
 }
