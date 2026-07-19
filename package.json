@@ -54,6 +54,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
+    "@types/nodemailer": "^8.0.1",
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
@@ -72,6 +73,7 @@
     "drizzle-orm": "^0.45.2"
   },
   "dependencies": {
+    "nodemailer": "^9.0.3",
     "zod": "^4.4.3"
   }
 }
