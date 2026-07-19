@@ -35,6 +35,11 @@ export enum RiderStatus {
   BUSY = 'BUSY',
 }
 
+export enum DispatcherStatus {
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+}
+
 export enum ApprovalStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',

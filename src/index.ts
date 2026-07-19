@@ -14,6 +14,7 @@ export {
   DeliveryStatus,
   PaymentMethod,
   RiderStatus,
+  DispatcherStatus,
   ApprovalStatus,
   EntityType,
   ChannelPlatform,
