@@ -15,12 +15,11 @@ import {
 
 describe('Enums', () => {
   describe('UserRole', () => {
-    it('has all five roles', () => {
+    it('has all four roles', () => {
       expect(UserRole.ADMIN).toBe('ADMIN');
       expect(UserRole.COMPANY).toBe('COMPANY');
       expect(UserRole.DISPATCHER).toBe('DISPATCHER');
       expect(UserRole.RIDER).toBe('RIDER');
-      expect(UserRole.CUSTOMER).toBe('CUSTOMER');
     });
 
     it('values are strings matching their keys', () => {

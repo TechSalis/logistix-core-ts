@@ -3,7 +3,6 @@ export enum UserRole {
   COMPANY = 'COMPANY',
   DISPATCHER = 'DISPATCHER',
   RIDER = 'RIDER',
-  CUSTOMER = 'CUSTOMER',
 }
 
 export enum DeliveryStatus {
