@@ -114,7 +114,7 @@ export type { AIConfig } from './ai.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetch-with-timeout.js';
-export { extractErrorMessage } from './error-utils.js';
+export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export {

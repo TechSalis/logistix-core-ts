@@ -11,6 +11,21 @@
  *   toast.error(extractErrorMessage(err));
  * }
  */
+/**
+ * Returns a structured error context for logger calls.
+ * Single `instanceof Error` check — replaces the verbose
+ * `{ error: extractErrorMessage(e), stack: e instanceof Error ? e.stack : undefined }` pattern.
+ *
+ * @example
+ * logger.error('Something failed', extractErrorContext(err));
+ */
+export function extractErrorContext(error: unknown): { error: string; stack?: string } {
+  return {
+    error: extractErrorMessage(error),
+    stack: error instanceof Error ? error.stack : undefined,
+  };
+}
+
 export function extractErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     const parts: string[] = [error.message];
