@@ -85,6 +85,7 @@ export {
   MS_PER_DAY,
   MS_PER_HOUR,
   MS_PER_MINUTE,
+  FIVE_MINUTES_MS,
   getSubscriptionPrice,
   formatAmount,
   formatNaira,
@@ -120,7 +121,14 @@ export { fetchWithTimeout } from './fetch-with-timeout.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
-export { sendFcmPush, sendFcmPushBatch, type FcmMessage, type FcmResponse } from './fcm-sender.js';
+export {
+  FcmService,
+  sendFcmPush,
+  sendFcmPushBatch,
+  type FcmCredentials,
+  type FcmMessage,
+  type FcmResponse,
+} from './fcm-sender.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export {

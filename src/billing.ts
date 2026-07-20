@@ -23,6 +23,9 @@ export const MS_PER_HOUR = 3_600_000;
  */
 export const MS_PER_MINUTE = 60_000;
 
+/** 5 minutes in milliseconds — standard cache TTL across the codebase. */
+export const FIVE_MINUTES_MS = 5 * 60_000;
+
 /**
  * Data retention in days per tier
  */
