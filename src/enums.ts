@@ -255,6 +255,7 @@ export enum SystemStatus {
 
 export enum ComponentStatus {
   HEALTHY = 'HEALTHY',
+  DEGRADED = 'DEGRADED',
   UNHEALTHY = 'UNHEALTHY',
   UNKNOWN = 'UNKNOWN',
   CONFIGURED = 'CONFIGURED',
