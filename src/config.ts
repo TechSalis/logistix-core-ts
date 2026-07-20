@@ -11,6 +11,12 @@ export interface BankDetails {
 /** Sentinel value used when a user record is purged but references remain. */
 export const DELETED_USER_SENTINEL = 'DELETED_USER';
 
+/**
+ * System actor ID used for automated/system-generated audit log entries.
+ * Used in event_logs.actorId and as RLS role for worker sessions.
+ */
+export const SYSTEM_ACTOR_ID = 'system';
+
 export interface SystemConfig {
   readonly jwtIssuer: string;
   readonly customerBaseUrl: string;

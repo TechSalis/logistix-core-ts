@@ -63,6 +63,7 @@ export {
   DEFAULT_WORKING_HOURS,
   BRAND_NAME,
   DELETED_USER_SENTINEL,
+  SYSTEM_ACTOR_ID,
 } from './config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config.js';
 
@@ -82,6 +83,8 @@ export {
   DEDICATED_TIERS,
   KOBO_PER_NAIRA,
   MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
   getSubscriptionPrice,
   formatAmount,
   formatNaira,
@@ -115,6 +118,9 @@ export type { AIConfig } from './ai.js';
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './fetch-with-timeout.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
+
+// ─── FCM Push Notifications ───────────────────────────────────────────────────
+export { sendFcmPush, sendFcmPushBatch, type FcmMessage, type FcmResponse } from './fcm-sender.js';
 
 // ─── Contact Form ─────────────────────────────────────────────────────────────
 export {
