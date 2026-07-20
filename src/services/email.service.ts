@@ -57,19 +57,20 @@ async function sendViaSmtp(smtp: SmtpConfig, options: SendEmailOptions): Promise
 }
 
 export class EmailService {
-  private readonly apiKey: string;
+  private readonly apiKey: string | null;
 
-  constructor(apiKey: string) {
-    if (!apiKey) {
-      throw new Error('EmailService requires a valid API key');
-    }
-    this.apiKey = apiKey;
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || null;
   }
 
   async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
     const smtp = getSmtpConfig();
     if (smtp) {
       return sendViaSmtp(smtp, options);
+    }
+
+    if (!this.apiKey) {
+      throw new Error('EmailService: no SMTP configured and no RESEND_API_KEY set — email not sent');
     }
 
     const res = await fetchWithTimeout(RESEND_API_URL, {
