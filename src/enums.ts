@@ -188,7 +188,7 @@ export enum UserAuditAction {
 
 export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
-  TYPING = 'TYPING',
+  OWNERSHIP = 'OWNERSHIP',
 }
 
 export enum MessageStatus {

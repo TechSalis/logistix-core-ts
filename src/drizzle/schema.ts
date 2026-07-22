@@ -77,6 +77,8 @@ export const companies = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     name: text(),
+    cac: text(),
+    nipostLicenseNumber: text('nipost_license_number'),
     contactPhone: text('contact_phone'),
     states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').default(false).notNull(),
@@ -95,6 +97,7 @@ export const companies = pgTable(
       'btree',
       table.verificationStatus.asc().nullsLast().op('enum_ops'),
     ),
+    uniqueIndex('companies_cac_key').on(table.cac),
   ],
 );
 
@@ -219,6 +222,9 @@ export const conversations = pgTable(
     scratchpad: jsonb(),
     customerName: text('customer_name'),
     timezone: text('timezone'),
+    handledBy: text('handled_by'),
+    handledByType: text('handled_by_type').default('ai').notNull(),
+    handledAt: timestamp('handled_at', { precision: 3, mode: 'date' }),
   },
   (table) => [
     index('conversations_company_id_idx').using(
@@ -241,9 +247,10 @@ export const conversations = pgTable(
       table.platformId.asc().nullsLast().op('text_ops'),
       table.companyId.asc().nullsLast().op('text_ops'),
     ),
-    index('conversations_auto_reply_disabled_idx')
-      .on(table.companyId, table.lastMessageAt)
-      .where(sql`auto_reply_enabled = false AND company_id IS NULL`),
+    index('conversations_handled_by_type_idx').using(
+      'btree',
+      table.handledByType.asc().nullsLast().op('text_ops'),
+    ),
     index('conversations_channel_type_idx').using(
       'btree',
       table.channelType.asc().nullsLast().op('enum_ops'),
@@ -438,7 +445,9 @@ export const deliveries = pgTable(
     pool: boolean('pool').notNull().default(false),
     metadata: jsonb(),
     pickupState: text('pickup_state'),
+    dropOffState: text('drop_off_state'),
     creatorPlatform: text('creator_platform'),
+    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
   },
   (table) => [
     index('deliveries_company_id_status_idx').using(
@@ -533,6 +542,7 @@ export const riders = pgTable(
     lastSeen: timestamp('last_seen', { precision: 3, mode: 'date' }),
     fcmToken: text('fcm_token'),
     companyId: text('company_id'),
+    phoneNumber: text('phone_number'),
     metadata: jsonb(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })

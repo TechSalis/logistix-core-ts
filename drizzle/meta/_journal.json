@@ -8,6 +8,27 @@
       "when": 1784308106426,
       "tag": "0000_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784798400000,
+      "tag": "0001_add_company_cac_nipost",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784802000000,
+      "tag": "0002_promote_delivery_rider_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784888400000,
+      "tag": "0003_conversation_ownership",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,8 @@ export interface DeliveryBase {
   createdAt: string;
   rider: { id: string; fullName: string } | null;
   pool: boolean;
+  dropOffState: string | null;
+  vehicleType: string;
 }
 
 export interface RiderBase {
