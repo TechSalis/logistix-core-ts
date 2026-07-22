@@ -506,6 +506,16 @@ export const deliveries = pgTable(
     ),
     index('deliveries_pickup_state_idx').on(table.pickupState),
     index('deliveries_creator_platform_idx').on(table.creatorPlatform),
+    index('deliveries_status_created_at_idx').using(
+      'btree',
+      table.status.asc().nullsLast().op('enum_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('deliveries_status_scheduled_at_idx').using(
+      'btree',
+      table.status.asc().nullsLast().op('enum_ops'),
+      table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
+    ),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
