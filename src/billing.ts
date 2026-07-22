@@ -75,14 +75,14 @@ export const BILLING_CONFIG = {
   BILLING_CYCLE_DAYS: 30,
 
   /**
-   * Grace period before locking (in days)
+   * Days after PAST_DUE before company data is cancelled
    */
-  GRACE_PERIOD_DAYS: 14,
+  PAST_DUE_CANCEL_DAYS: 14,
 
   /**
-   * Days after LOCKED before company data is purged
+   * Days after CANCELLED before company data is purged
    */
-  PURGE_AFTER_LOCKED_DAYS: 30,
+  PURGE_AFTER_CANCELLED_DAYS: 30,
 
   /**
    * Message retention in days (archived after this period)
@@ -127,12 +127,12 @@ export const BILLING_CONFIG = {
 
   /**
    * Retry configuration for failed payments.
-   * Retries daily for up to MAX_ATTEMPTS days.
-   * If all retries fail, deduct from ledger. If insufficient, lock.
+   * Retries on specific days after failure (1, 3, 7 days).
+   * If all retries fail, moves to PAST_DUE. After PAST_DUE window, cancels.
    */
   PAYMENT_RETRY: {
-    MAX_ATTEMPTS: 30, // Retry daily for up to 30 days
-    DAILY_RETRY_INTERVAL_DAYS: 1, // Retry every day
+    MAX_ATTEMPTS: 3,
+    INTERVALS_DAYS: [1, 3, 7] as const,
   },
 } as const;
 
@@ -179,20 +179,23 @@ export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date
 
 /**
  * Check if we should retry a failed payment.
- * Retries daily up to MAX_ATTEMPTS times.
+ * Retries on specific days: 1, 3, 7 after the last billing attempt.
  */
 export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number): boolean {
   if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
     return false;
   }
 
+  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
+  const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
   const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
-  return daysSinceLastAttempt >= BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS;
+  return daysSinceLastAttempt >= daysToWait;
 }
 
 /**
  * Get the next retry date for a failed payment.
+ * Uses the interval schedule: day 1, day 3, day 7.
  * Returns null if max retry attempts have been exhausted.
  */
 export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): Date | null {
@@ -200,10 +203,10 @@ export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): D
     return null;
   }
 
+  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
+  const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
   const nextRetryDate = new Date(lastBillingDate);
-  nextRetryDate.setDate(
-    nextRetryDate.getDate() + BILLING_CONFIG.PAYMENT_RETRY.DAILY_RETRY_INTERVAL_DAYS,
-  );
+  nextRetryDate.setDate(nextRetryDate.getDate() + daysToWait);
   return nextRetryDate;
 }
 

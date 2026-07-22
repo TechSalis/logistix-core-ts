@@ -29,6 +29,20 @@
       "when": 1784888400000,
       "tag": "0003_conversation_ownership",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784892000000,
+      "tag": "0004_add_event_type_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784978400000,
+      "tag": "0005_simplify_subscription",
+      "breakpoints": true
     }
   ]
 }

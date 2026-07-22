@@ -111,11 +111,11 @@ export const companySettings = pgTable(
     companyId: text('company_id').notNull(),
     tier: subscriptionTier().default(SubscriptionTier.STARTER).notNull(),
     subscriptionStatus: subscriptionStatus('subscription_status')
-      .default(SubscriptionStatus.PENDING)
+      .default(SubscriptionStatus.CANCELLED)
       .notNull(),
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
-    lockedAt: timestamp('locked_at', { precision: 3, mode: 'date' }),
+    squadTokenId: text('squad_token_id'),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
     virtualAccountNumber: text('virtual_account_number'),

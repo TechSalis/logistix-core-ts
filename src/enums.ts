@@ -34,11 +34,6 @@ export enum RiderStatus {
   BUSY = 'BUSY',
 }
 
-export enum DispatcherStatus {
-  ACTIVE = 'ACTIVE',
-  SUSPENDED = 'SUSPENDED',
-}
-
 export enum ApprovalStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
@@ -86,10 +81,8 @@ export enum SubscriptionTier {
 }
 
 export enum SubscriptionStatus {
-  PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
-  GRACE = 'GRACE',
-  LOCKED = 'LOCKED',
+  PAST_DUE = 'PAST_DUE',
   CANCELLED = 'CANCELLED',
 }
 
@@ -161,6 +154,9 @@ export enum EventType {
   COMPANY_VERIFICATION_REJECTED = 'COMPANY_VERIFICATION_REJECTED',
   RIDER_DOCUMENTS_VERIFIED = 'RIDER_DOCUMENTS_VERIFIED',
   RIDER_DOCUMENTS_REJECTED = 'RIDER_DOCUMENTS_REJECTED',
+  LOGIN = 'LOGIN',
+  LOGOUT = 'LOGOUT',
+  PROFILE_UPDATE = 'PROFILE_UPDATE',
 }
 
 export enum SubscriptionEventType {
@@ -170,14 +166,6 @@ export enum SubscriptionEventType {
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
   LOCATION_UPDATED = 'LOCATION_UPDATED',
-}
-
-export enum NotificationEventType {
-  HUMAN_REQUEST = 'HUMAN_REQUEST',
-}
-
-export enum NotificationPriority {
-  URGENT = 'URGENT',
 }
 
 export enum UserAuditAction {
@@ -252,16 +240,6 @@ export enum SystemStatus {
   DOWN = 'DOWN',
 }
 
-export enum ComponentStatus {
-  HEALTHY = 'HEALTHY',
-  DEGRADED = 'DEGRADED',
-  UNHEALTHY = 'UNHEALTHY',
-  UNKNOWN = 'UNKNOWN',
-  CONFIGURED = 'CONFIGURED',
-  NOT_CONFIGURED = 'NOT_CONFIGURED',
-  PARTIALLY_CONFIGURED = 'PARTIALLY_CONFIGURED',
-}
-
 export enum LlmRole {
   USER = 'user',
   ASSISTANT = 'assistant',
@@ -295,10 +273,6 @@ export enum ApiTag {
   GRAPHQL = 'GraphQL',
   SYSTEM = 'System',
   ONBOARDING = 'Onboarding',
-}
-
-export enum UpdateReason {
-  REJECTED_BY_COMPANY = 'REJECTED_BY_COMPANY',
 }
 
 export enum SseEventType {
