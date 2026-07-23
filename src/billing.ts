@@ -80,6 +80,11 @@ export const BILLING_CONFIG = {
   PAST_DUE_CANCEL_DAYS: 14,
 
   /**
+   * Days of free trial for new companies
+   */
+  TRIAL_DAYS: 14,
+
+  /**
    * Days after CANCELLED before company data is purged
    */
   PURGE_AFTER_CANCELLED_DAYS: 30,

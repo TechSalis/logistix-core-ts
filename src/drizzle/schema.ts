@@ -111,7 +111,7 @@ export const companySettings = pgTable(
     companyId: text('company_id').notNull(),
     tier: subscriptionTier().default(SubscriptionTier.STARTER).notNull(),
     subscriptionStatus: subscriptionStatus('subscription_status')
-      .default(SubscriptionStatus.CANCELLED)
+      .default(SubscriptionStatus.TRIAL)
       .notNull(),
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
