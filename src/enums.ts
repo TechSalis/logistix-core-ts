@@ -265,7 +265,6 @@ export enum LogLevel {
 }
 
 export enum ApiTag {
-  ANALYTICS = 'Analytics',
   TRACKING = 'Tracking',
   AUTH = 'Auth',
   CONTACT = 'Contact',
