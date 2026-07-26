@@ -15,6 +15,7 @@ export {
   PaymentMethod,
   RiderStatus,
   ApprovalStatus,
+  CompanyAccessLevel,
   EntityType,
   ChannelPlatform,
   NodeEnv,
@@ -39,6 +40,8 @@ export {
   SecurityEventType,
   SecuritySeverity,
   ErrorCode,
+  DayOfWeek,
+  WEEKDAYS,
   SystemStatus,
   LlmRole,
   ProviderRole,
@@ -48,7 +51,6 @@ export {
   SseEventType,
   JwtTokenType,
   ContactCategory,
-  isDeliveryTerminal,
   safeEnumValue,
 } from './enums.js';
 
@@ -87,8 +89,8 @@ export {
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
-  getNextRetryDate,
   computeAllocationTargets,
+  computeAccessLevel,
 } from './billing.js';
 export type { AllocationDeliveryInput, AllocationTarget } from './billing.js';
 
@@ -139,6 +141,8 @@ export {
   sendBreachNotification,
   logBreachIncident,
   sendSettlementReceipt,
+  sendVerificationApprovedEmail,
+  sendVerificationRejectedEmail,
   type BreachSeverity,
   type CompanyRecipient,
   type MaintenanceWindow,

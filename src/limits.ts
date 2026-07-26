@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
-import { DATA_RETENTION } from './billing.js';
+import { DATA_RETENTION, MS_PER_MINUTE } from './billing.js';
 
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;
@@ -61,7 +61,7 @@ const rawLimitsConfig = {
   trackingFrequencyConfig: {
     baseIntervalMs: 3000, // 3 seconds — minimum interval when very close to destination
     farDistanceMeters: 3000, // 3km — distance threshold to switch from close to far interval
-    farIntervalMs: 60000, // 60 seconds — maximum interval when far from destination
+    farIntervalMs: MS_PER_MINUTE, // 60 seconds — maximum interval when far from destination
   },
   maxRiderActiveDeliveries: 5,
   maxSearchQueryLength: 100,

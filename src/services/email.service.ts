@@ -15,6 +15,7 @@ export interface SendEmailOptions {
 }
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
+const DEFAULT_SMTP_PORT = 1025;
 
 export interface SendEmailResult {
   id: string;
@@ -29,7 +30,7 @@ function getSmtpConfig(): SmtpConfig | null {
   const host = typeof process !== 'undefined' && process.env?.SMTP_HOST;
   const port = typeof process !== 'undefined' && process.env?.SMTP_PORT;
   if (!host) return null;
-  return { host, port: port ? parseInt(port, 10) : 1025 };
+  return { host, port: port ? parseInt(port, 10) : DEFAULT_SMTP_PORT };
 }
 
 async function sendViaSmtp(smtp: SmtpConfig, options: SendEmailOptions): Promise<SendEmailResult> {
@@ -70,7 +71,9 @@ export class EmailService {
     }
 
     if (!this.apiKey) {
-      throw new Error('EmailService: no SMTP configured and no RESEND_API_KEY set — email not sent');
+      throw new Error(
+        'EmailService: no SMTP configured and no RESEND_API_KEY set — email not sent',
+      );
     }
 
     const res = await fetchWithTimeout(RESEND_API_URL, {
@@ -91,7 +94,9 @@ export class EmailService {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(`Failed to send email: ${res.statusText} - ${JSON.stringify(errorData)}`);
+      throw new Error(
+        `EmailService: failed to send email via Resend (${res.status} ${res.statusText}): ${JSON.stringify(errorData)}`,
+      );
     }
 
     return res.json() as Promise<SendEmailResult>;

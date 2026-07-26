@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { Currency } from './enums.js';
 
 export interface RegionalConfig {
   readonly defaultCountryCode: string;
+  readonly defaultIsoCountryCode: string;
   readonly timeZone: string;
   readonly currencySymbol: string;
   readonly currencyCode: string;
@@ -10,6 +12,7 @@ export interface RegionalConfig {
 
 const regionalConfigSchema = z.object({
   defaultCountryCode: z.string(),
+  defaultIsoCountryCode: z.string(),
   timeZone: z.string(),
   currencySymbol: z.string(),
   currencyCode: z.string(),
@@ -19,9 +22,11 @@ const regionalConfigSchema = z.object({
 const rawRegionalConfig = {
   // Phone dialing code (ITU-T E.164), NOT ISO 3166-1 alpha-2 country code
   defaultCountryCode: '234',
+  // ISO 3166-1 alpha-2 country code
+  defaultIsoCountryCode: 'ng',
   timeZone: 'Africa/Lagos',
   currencySymbol: '₦',
-  currencyCode: 'NGN',
+  currencyCode: Currency.NGN,
   states: [
     'Abia',
     'Adamawa',
@@ -65,3 +70,9 @@ const rawRegionalConfig = {
 
 // Runtime validation guard — keeps config in sync with schema
 export const REGIONAL_CONFIG: RegionalConfig = regionalConfigSchema.parse(rawRegionalConfig);
+
+/** Locale string for toLocaleDateString / toLocaleTimeString / toLocaleString calls. */
+export const REGIONAL_LOCALE = 'en-NG';
+
+/** Headquarter location for footer text in emails. */
+export const HQ_LOCATION = 'Lagos, Nigeria';

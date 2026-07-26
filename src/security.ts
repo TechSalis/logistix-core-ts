@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
+import { MS_PER_MINUTE, MS_PER_HOUR, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './billing.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {
@@ -53,11 +54,11 @@ const securityConfigSchema = z.object({
     jwtRefreshExpiresIn: z.string(),
   }),
   sudo: z.object({
-    tokenExpiresInMs: z.number().default(900_000),
+    tokenExpiresInMs: z.number().default(FIFTEEN_MINUTES_MS),
   }),
   admin: z.object({
     maxFailedSudoAttempts: z.number().default(5),
-    sudoLockoutMs: z.number().default(900_000),
+    sudoLockoutMs: z.number().default(FIFTEEN_MINUTES_MS),
   }),
   headers: z.record(z.string(), z.string()),
   maliciousPatterns: z.array(z.instanceof(RegExp)),
@@ -76,13 +77,13 @@ const securityConfigSchema = z.object({
 
 const rawSecurityConfig = {
   rateLimits: {
-    global: { max: 1000, windowMs: 60_000 },
-    auth: { max: 15, windowMs: 900_000 },
-    login: { max: 10, windowMs: 300_000 },
-    register: { max: 3, windowMs: 3_600_000 },
+    global: { max: 1000, windowMs: MS_PER_MINUTE },
+    auth: { max: 15, windowMs: FIFTEEN_MINUTES_MS },
+    login: { max: 10, windowMs: FIVE_MINUTES_MS },
+    register: { max: 3, windowMs: MS_PER_HOUR },
     tiers: {
-      [SubscriptionTier.STARTER]: { max: 500, windowMs: 900_000 },
-      [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: 900_000 },
+      [SubscriptionTier.STARTER]: { max: 500, windowMs: FIFTEEN_MINUTES_MS },
+      [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: FIFTEEN_MINUTES_MS },
     },
   },
   jwt: {
@@ -90,11 +91,11 @@ const rawSecurityConfig = {
     jwtRefreshExpiresIn: '30d',
   },
   sudo: {
-    tokenExpiresInMs: 900_000,
+    tokenExpiresInMs: FIFTEEN_MINUTES_MS,
   },
   admin: {
     maxFailedSudoAttempts: 5,
-    sudoLockoutMs: 900_000,
+    sudoLockoutMs: FIFTEEN_MINUTES_MS,
   },
   headers: {
     'X-Content-Type-Options': 'nosniff',

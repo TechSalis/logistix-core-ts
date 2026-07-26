@@ -1,5 +1,12 @@
-import { SubscriptionTier, ChannelType, Currency } from './enums.js';
-import { REGIONAL_CONFIG } from './regional.js';
+import {
+  SubscriptionTier,
+  ChannelType,
+  Currency,
+  ApprovalStatus,
+  SubscriptionStatus,
+  CompanyAccessLevel,
+} from './enums.js';
+import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.js';
 
 /**
  * 1 Naira = 100 Kobo.
@@ -24,7 +31,13 @@ export const MS_PER_HOUR = 3_600_000;
 export const MS_PER_MINUTE = 60_000;
 
 /** 5 minutes in milliseconds — standard cache TTL across the codebase. */
-export const FIVE_MINUTES_MS = 5 * 60_000;
+export const FIVE_MINUTES_MS = 5 * MS_PER_MINUTE;
+
+/** 10 minutes in milliseconds. */
+export const TEN_MINUTES_MS = 10 * MS_PER_MINUTE;
+
+/** 15 minutes in milliseconds. */
+export const FIFTEEN_MINUTES_MS = 15 * MS_PER_MINUTE;
 
 /**
  * Data retention in days per tier
@@ -153,7 +166,7 @@ export function getSubscriptionPrice(tier: SubscriptionTier): number {
  */
 export function formatAmount(kobo: number): string {
   const value = kobo / KOBO_PER_NAIRA;
-  return `${REGIONAL_CONFIG.currencySymbol}${value.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${REGIONAL_CONFIG.currencySymbol}${value.toLocaleString(REGIONAL_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 /**
@@ -161,7 +174,7 @@ export function formatAmount(kobo: number): string {
  * Use this for values already converted from kobo, or raw naira amounts.
  */
 export function formatNaira(amount: number, decimals = 2): string {
-  return `${REGIONAL_CONFIG.currencySymbol}${amount.toLocaleString('en-NG', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+  return `${REGIONAL_CONFIG.currencySymbol}${amount.toLocaleString(REGIONAL_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
 }
 
 /**
@@ -196,23 +209,6 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
   const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
   return daysSinceLastAttempt >= daysToWait;
-}
-
-/**
- * Get the next retry date for a failed payment.
- * Uses the interval schedule: day 1, day 3, day 7.
- * Returns null if max retry attempts have been exhausted.
- */
-export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): Date | null {
-  if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
-    return null;
-  }
-
-  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
-  const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
-  const nextRetryDate = new Date(lastBillingDate);
-  nextRetryDate.setDate(nextRetryDate.getDate() + daysToWait);
-  return nextRetryDate;
 }
 
 /**
@@ -266,4 +262,33 @@ export function computeAllocationTargets(
   }
 
   return { targets, fullyPaidIds, leftover };
+}
+
+/**
+ * Compute a single access level from the approval × subscription matrix.
+ *
+ *  ApprovalStatus × SubscriptionStatus  →  CompanyAccessLevel
+ *  ─────────────────────────────────────────────────────────────
+ *  APPROVED + ACTIVE      →  FULL
+ *  APPROVED + TRIAL       →  TRIAL
+ *  APPROVED + PAST_DUE    →  PAST_DUE
+ *  anything else          →  RESTRICTED
+ */
+export function computeAccessLevel(
+  verificationStatus: ApprovalStatus | null | undefined,
+  subscriptionStatus: SubscriptionStatus | null | undefined,
+): CompanyAccessLevel {
+  if (verificationStatus !== ApprovalStatus.APPROVED) {
+    return CompanyAccessLevel.RESTRICTED;
+  }
+  if (subscriptionStatus === SubscriptionStatus.ACTIVE) {
+    return CompanyAccessLevel.FULL;
+  }
+  if (subscriptionStatus === SubscriptionStatus.TRIAL) {
+    return CompanyAccessLevel.TRIAL;
+  }
+  if (subscriptionStatus === SubscriptionStatus.PAST_DUE) {
+    return CompanyAccessLevel.PAST_DUE;
+  }
+  return CompanyAccessLevel.RESTRICTED;
 }

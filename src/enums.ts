@@ -15,14 +15,6 @@ export enum DeliveryStatus {
   FAILED = 'FAILED',
 }
 
-export function isDeliveryTerminal(status: DeliveryStatus): boolean {
-  return (
-    status === DeliveryStatus.DELIVERED ||
-    status === DeliveryStatus.CANCELLED ||
-    status === DeliveryStatus.FAILED
-  );
-}
-
 export enum PaymentMethod {
   PREPAID = 'PREPAID',
   PAY_ON_DELIVERY = 'PAY_ON_DELIVERY',
@@ -42,6 +34,13 @@ export enum ApprovalStatus {
   DISABLED = 'DISABLED',
 }
 
+export enum CompanyAccessLevel {
+  FULL = 'FULL',
+  TRIAL = 'TRIAL',
+  PAST_DUE = 'PAST_DUE',
+  RESTRICTED = 'RESTRICTED',
+}
+
 export enum EntityType {
   USER = 'USER',
   DELIVERY = 'DELIVERY',
@@ -49,7 +48,6 @@ export enum EntityType {
   COMPANY = 'COMPANY',
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
-  MESSAGE = 'MESSAGE',
   COMPANY_CHANNEL = 'COMPANY_CHANNEL',
 }
 
@@ -65,7 +63,6 @@ export enum NodeEnv {
   Development = 'development',
   Production = 'production',
   Test = 'test',
-  Staging = 'staging',
 }
 
 export enum VehicleType {
@@ -105,8 +102,6 @@ export enum TransactionType {
 export enum LedgerAdjustmentType {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
-  CORRECTION = 'CORRECTION',
-  REFUND = 'REFUND',
   CHANNEL_FEE = 'CHANNEL_FEE',
   OVERAGE = 'OVERAGE',
 }
@@ -132,18 +127,12 @@ export enum EventType {
   DELIVERY_STATUS_CHANGED = 'DELIVERY_STATUS_CHANGED',
   DELIVERY_DELETED = 'DELIVERY_DELETED',
   RIDER_LOCATION_UPDATED = 'RIDER_LOCATION_UPDATED',
-  RIDER_ASSIGNED = 'RIDER_ASSIGNED',
   RIDER_ACCEPTED = 'RIDER_ACCEPTED',
   RIDER_DELETED = 'RIDER_DELETED',
-  USER_PURGED = 'USER_PURGED',
-  MESSAGE_SENT = 'MESSAGE_SENT',
   CHANNEL_SETUP = 'CHANNEL_SETUP',
   CHANNEL_ACTIVATED = 'CHANNEL_ACTIVATED',
   CHANNEL_DEACTIVATED = 'CHANNEL_DEACTIVATED',
-  MESSAGE_DELETED = 'MESSAGE_DELETED',
   DISPATCHER_DELETED = 'DISPATCHER_DELETED',
-  DOWNGRADE = 'DOWNGRADE',
-  CANCELLED_PAYMENT_TIMEOUT = 'CANCELLED_PAYMENT_TIMEOUT',
   AI_EXECUTION = 'AI_EXECUTION',
   SECURITY_INCIDENT = 'SECURITY_INCIDENT',
   COMPANY_ACTIVATED = 'COMPANY_ACTIVATED',
@@ -155,9 +144,6 @@ export enum EventType {
   COMPANY_VERIFICATION_REJECTED = 'COMPANY_VERIFICATION_REJECTED',
   RIDER_DOCUMENTS_VERIFIED = 'RIDER_DOCUMENTS_VERIFIED',
   RIDER_DOCUMENTS_REJECTED = 'RIDER_DOCUMENTS_REJECTED',
-  LOGIN = 'LOGIN',
-  LOGOUT = 'LOGOUT',
-  PROFILE_UPDATE = 'PROFILE_UPDATE',
 }
 
 export enum SubscriptionEventType {
@@ -166,7 +152,6 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
-  LOCATION_UPDATED = 'LOCATION_UPDATED',
 }
 
 export enum UserAuditAction {
@@ -200,13 +185,10 @@ export enum SenderType {
   CUSTOMER = 'CUSTOMER',
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
-  SYSTEM = 'SYSTEM',
 }
 
 export enum ExportRequestStatus {
   PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
 }
 
 export enum SecurityEventType {
@@ -292,7 +274,6 @@ export enum JwtTokenType {
 }
 
 export enum ContactCategory {
-  SUPPORT = 'Support',
   PARTNERSHIP = 'Become a Partner',
   BUSINESS = 'For Business',
 }
@@ -306,6 +287,8 @@ export enum DayOfWeek {
   SATURDAY = 'Saturday',
   SUNDAY = 'Sunday',
 }
+
+export const WEEKDAYS: readonly DayOfWeek[] = Object.values(DayOfWeek);
 
 // Categories that should generate leads in external CRM/Sheets
 // Uses enum members so display strings can change without breaking logic

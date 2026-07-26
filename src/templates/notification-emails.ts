@@ -1,5 +1,7 @@
 import { BRAND_NAME } from '../config.js';
+import { SecuritySeverity } from '../enums.js';
 import type { BreachSeverity } from '../notifications.js';
+import { MS_PER_MINUTE } from '../billing.js';
 
 const FOOTER_STYLE = 'margin-top: 16px; color: #6b7280; font-size: 12px;';
 const CARD_STYLE = 'background: #f3f4f6; border-radius: 8px; padding: 16px; margin: 16px 0;';
@@ -83,13 +85,13 @@ export function breachEmailTemplate(
 
 export function getSeverityLabel(severity: BreachSeverity): string {
   switch (severity) {
-    case 'CRITICAL':
+    case SecuritySeverity.CRITICAL:
       return 'Critical — Immediate Action Required';
-    case 'HIGH':
+    case SecuritySeverity.HIGH:
       return 'High';
-    case 'MEDIUM':
+    case SecuritySeverity.MEDIUM:
       return 'Medium';
-    case 'LOW':
+    case SecuritySeverity.LOW:
       return 'Low';
     default:
       return severity;
@@ -97,9 +99,9 @@ export function getSeverityLabel(severity: BreachSeverity): string {
 }
 
 export function formatDuration(start: Date, end: Date): string {
-  const diffMs = end.getTime() - start.getTime();
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const totalMinutes = Math.floor((end.getTime() - start.getTime()) / MS_PER_MINUTE);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
   if (hours === 0) return `${minutes} minutes`;
   if (minutes === 0) return `${hours} hour${hours > 1 ? 's' : ''}`;

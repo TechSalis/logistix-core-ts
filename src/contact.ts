@@ -4,6 +4,9 @@ import { submitterAckTemplate } from './templates/contact-email.js';
 import { SHARED_SYSTEM_CONFIG } from './config.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 
+const CONTACT_FORM_TYPE = 'contact_form';
+const CONTACT_REQUEST_ACTION = 'contact_request';
+
 export interface ContactSubmission {
   email: string;
   name: string;
@@ -41,8 +44,8 @@ export async function sendContactSubmissionAck(
         body: JSON.stringify({
           email,
           fullName: name,
-          data: JSON.stringify({ category, message, type: 'contact_form' }),
-          action: 'contact_request',
+          data: JSON.stringify({ category, message, type: CONTACT_FORM_TYPE }),
+          action: CONTACT_REQUEST_ACTION,
         }),
       });
     } catch (e) {

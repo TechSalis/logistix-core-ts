@@ -1,5 +1,6 @@
 import { BRAND_NAME, SHARED_SYSTEM_CONFIG } from '../config.js';
 import { ContactCategory } from '../enums.js';
+import { HQ_LOCATION } from '../regional.js';
 
 function escapeHtml(s: string): string {
   return s
@@ -63,7 +64,7 @@ export function submitterAckTemplate(
       </div>
     </div>
     <div class="footer">
-      <p class="footer-text">${BRAND_NAME} Inc. &bull; Lagos, Nigeria</p>
+      <p class="footer-text">${BRAND_NAME} Inc. &bull; ${HQ_LOCATION}</p>
     </div>
   </div>
 </body></html>`;

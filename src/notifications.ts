@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { BRAND_NAME } from './config.js';
 import { EmailService } from './services/email.service.js';
-import { EntityType, EventType, SubscriptionStatus } from './enums.js';
+import { EntityType, EventType, SecuritySeverity, SubscriptionStatus } from './enums.js';
+import { REGIONAL_LOCALE } from './regional.js';
 import { companies, companySettings, dispatchers, eventLogs } from './drizzle/index.js';
 import type { SystemConfig } from './config.js';
 import {
@@ -11,10 +12,14 @@ import {
   getSeverityLabel,
   formatDuration,
 } from './templates/notification-emails.js';
+import {
+  verificationApprovedTemplate,
+  verificationRejectedTemplate,
+} from './templates/verification-emails.js';
 
 // ─── Shared Types ─────────────────────────────────────────────────────────────
 
-export type BreachSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type BreachSeverity = SecuritySeverity;
 
 export interface CompanyRecipient {
   company_id: string;
@@ -76,18 +81,18 @@ export async function sendMaintenanceNotification(
   recipient: CompanyRecipient,
   window: MaintenanceWindow,
 ): Promise<void> {
-  const startStr = window.startTime.toLocaleDateString('en-NG', {
+  const startStr = window.startTime.toLocaleDateString(REGIONAL_LOCALE, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  const startTimeStr = window.startTime.toLocaleTimeString('en-NG', {
+  const startTimeStr = window.startTime.toLocaleTimeString(REGIONAL_LOCALE, {
     hour: '2-digit',
     minute: '2-digit',
     timeZoneName: 'short',
   });
-  const endTimeStr = window.endTime.toLocaleTimeString('en-NG', {
+  const endTimeStr = window.endTime.toLocaleTimeString(REGIONAL_LOCALE, {
     hour: '2-digit',
     minute: '2-digit',
     timeZoneName: 'short',
@@ -134,12 +139,12 @@ export async function sendBreachNotification(
   incident: BreachIncident,
 ): Promise<void> {
   const severityLabel = getSeverityLabel(incident.severity);
-  const detectedStr = incident.detectedAt.toLocaleDateString('en-NG', {
+  const detectedStr = incident.detectedAt.toLocaleDateString(REGIONAL_LOCALE, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  const detectedTimeStr = incident.detectedAt.toLocaleTimeString('en-NG', {
+  const detectedTimeStr = incident.detectedAt.toLocaleTimeString(REGIONAL_LOCALE, {
     hour: '2-digit',
     minute: '2-digit',
     timeZoneName: 'short',
@@ -193,5 +198,36 @@ export async function sendSettlementReceipt(
       data.processedAt,
       data.bankLast4,
     ),
+  });
+}
+
+// ─── Verification Status Notifications ───────────────────────────────────────
+
+export async function sendVerificationApprovedEmail(
+  emailService: EmailService,
+  config: SystemConfig,
+  email: string,
+  companyName: string,
+): Promise<void> {
+  await emailService.sendEmail({
+    from: `${BRAND_NAME} Team <${config.supportEmail}>`,
+    to: [email],
+    subject: `Verification Approved — ${BRAND_NAME}`,
+    html: verificationApprovedTemplate(companyName),
+  });
+}
+
+export async function sendVerificationRejectedEmail(
+  emailService: EmailService,
+  config: SystemConfig,
+  email: string,
+  companyName: string,
+  reason?: string,
+): Promise<void> {
+  await emailService.sendEmail({
+    from: `${BRAND_NAME} Team <${config.supportEmail}>`,
+    to: [email],
+    subject: `Verification Rejected — ${BRAND_NAME}`,
+    html: verificationRejectedTemplate(companyName, reason),
   });
 }

@@ -3,6 +3,7 @@ import {
   pgTable,
   timestamp,
   text,
+  date,
   integer,
   uniqueIndex,
   index,
@@ -76,7 +77,7 @@ export const companies = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    name: text(),
+    name: text().notNull(),
     cac: text(),
     nipostLicenseNumber: text('nipost_license_number'),
     contactPhone: text('contact_phone'),
@@ -403,7 +404,7 @@ export const blockedIps = pgTable(
       'btree',
       table.expiresAt.asc().nullsLast().op('timestamp_ops'),
     ),
-    index('blocked_ips_ip_address_idx').using(
+    uniqueIndex('blocked_ips_ip_address_idx').using(
       'btree',
       table.ipAddress.asc().nullsLast().op('text_ops'),
     ),
@@ -607,7 +608,7 @@ export const transactions = pgTable(
     currency: currencyEnum().default(Currency.NGN).notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
-    provider: paymentProvider('provider'),
+    provider: paymentProvider('provider').default(PaymentProvider.SQUAD),
     tier: subscriptionTier('tier'),
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
@@ -868,7 +869,7 @@ export const companyDailyMetrics = pgTable(
   'company_daily_metrics',
   {
     companyId: text('company_id').notNull(),
-    date: text('date').notNull(),
+    date: date('date').notNull(),
     totalDeliveries: integer('total_deliveries').notNull().default(0),
     deliveredCount: integer('delivered_count').notNull().default(0),
     cancelledCount: integer('cancelled_count').notNull().default(0),
@@ -888,7 +889,7 @@ export const companyDailyMetrics = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.companyId, table.date] }),
-    index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('text_ops')),
+    index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('date_ops')),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],

@@ -1,4 +1,5 @@
 import { extractErrorMessage } from './error-utils.js';
+import { FIVE_MINUTES_MS, MS_PER_HOUR } from './billing.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.
@@ -34,8 +35,9 @@ interface CachedToken {
   expiresAt: number;
 }
 
-const TOKEN_BUFFER_MS = 5 * 60 * 1000; // refresh 5 min early
-const TOKEN_LIFETIME_MS = 60 * 60 * 1000; // tokens valid for 1 hour
+const TOKEN_BUFFER_MS = FIVE_MINUTES_MS; // refresh 5 min early
+const TOKEN_LIFETIME_MS = MS_PER_HOUR; // tokens valid for 1 hour
+const TOKEN_EXPIRY_SECONDS = 3600; // JWT exp claim in seconds (1 hour)
 
 // FCM v1 error codes that indicate an invalid/unregistered token
 const INVALID_TOKEN_CODES = new Set(['UNREGISTERED', 'INVALID_ARGUMENT']);
@@ -88,7 +90,9 @@ export class FcmService {
   /** Send to multiple tokens. One failure does not block others. */
   async sendBatch(messages: FcmMessage[]): Promise<FcmResponse[]> {
     return Promise.allSettled(messages.map((msg) => this.send(msg))).then((results) =>
-      results.map((r) => (r.status === 'fulfilled' ? r.value : { success: false, error: String(r.reason) })),
+      results.map((r) =>
+        r.status === 'fulfilled' ? r.value : { success: false, error: String(r.reason) },
+      ),
     );
   }
 
@@ -144,7 +148,11 @@ export class FcmService {
 
   // ── internals ──────────────────────────────────────────────────────────
 
-  private async topicAction(action: 'subscribe' | 'unsubscribe', token: string, topic: string): Promise<FcmResponse> {
+  private async topicAction(
+    action: 'subscribe' | 'unsubscribe',
+    token: string,
+    topic: string,
+  ): Promise<FcmResponse> {
     try {
       const accessToken = await this.getAccessToken();
       const method = action === 'subscribe' ? 'POST' : 'DELETE';
@@ -213,7 +221,7 @@ async function generateJwt(c: FcmCredentials): Promise<string> {
     scope: 'https://www.googleapis.com/auth/firebase.messaging',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
-    exp: now + 3600,
+    exp: now + TOKEN_EXPIRY_SECONDS,
   };
 
   const signInput = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
@@ -233,7 +241,11 @@ async function generateJwt(c: FcmCredentials): Promise<string> {
     ['sign'],
   );
 
-  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(signInput));
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    new TextEncoder().encode(signInput),
+  );
 
   return `${signInput}.${base64Url(String.fromCharCode(...new Uint8Array(signature)))}`;
 }
