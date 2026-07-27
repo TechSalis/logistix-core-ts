@@ -117,6 +117,9 @@ export {
 export { SECURITY_CONFIG } from './security.js';
 export type { SecurityConfig } from './security.js';
 
+// ─── Validation ──────────────────────────────────────────────────────────────
+export { InputValidator, sanitizeInput, containsSqlInjection, containsXss } from './validation.js';
+
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 export { DEFAULT_PRICING_SCHEMES } from './pricing-constants.js';
 export type { PricingSchemeDefaults } from './pricing-constants.js';

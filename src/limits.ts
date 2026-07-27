@@ -8,7 +8,7 @@ export interface TierLimits {
   readonly maxBulkDeliveries: number;
   readonly maxTrackingHistory: number;
   readonly maxDrafts: number;
-  readonly retentionDays: number;
+  readonly retentionMonths: number;
 
   // Account & usage limits
   readonly maxDispatchers: number;
@@ -81,7 +81,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxBulkDeliveries: 20,
     maxTrackingHistory: 50,
     maxDrafts: 30,
-    retentionDays: DATA_RETENTION[SubscriptionTier.STARTER],
+    retentionMonths: DATA_RETENTION[SubscriptionTier.STARTER],
     maxDispatchers: 2,
     maxRiders: 20,
     maxDeliveriesPerMonth: 500,
@@ -92,7 +92,7 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxBulkDeliveries: 100,
     maxTrackingHistory: 100,
     maxDrafts: 50,
-    retentionDays: DATA_RETENTION[SubscriptionTier.PROFESSIONAL],
+    retentionMonths: DATA_RETENTION[SubscriptionTier.PROFESSIONAL],
     maxDispatchers: 10,
     maxRiders: 100,
     maxDeliveriesPerMonth: 5000,

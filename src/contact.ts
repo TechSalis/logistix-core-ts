@@ -15,7 +15,6 @@ export interface ContactSubmission {
 }
 
 export interface ContactNotifierOptions {
-  resendApiKey: string;
   googleLeadsUrl?: string;
   fromEmail?: string;
 }
@@ -25,16 +24,20 @@ export async function sendContactSubmissionAck(
   options: ContactNotifierOptions,
 ): Promise<void> {
   const { email, name, category, message } = submission;
-  const { resendApiKey, googleLeadsUrl, fromEmail = SHARED_SYSTEM_CONFIG.supportEmail } = options;
+  const { googleLeadsUrl, fromEmail = SHARED_SYSTEM_CONFIG.supportEmail } = options;
 
-  const emailService = new EmailService(resendApiKey);
+  const emailService = new EmailService();
 
-  await emailService.sendEmail({
-    from: fromEmail,
-    to: email,
-    subject: 'We received your request',
-    html: submitterAckTemplate(name, category, message),
-  });
+  try {
+    await emailService.sendEmail({
+      from: fromEmail,
+      to: email,
+      subject: 'We received your request',
+      html: submitterAckTemplate(name, category, message),
+    });
+  } catch {
+    // Fire-and-forget: contact ack email failure should not block the user
+  }
 
   if (googleLeadsUrl && LEAD_CATEGORIES.has(category)) {
     try {
@@ -48,8 +51,8 @@ export async function sendContactSubmissionAck(
           action: CONTACT_REQUEST_ACTION,
         }),
       });
-    } catch (e) {
-      console.debug('[Contact] Google Leads submission failed (non-blocking):', e);
+    } catch {
+      // Non-blocking: Google Leads submission failure is expected when URL is invalid or network issues.
     }
   }
 }

@@ -63,7 +63,6 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
 /** Shared instance built from env (used by contact/email modules). */
 export const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig({
   ...(process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {}),
-  ...(process.env.BUSINESS_BASE_URL ? { businessBaseUrl: process.env.BUSINESS_BASE_URL } : {}),
   ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
   ...(process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}),
 });

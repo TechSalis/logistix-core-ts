@@ -27,11 +27,11 @@ import { MS_PER_DAY } from './time.js';
 export const KOBO_PER_NAIRA = 100;
 
 /**
- * Data retention in days per tier
+ * Data retention in months per tier — controls dashboard visibility, export window, and archival
  */
 export const DATA_RETENTION: Record<SubscriptionTier, number> = {
-  [SubscriptionTier.STARTER]: 45,
-  [SubscriptionTier.PROFESSIONAL]: 90,
+  [SubscriptionTier.STARTER]: 1,
+  [SubscriptionTier.PROFESSIONAL]: 3,
 };
 
 /**
