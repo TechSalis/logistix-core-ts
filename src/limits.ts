@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
-import { DATA_RETENTION, MS_PER_MINUTE } from './billing.js';
+import { DATA_RETENTION } from './billing.js';
+import { MS_PER_MINUTE } from './time.js';
 
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;

@@ -77,6 +77,16 @@ export type { RegionalConfig } from './regional.js';
 export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
 export type { TierLimits, LimitsConfig } from './limits.js';
 
+// ─── Time constants ──────────────────────────────────────────────────────────
+export {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  FIVE_MINUTES_MS,
+  TEN_MINUTES_MS,
+  FIFTEEN_MINUTES_MS,
+} from './time.js';
+
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
   BILLING_CONFIG,
@@ -84,10 +94,6 @@ export {
   CHANNEL_FEES,
   DEDICATED_TIERS,
   KOBO_PER_NAIRA,
-  MS_PER_DAY,
-  MS_PER_HOUR,
-  MS_PER_MINUTE,
-  FIVE_MINUTES_MS,
   getSubscriptionPrice,
   formatAmount,
   formatNaira,

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
-import { MS_PER_MINUTE, MS_PER_HOUR, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './billing.js';
+import { MS_PER_MINUTE, MS_PER_HOUR, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './time.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {

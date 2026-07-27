@@ -29,6 +29,7 @@ CREATE TABLE "admins" (
 	"full_name" text NOT NULL,
 	"role" "AdminRole" DEFAULT 'ADMIN' NOT NULL,
 	"fcm_token" text,
+	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint

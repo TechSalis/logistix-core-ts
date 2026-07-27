@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TEN_MINUTES_MS, FIVE_MINUTES_MS, MS_PER_MINUTE } from './billing.js';
+import { TEN_MINUTES_MS, FIVE_MINUTES_MS, MS_PER_MINUTE } from './time.js';
 
 export interface AIConfig {
   readonly interpretation: {

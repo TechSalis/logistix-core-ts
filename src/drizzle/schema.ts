@@ -339,6 +339,7 @@ export const admins = pgTable(
     fullName: text('full_name').notNull(),
     role: adminRoleEnum('role').default(AdminRole.ADMIN).notNull(),
     fcmToken: text('fcm_token'),
+    deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

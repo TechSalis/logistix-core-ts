@@ -8,36 +8,23 @@ import {
 } from './enums.js';
 import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.js';
 
+// Re-export time constants from time.ts for backward compatibility
+export {
+  MS_PER_DAY,
+  MS_PER_HOUR,
+  MS_PER_MINUTE,
+  FIVE_MINUTES_MS,
+  TEN_MINUTES_MS,
+  FIFTEEN_MINUTES_MS,
+} from './time.js';
+
+import { MS_PER_DAY } from './time.js';
+
 /**
  * 1 Naira = 100 Kobo.
  * Use this constant for ALL kobo ↔ naira conversions.
  */
 export const KOBO_PER_NAIRA = 100;
-
-/**
- * Milliseconds in one day.
- * Use this constant for ALL day-in-ms calculations.
- */
-export const MS_PER_DAY = 86_400_000;
-
-/**
- * Milliseconds in one hour.
- */
-export const MS_PER_HOUR = 3_600_000;
-
-/**
- * Milliseconds in one minute.
- */
-export const MS_PER_MINUTE = 60_000;
-
-/** 5 minutes in milliseconds — standard cache TTL across the codebase. */
-export const FIVE_MINUTES_MS = 5 * MS_PER_MINUTE;
-
-/** 10 minutes in milliseconds. */
-export const TEN_MINUTES_MS = 10 * MS_PER_MINUTE;
-
-/** 15 minutes in milliseconds. */
-export const FIFTEEN_MINUTES_MS = 15 * MS_PER_MINUTE;
 
 /**
  * Data retention in days per tier
