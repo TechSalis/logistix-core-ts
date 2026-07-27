@@ -53,7 +53,7 @@ export const DATA_RETENTION: Record<SubscriptionTier, number> = {
  * Deducted from wallet in real-time, reconciled on monthly invoice.
  */
 export const CHANNEL_FEES: Record<ChannelType, number> = {
-  [ChannelType.LOGISTIX_NETWORK]: 200_00, // ₦200 — covers network number + routing + AI
+  [ChannelType.PLATFORM_POOL]: 200_00, // ₦200 — covers network number + routing + AI
   [ChannelType.MY_CHANNEL]: 200_00, // ₦200 — covers AI only
 };
 
@@ -113,10 +113,11 @@ export const BILLING_CONFIG = {
   PAYMENT_TIMEOUT_HOURS: 0.5,
 
   /**
-   * Logistix AI's default cut (percentage) when a delivery is outsourced to
-   * a partner company via the pool. Configurable per-company in the future.
+   * Fixed outsource cut (in Kobo) charged to the originating company when a
+   * pool delivery is fulfilled by a different company's rider.
+   * ₦200 = 20000 kobo.
    */
-  OUTSOURCE_DEFAULT_CUT: 10,
+  OUTSOURCE_CUT_KOBO: 200_00,
 
   /**
    * Minimum balance required to avoid grace period (in Kobo)
@@ -209,6 +210,18 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
   const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
   return daysSinceLastAttempt >= daysToWait;
+}
+
+/**
+ * Returns the Date when the next retry attempt should occur, or null if max attempts exceeded.
+ */
+export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): Date | null {
+  if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
+    return null;
+  }
+  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
+  const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
+  return new Date(lastBillingDate.getTime() + daysToWait * MS_PER_DAY);
 }
 
 /**

@@ -16,8 +16,10 @@ import {
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import {
+  AdminRole,
   ChannelType,
   DeliveryStatus,
+  DispatcherRole,
   EscalatedTo,
   EscalationStatus,
   ExportRequestStatus,
@@ -61,6 +63,8 @@ export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(Subscripti
 export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
 export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
+// NOTE: Only BIKE is used in production. CAR/VAN/TRUCK are intentional future-proofing —
+// pricing defined in DEFAULT_PRICING_SCHEMES, schema accepts all, but every code path defaults to BIKE.
 export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
@@ -69,6 +73,8 @@ export const escalationStatus = pgEnum('EscalationStatus', enumValues(Escalation
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
 export const currencyEnum = pgEnum('Currency', enumValues(Currency));
+export const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
+export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
 
 export const companies = pgTable(
   'companies',
@@ -218,13 +224,13 @@ export const conversations = pgTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     autoReplyEnabled: boolean('auto_reply_enabled').default(true).notNull(),
-    channelType: channelType('channel_type').default(ChannelType.LOGISTIX_NETWORK).notNull(),
+    channelType: channelType('channel_type').default(ChannelType.PLATFORM_POOL).notNull(),
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
     scratchpad: jsonb(),
     customerName: text('customer_name'),
     timezone: text('timezone'),
     handledBy: text('handled_by'),
-    handledByType: text('handled_by_type').default('ai').notNull(),
+    handledByType: text('handled_by_type').default('AI').notNull(),
     handledAt: timestamp('handled_at', { precision: 3, mode: 'date' }),
   },
   (table) => [
@@ -331,6 +337,7 @@ export const admins = pgTable(
     userId: text('user_id').notNull(),
     email: text().notNull(),
     fullName: text('full_name').notNull(),
+    role: adminRoleEnum('role').default(AdminRole.ADMIN).notNull(),
     fcmToken: text('fcm_token'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -355,6 +362,7 @@ export const dispatchers = pgTable(
     companyId: text('company_id'),
     fcmToken: text('fcm_token'),
     isOwner: boolean('is_owner').default(false).notNull(),
+    role: dispatcherRoleEnum('role').default(DispatcherRole.DISPATCHER).notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })

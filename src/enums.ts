@@ -1,8 +1,17 @@
 export enum UserRole {
   ADMIN = 'ADMIN',
-  COMPANY = 'COMPANY',
   DISPATCHER = 'DISPATCHER',
   RIDER = 'RIDER',
+}
+
+export enum AdminRole {
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+export enum DispatcherRole {
+  OWNER = 'OWNER',
+  DISPATCHER = 'DISPATCHER',
 }
 
 export enum DeliveryStatus {
@@ -49,6 +58,7 @@ export enum EntityType {
   DISPATCHER = 'DISPATCHER',
   SYSTEM = 'SYSTEM',
   COMPANY_CHANNEL = 'COMPANY_CHANNEL',
+  MESSAGE = 'MESSAGE',
 }
 
 export enum ChannelPlatform {
@@ -56,7 +66,6 @@ export enum ChannelPlatform {
   INSTAGRAM = 'INSTAGRAM',
   FACEBOOK = 'FACEBOOK',
   TIKTOK = 'TIKTOK',
-  BUSINESS = 'BUSINESS',
 }
 
 export enum NodeEnv {
@@ -108,7 +117,7 @@ export enum LedgerAdjustmentType {
 }
 
 export enum ChannelType {
-  LOGISTIX_NETWORK = 'LOGISTIX_NETWORK',
+  PLATFORM_POOL = 'PLATFORM_POOL',
   MY_CHANNEL = 'MY_CHANNEL',
 }
 
@@ -130,21 +139,24 @@ export enum EventType {
   RIDER_LOCATION_UPDATED = 'RIDER_LOCATION_UPDATED',
   RIDER_ACCEPTED = 'RIDER_ACCEPTED',
   RIDER_DELETED = 'RIDER_DELETED',
+  RIDER_DOCUMENTS_VERIFIED = 'RIDER_DOCUMENTS_VERIFIED',
+  RIDER_DOCUMENTS_REJECTED = 'RIDER_DOCUMENTS_REJECTED',
   CHANNEL_SETUP = 'CHANNEL_SETUP',
   CHANNEL_ACTIVATED = 'CHANNEL_ACTIVATED',
   CHANNEL_DEACTIVATED = 'CHANNEL_DEACTIVATED',
+  SUBSCRIPTION_STATUS_CHANGED = 'SUBSCRIPTION_STATUS_CHANGED',
   DISPATCHER_DELETED = 'DISPATCHER_DELETED',
   AI_EXECUTION = 'AI_EXECUTION',
   SECURITY_INCIDENT = 'SECURITY_INCIDENT',
   COMPANY_ACTIVATED = 'COMPANY_ACTIVATED',
   COMPANY_DEACTIVATED = 'COMPANY_DEACTIVATED',
   COMPANY_TIER_CHANGED = 'COMPANY_TIER_CHANGED',
-  SUBSCRIPTION_STATUS_CHANGED = 'SUBSCRIPTION_STATUS_CHANGED',
-
   COMPANY_VERIFIED = 'COMPANY_VERIFIED',
   COMPANY_VERIFICATION_REJECTED = 'COMPANY_VERIFICATION_REJECTED',
-  RIDER_DOCUMENTS_VERIFIED = 'RIDER_DOCUMENTS_VERIFIED',
-  RIDER_DOCUMENTS_REJECTED = 'RIDER_DOCUMENTS_REJECTED',
+  USER_PURGED = 'USER_PURGED',
+  CANCELLED_PAYMENT_TIMEOUT = 'CANCELLED_PAYMENT_TIMEOUT',
+  DOWNGRADE = 'DOWNGRADE',
+  MESSAGE_DELETED = 'MESSAGE_DELETED',
 }
 
 export enum SubscriptionEventType {
@@ -174,7 +186,7 @@ export enum MessageStatus {
 export enum EscalationStatus {
   OPEN = 'OPEN',
   RESOLVED = 'RESOLVED',
-  HIJACKED = 'HIJACKED',
+  TAKEN_OVER = 'TAKEN_OVER',
 }
 
 export enum EscalatedTo {
@@ -186,10 +198,13 @@ export enum SenderType {
   CUSTOMER = 'CUSTOMER',
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
+  SYSTEM = 'SYSTEM',
 }
 
 export enum ExportRequestStatus {
   PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
 }
 
 export enum SecurityEventType {
@@ -277,6 +292,24 @@ export enum JwtTokenType {
 export enum ContactCategory {
   PARTNERSHIP = 'Become a Partner',
   BUSINESS = 'For Business',
+}
+
+export enum IdType {
+  NIN = 'NIN',
+  DRIVER_LICENSE = 'DRIVER_LICENSE',
+  PASSPORT = 'PASSPORT',
+}
+
+export enum ConversationHandlerType {
+  AI = 'AI',
+  DISPATCHER = 'DISPATCHER',
+  ADMIN = 'ADMIN',
+}
+
+export enum ExportDataType {
+  DELIVERIES = 'deliveries',
+  BILLING = 'billing',
+  CHAT = 'chat',
 }
 
 export enum DayOfWeek {

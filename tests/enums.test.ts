@@ -15,9 +15,8 @@ import {
 
 describe('Enums', () => {
   describe('UserRole', () => {
-    it('has all four roles', () => {
+    it('has all three roles', () => {
       expect(UserRole.ADMIN).toBe('ADMIN');
-      expect(UserRole.COMPANY).toBe('COMPANY');
       expect(UserRole.DISPATCHER).toBe('DISPATCHER');
       expect(UserRole.RIDER).toBe('RIDER');
     });
@@ -93,10 +92,11 @@ describe('Enums', () => {
   });
 
   describe('ChannelPlatform', () => {
-    it('includes social platforms and business', () => {
+    it('includes social platforms', () => {
       expect(ChannelPlatform.WHATSAPP).toBe('WHATSAPP');
       expect(ChannelPlatform.INSTAGRAM).toBe('INSTAGRAM');
-      expect(ChannelPlatform.BUSINESS).toBe('BUSINESS');
+      expect(ChannelPlatform.FACEBOOK).toBe('FACEBOOK');
+      expect(ChannelPlatform.TIKTOK).toBe('TIKTOK');
     });
   });
 

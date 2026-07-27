@@ -11,6 +11,8 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export {
   UserRole,
+  AdminRole,
+  DispatcherRole,
   DeliveryStatus,
   PaymentMethod,
   RiderStatus,
@@ -36,6 +38,9 @@ export {
   EscalationStatus,
   EscalatedTo,
   SenderType,
+  IdType,
+  ConversationHandlerType,
+  ExportDataType,
   ExportRequestStatus,
   SecurityEventType,
   SecuritySeverity,
@@ -89,6 +94,7 @@ export {
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
+  getNextRetryDate,
   computeAllocationTargets,
   computeAccessLevel,
 } from './billing.js';

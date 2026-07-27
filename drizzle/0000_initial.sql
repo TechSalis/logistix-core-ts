@@ -1,13 +1,15 @@
 CREATE TYPE "public"."ActorType" AS ENUM('SYSTEM', 'ADMIN', 'COMPANY', 'DISPATCHER', 'RIDER', 'CUSTOMER');--> statement-breakpoint
+CREATE TYPE "public"."AdminRole" AS ENUM('ADMIN', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED', 'DISABLED');--> statement-breakpoint
-CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK', 'BUSINESS');--> statement-breakpoint
-CREATE TYPE "public"."ChannelType" AS ENUM('LOGISTIX_NETWORK', 'MY_CHANNEL');--> statement-breakpoint
+CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
+CREATE TYPE "public"."ChannelType" AS ENUM('PLATFORM_POOL', 'MY_CHANNEL');--> statement-breakpoint
 CREATE TYPE "public"."Currency" AS ENUM('NGN');--> statement-breakpoint
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('AWAITING_PAYMENT', 'PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED', 'FAILED');--> statement-breakpoint
-CREATE TYPE "public"."EntityType" AS ENUM('USER', 'DELIVERY', 'RIDER', 'COMPANY', 'DISPATCHER', 'SYSTEM', 'MESSAGE', 'COMPANY_CHANNEL');--> statement-breakpoint
+CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'DISPATCHER');--> statement-breakpoint
+CREATE TYPE "public"."EntityType" AS ENUM('USER', 'DELIVERY', 'RIDER', 'COMPANY', 'DISPATCHER', 'SYSTEM', 'COMPANY_CHANNEL', 'MESSAGE');--> statement-breakpoint
 CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN');--> statement-breakpoint
-CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'HIJACKED');--> statement-breakpoint
-CREATE TYPE "public"."EventType" AS ENUM('DELIVERY_ASSIGNED', 'DELIVERY_UPDATED', 'DELIVERY_CREATED', 'DELIVERY_STATUS_CHANGED', 'DELIVERY_DELETED', 'RIDER_LOCATION_UPDATED', 'RIDER_ASSIGNED', 'RIDER_ACCEPTED', 'RIDER_DELETED', 'USER_PURGED', 'MESSAGE_SENT', 'CHANNEL_SETUP', 'CHANNEL_ACTIVATED', 'CHANNEL_DEACTIVATED', 'MESSAGE_DELETED', 'DISPATCHER_DELETED', 'DOWNGRADE', 'CANCELLED_PAYMENT_TIMEOUT', 'AI_EXECUTION', 'SECURITY_INCIDENT', 'COMPANY_ACTIVATED', 'COMPANY_DEACTIVATED', 'COMPANY_TIER_CHANGED', 'SUBSCRIPTION_STATUS_CHANGED', 'COMPANY_VERIFIED', 'COMPANY_VERIFICATION_REJECTED');--> statement-breakpoint
+CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'TAKEN_OVER');--> statement-breakpoint
+CREATE TYPE "public"."EventType" AS ENUM('DELIVERY_ASSIGNED', 'DELIVERY_UPDATED', 'DELIVERY_CREATED', 'DELIVERY_STATUS_CHANGED', 'DELIVERY_DELETED', 'RIDER_LOCATION_UPDATED', 'RIDER_ACCEPTED', 'RIDER_DELETED', 'RIDER_DOCUMENTS_VERIFIED', 'RIDER_DOCUMENTS_REJECTED', 'CHANNEL_SETUP', 'CHANNEL_ACTIVATED', 'CHANNEL_DEACTIVATED', 'SUBSCRIPTION_STATUS_CHANGED', 'DISPATCHER_DELETED', 'AI_EXECUTION', 'SECURITY_INCIDENT', 'COMPANY_ACTIVATED', 'COMPANY_DEACTIVATED', 'COMPANY_TIER_CHANGED', 'COMPANY_VERIFIED', 'COMPANY_VERIFICATION_REJECTED', 'USER_PURGED', 'CANCELLED_PAYMENT_TIMEOUT', 'DOWNGRADE', 'MESSAGE_DELETED');--> statement-breakpoint
 CREATE TYPE "public"."ExportRequestStatus" AS ENUM('PENDING', 'COMPLETED', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'REFUND', 'CHANNEL_FEE', 'OVERAGE');--> statement-breakpoint
 CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'FAILED');--> statement-breakpoint
@@ -15,7 +17,7 @@ CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> s
 CREATE TYPE "public"."PaymentProvider" AS ENUM('SQUAD', 'SYSTEM');--> statement-breakpoint
 CREATE TYPE "public"."RiderStatus" AS ENUM('ONLINE', 'OFFLINE', 'BUSY');--> statement-breakpoint
 CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM');--> statement-breakpoint
-CREATE TYPE "public"."SubscriptionStatus" AS ENUM('PENDING', 'ACTIVE', 'GRACE', 'LOCKED', 'CANCELLED');--> statement-breakpoint
+CREATE TYPE "public"."SubscriptionStatus" AS ENUM('TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."SubscriptionTier" AS ENUM('STARTER', 'PROFESSIONAL');--> statement-breakpoint
 CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED');--> statement-breakpoint
 CREATE TYPE "public"."TransactionType" AS ENUM('DELIVERY_PAYMENT', 'SUBSCRIPTION', 'ADJUSTMENT', 'SETTLEMENT', 'REFUND');--> statement-breakpoint
@@ -25,6 +27,7 @@ CREATE TABLE "admins" (
 	"user_id" text NOT NULL,
 	"email" text NOT NULL,
 	"full_name" text NOT NULL,
+	"role" "AdminRole" DEFAULT 'ADMIN' NOT NULL,
 	"fcm_token" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -40,7 +43,9 @@ CREATE TABLE "blocked_ips" (
 --> statement-breakpoint
 CREATE TABLE "companies" (
 	"id" text PRIMARY KEY NOT NULL,
-	"name" text,
+	"name" text NOT NULL,
+	"cac" text,
+	"nipost_license_number" text,
 	"contact_phone" text,
 	"states" text[] DEFAULT '{}',
 	"interstate_deliveries" boolean DEFAULT false NOT NULL,
@@ -82,10 +87,10 @@ CREATE TABLE "company_settings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
 	"tier" "SubscriptionTier" DEFAULT 'STARTER' NOT NULL,
-	"subscription_status" "SubscriptionStatus" DEFAULT 'PENDING' NOT NULL,
+	"subscription_status" "SubscriptionStatus" DEFAULT 'TRIAL' NOT NULL,
 	"period_start" timestamp (3),
 	"period_end" timestamp (3),
-	"locked_at" timestamp (3),
+	"squad_token_id" text,
 	"working_hours" jsonb DEFAULT '{"Monday":{"start":"07:00","close":"19:00"},"Tuesday":{"start":"07:00","close":"19:00"},"Wednesday":{"start":"07:00","close":"19:00"},"Thursday":{"start":"07:00","close":"19:00"},"Friday":{"start":"07:00","close":"19:00"},"Saturday":{"start":"07:00","close":"19:00"}}'::jsonb NOT NULL,
 	"bank_details" jsonb,
 	"virtual_account_number" text,
@@ -107,11 +112,14 @@ CREATE TABLE "conversations" (
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"auto_reply_enabled" boolean DEFAULT true NOT NULL,
-	"channel_type" "ChannelType" DEFAULT 'LOGISTIX_NETWORK' NOT NULL,
+	"channel_type" "ChannelType" DEFAULT 'PLATFORM_POOL' NOT NULL,
 	"last_customer_message_at" timestamp (3),
 	"scratchpad" jsonb,
 	"customer_name" text,
-	"timezone" text
+	"timezone" text,
+	"handled_by" text,
+	"handled_by_type" text DEFAULT 'AI' NOT NULL,
+	"handled_at" timestamp (3)
 );
 --> statement-breakpoint
 CREATE TABLE "deliveries" (
@@ -140,6 +148,8 @@ CREATE TABLE "deliveries" (
 	"pool" boolean DEFAULT false NOT NULL,
 	"metadata" jsonb,
 	"pickup_state" text,
+	"drop_off_state" text,
+	"vehicle_type" text DEFAULT 'BIKE' NOT NULL,
 	"creator_platform" text
 );
 --> statement-breakpoint
@@ -159,6 +169,7 @@ CREATE TABLE "dispatchers" (
 	"company_id" text,
 	"fcm_token" text,
 	"is_owner" boolean DEFAULT false NOT NULL,
+	"role" "DispatcherRole" DEFAULT 'DISPATCHER' NOT NULL,
 	"approval_status" "ApprovalStatus" DEFAULT 'PENDING' NOT NULL,
 	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -246,6 +257,7 @@ CREATE TABLE "riders" (
 	"last_seen" timestamp (3),
 	"fcm_token" text,
 	"company_id" text,
+	"phone_number" text,
 	"metadata" jsonb,
 	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -292,6 +304,7 @@ CREATE UNIQUE INDEX "admins_email_key" ON "admins" USING btree ("email" text_ops
 CREATE UNIQUE INDEX "admins_user_id_key" ON "admins" USING btree ("user_id" text_ops);--> statement-breakpoint
 CREATE INDEX "blocked_ips_expires_at_idx" ON "blocked_ips" USING btree ("expires_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "blocked_ips_ip_address_idx" ON "blocked_ips" USING btree ("ip_address" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "companies_cac_key" ON "companies" USING btree ("cac");--> statement-breakpoint
 CREATE INDEX "companies_name_idx" ON "companies" USING btree ("name" text_ops);--> statement-breakpoint
 CREATE INDEX "companies_verification_status_idx" ON "companies" USING btree ("verification_status" enum_ops);--> statement-breakpoint
 CREATE INDEX "company_channels_is_active_idx" ON "company_channels" USING btree ("is_active" bool_ops);--> statement-breakpoint
@@ -306,7 +319,7 @@ CREATE INDEX "conversations_company_id_idx" ON "conversations" USING btree ("com
 CREATE INDEX "conversations_company_id_last_message_at_idx" ON "conversations" USING btree ("company_id" text_ops,"last_message_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "conversations_platform_id_platform_idx" ON "conversations" USING btree ("platform_id" text_ops,"platform" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "conversations_platform_platform_id_company_id_key" ON "conversations" USING btree ("platform" enum_ops,"platform_id" text_ops,"company_id" text_ops);--> statement-breakpoint
-CREATE INDEX "conversations_auto_reply_disabled_idx" ON "conversations" USING btree ("company_id","last_message_at") WHERE auto_reply_enabled = false AND company_id IS NULL;--> statement-breakpoint
+CREATE INDEX "conversations_handled_by_type_idx" ON "conversations" USING btree ("handled_by_type");--> statement-breakpoint
 CREATE INDEX "conversations_channel_type_idx" ON "conversations" USING btree ("channel_type" enum_ops);--> statement-breakpoint
 CREATE INDEX "deliveries_company_id_status_idx" ON "deliveries" USING btree ("company_id" text_ops,"status" enum_ops);--> statement-breakpoint
 CREATE INDEX "deliveries_company_id_created_by_idx" ON "deliveries" USING btree ("company_id" text_ops,"created_by" text_ops);--> statement-breakpoint
