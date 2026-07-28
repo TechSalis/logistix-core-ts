@@ -20,7 +20,7 @@ export async function fetchWithTimeout(
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  timer.unref();
+  if (typeof timer === 'object' && typeof timer.unref === 'function') timer.unref();
 
   try {
     const res = await fetchFn(url, { ...rest, signal: controller.signal });

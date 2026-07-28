@@ -40,7 +40,7 @@ const TOKEN_LIFETIME_MS = MS_PER_HOUR; // tokens valid for 1 hour
 const TOKEN_EXPIRY_SECONDS = 3600; // JWT exp claim in seconds (1 hour)
 
 // FCM v1 error codes that indicate an invalid/unregistered token
-const INVALID_TOKEN_CODES = new Set(['UNREGISTERED', 'INVALID_ARGUMENT']);
+const INVALID_TOKEN_CODES = new Set(['UNREGISTERED']);
 
 export class FcmService {
   private cachedToken: CachedToken | null = null;

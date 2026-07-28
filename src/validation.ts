@@ -3,7 +3,7 @@ import { SECURITY_CONFIG } from './security.js';
 import { LIMITS_CONFIG } from './limits.js';
 
 const SQL_INJECTION_PATTERN =
-  /(?:union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+set|exec\s*\(|script\s*>)/i;
+  /(?:union\s+select|drop\s+table|insert\s+into|delete\s+from|update\s+\w+\s+set|exec\s*\(|script\s*>)/i;
 const XSS_PATTERN =
   /(?:<script|javascript:|onload=|onerror=|onclick=|onmouseover=|<iframe|<object|<embed)/i;
 

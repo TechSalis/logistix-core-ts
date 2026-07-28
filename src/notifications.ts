@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { BRAND_NAME } from './config.js';
 import { EmailService } from './services/email.service.js';
 import { EntityType, EventType, SecuritySeverity, SubscriptionStatus } from './enums.js';
@@ -66,7 +66,10 @@ export async function fetchActiveCompanyRecipients(
     })
     .from(companySettings)
     .innerJoin(companies, eq(companies.id, companySettings.companyId))
-    .leftJoin(dispatchers, eq(dispatchers.companyId, companySettings.companyId))
+    .leftJoin(
+      dispatchers,
+      and(eq(dispatchers.companyId, companySettings.companyId), eq(dispatchers.isOwner, true)),
+    )
     .where(eq(companySettings.subscriptionStatus, SubscriptionStatus.ACTIVE));
 
   const result = limit ? await query.limit(limit) : await query;
