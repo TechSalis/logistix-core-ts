@@ -218,8 +218,8 @@ npm test         # run unit tests
 | Export                          | Type       | Description                                  |
 |---------------------------------|------------|----------------------------------------------|
 | `fetchActiveCompanyRecipients()` | `function` | Fetches active notification recipients      |
-| `sendMaintenanceNotification()` | `function` | Sends maintenance window notification        |
-| `sendBreachNotification()`      | `function` | Sends security breach notification           |
+| `sendMaintenanceEmail()`        | `function` | Sends maintenance window notification        |
+| `sendBreachEmail()`             | `function` | Sends security breach notification           |
 | `logBreachIncident()`           | `function` | Logs a breach incident                       |
 | `sendSettlementReceipt()`       | `function` | Sends settlement receipt email               |
 | `getSeverityLabel()`            | `function` | Maps severity enum to human-readable label   |
@@ -259,8 +259,8 @@ npm test         # run unit tests
 
 All Drizzle table definitions and relations are re-exported via `export * from './drizzle/index.js'`. This includes:
 
-- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `transactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `exportRequests`, `escalations`, `companyDailyMetrics`, `riderLocationLogs`
-- **pgEnums:** `deliveryStatus`, `exportRequestStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `escalationStatus`, `eventType`, `entityType`, `currencyEnum`
+- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `exportRequests`, `companyDailyMetrics`
+- **pgEnums:** `deliveryStatus`, `exportRequestStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`
 - **Relations:** All table relations for query building
 
 > **Note:** Drizzle exports are primarily for backend/workers that use Drizzle ORM directly. Web apps should use the typed API clients instead.

@@ -101,5 +101,10 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 };
 
 export function getTierLimits(tier: SubscriptionTier): TierLimits {
-  return TIER_LIMITS[tier] ?? TIER_LIMITS[SubscriptionTier.STARTER];
+  const limits = TIER_LIMITS[tier];
+  if (limits === undefined) {
+    console.error(`[Limits] Unknown subscription tier: ${tier} — falling back to STARTER`);
+    return TIER_LIMITS[SubscriptionTier.STARTER];
+  }
+  return limits;
 }

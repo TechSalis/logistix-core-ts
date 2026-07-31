@@ -9,9 +9,8 @@ import {
   deliveries,
   riders,
   deliveryAllocations,
-  transactions,
-  riderLocationLogs,
-  escalations,
+  paymentTransactions,
+  subscriptionTransactions,
   eventLogs,
   exportRequests,
   ledgerTransactions,
@@ -32,10 +31,10 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   dispatchers: many(dispatchers),
   deliveries: many(deliveries),
   riders: many(riders),
-  transactions: many(transactions),
+  paymentTransactions: many(paymentTransactions),
+  subscriptionTransactions: many(subscriptionTransactions),
   eventLogs: many(eventLogs),
   exportRequests: many(exportRequests),
-  escalations: many(escalations),
   ledgerTransactions: many(ledgerTransactions),
   companyDailyMetrics: many(companyDailyMetrics),
 }));
@@ -87,7 +86,6 @@ export const ridersRelations = relations(riders, ({ one, many }) => ({
     fields: [riders.companyId],
     references: [companies.id],
   }),
-  riderLocationLogs: many(riderLocationLogs),
 }));
 
 export const deliveryAllocationsRelations = relations(deliveryAllocations, ({ one }) => ({
@@ -95,34 +93,23 @@ export const deliveryAllocationsRelations = relations(deliveryAllocations, ({ on
     fields: [deliveryAllocations.deliveryId],
     references: [deliveries.id],
   }),
-  transaction: one(transactions, {
+  transaction: one(paymentTransactions, {
     fields: [deliveryAllocations.transactionId],
-    references: [transactions.id],
+    references: [paymentTransactions.id],
   }),
 }));
 
-export const transactionsRelations = relations(transactions, ({ one, many }) => ({
+export const transactionsRelations = relations(paymentTransactions, ({ one, many }) => ({
   company: one(companies, {
-    fields: [transactions.companyId],
+    fields: [paymentTransactions.companyId],
     references: [companies.id],
   }),
   deliveryAllocations: many(deliveryAllocations),
 }));
 
-export const riderLocationLogsRelations = relations(riderLocationLogs, ({ one }) => ({
-  rider: one(riders, {
-    fields: [riderLocationLogs.riderId],
-    references: [riders.id],
-  }),
-}));
-
-export const escalationsRelations = relations(escalations, ({ one }) => ({
-  conversation: one(conversations, {
-    fields: [escalations.conversationId],
-    references: [conversations.id],
-  }),
+export const subscriptionTransactionsRelations = relations(subscriptionTransactions, ({ one }) => ({
   company: one(companies, {
-    fields: [escalations.companyId],
+    fields: [subscriptionTransactions.companyId],
     references: [companies.id],
   }),
 }));

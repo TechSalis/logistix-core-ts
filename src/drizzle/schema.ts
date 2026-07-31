@@ -21,8 +21,8 @@ import {
   DeliveryStatus,
   DispatcherRole,
   EscalatedTo,
-  EscalationStatus,
   ExportRequestStatus,
+  JobStatus,
   LedgerAdjustmentType,
   ChannelPlatform,
   MessageStatus,
@@ -49,6 +49,7 @@ const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[
 
 export const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
 export const exportRequestStatus = pgEnum('ExportRequestStatus', enumValues(ExportRequestStatus));
+export const jobStatusEnum = pgEnum('JobStatus', enumValues(JobStatus));
 export const ledgerAdjustmentType = pgEnum(
   'LedgerAdjustmentType',
   enumValues(LedgerAdjustmentType),
@@ -69,7 +70,6 @@ export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvi
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
 export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
-export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
 export const currencyEnum = pgEnum('Currency', enumValues(Currency));
@@ -87,8 +87,6 @@ export const companies = pgTable(
     cac: text(),
     nipostLicenseNumber: text('nipost_license_number'),
     contactPhone: text('contact_phone'),
-    states: text().array().default([]),
-    interstateDeliveries: boolean('interstate_deliveries').default(false).notNull(),
     verificationStatus: approvalStatus('verification_status')
       .default(ApprovalStatus.PENDING)
       .notNull(),
@@ -116,7 +114,7 @@ export const companySettings = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     companyId: text('company_id').notNull(),
-    tier: subscriptionTier().default(SubscriptionTier.STARTER).notNull(),
+    tier: subscriptionTier().notNull(),
     subscriptionStatus: subscriptionStatus('subscription_status')
       .default(SubscriptionStatus.TRIAL)
       .notNull(),
@@ -125,11 +123,9 @@ export const companySettings = pgTable(
     squadTokenId: text('squad_token_id'),
     workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
     bankDetails: jsonb('bank_details'),
-    virtualAccountNumber: text('virtual_account_number'),
-
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
-    escalatedTo: escalatedTo('escalated_to').default(EscalatedTo.ADMIN).notNull(),
+    escalatedTo: escalatedTo('escalated_to').default('COMPANY').notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -146,8 +142,6 @@ export const companySettings = pgTable(
       'btree',
       table.companyCode.asc().nullsLast().op('text_ops'),
     ),
-    index('company_settings_virtual_account_number_idx').on(table.virtualAccountNumber),
-
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -170,6 +164,10 @@ export const companyChannels = pgTable(
     companyId: text('company_id').notNull(),
     isActive: boolean('is_active').default(false).notNull(),
     metadata: jsonb(),
+    aiDisabled: boolean('ai_disabled').default(false).notNull(),
+    removalRequested: boolean('removal_requested').default(false).notNull(),
+    removalReason: text('removal_reason'),
+    removalRequestedAt: timestamp('removal_requested_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -211,7 +209,7 @@ export const conversations = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    platform: channelPlatform().default(ChannelPlatform.WHATSAPP).notNull(),
+    platform: channelPlatform().notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id'),
     lastMessageAt: timestamp('last_message_at', { precision: 3, mode: 'date' })
@@ -223,14 +221,13 @@ export const conversations = pgTable(
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    autoReplyEnabled: boolean('auto_reply_enabled').default(true).notNull(),
-    channelType: channelType('channel_type').default(ChannelType.PLATFORM_POOL).notNull(),
+    escalatedAt: timestamp('escalated_at', { precision: 3, mode: 'date' }),
+    metadata: jsonb(),
+    channelType: channelType('channel_type').notNull(),
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
-    scratchpad: jsonb(),
-    customerName: text('customer_name'),
-    timezone: text('timezone'),
+    memory: jsonb(),
     handledBy: text('handled_by'),
-    handledByType: text('handled_by_type').default('AI').notNull(),
+    handledByType: text('handled_by_type').notNull(),
     handledAt: timestamp('handled_at', { precision: 3, mode: 'date' }),
   },
   (table) => [
@@ -261,6 +258,10 @@ export const conversations = pgTable(
     index('conversations_channel_type_idx').using(
       'btree',
       table.channelType.asc().nullsLast().op('enum_ops'),
+    ),
+    index('conversations_escalated_at_idx').using(
+      'btree',
+      table.escalatedAt.asc().nullsLast().op('timestamp_ops'),
     ),
     foreignKey({
       columns: [table.companyId],
@@ -337,7 +338,7 @@ export const admins = pgTable(
     userId: text('user_id').notNull(),
     email: text().notNull(),
     fullName: text('full_name').notNull(),
-    role: adminRoleEnum('role').default(AdminRole.ADMIN).notNull(),
+    role: adminRoleEnum('role').notNull(),
     fcmToken: text('fcm_token'),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -362,8 +363,7 @@ export const dispatchers = pgTable(
     fullName: text('full_name').notNull(),
     companyId: text('company_id'),
     fcmToken: text('fcm_token'),
-    isOwner: boolean('is_owner').default(false).notNull(),
-    role: dispatcherRoleEnum('role').default(DispatcherRole.DISPATCHER).notNull(),
+    role: dispatcherRoleEnum('role').notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -403,7 +403,7 @@ export const blockedIps = pgTable(
     ipAddress: text('ip_address').notNull(),
     reason: text(),
     blockedBy: text('blocked_by'),
-    expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }).notNull(),
+    expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -432,14 +432,16 @@ export const deliveries = pgTable(
     riderId: text('rider_id'),
     status: deliveryStatus().notNull(),
     pickupAddress: text('pickup_address').notNull(),
+    pickupState: text('pickup_state'),
+    dropOffAddress: text('drop_off_address').notNull(),
+    dropOffState: text('drop_off_state'),
+    description: text(),
     pickupLat: doublePrecision('pickup_lat'),
     pickupLng: doublePrecision('pickup_lng'),
-    dropOffAddress: text('drop_off_address').notNull(),
     dropOffLat: doublePrecision('drop_off_lat'),
     dropOffLng: doublePrecision('drop_off_lng'),
     pickupPhone: text('pickup_phone'),
     dropOffPhone: text('drop_off_phone'),
-    description: text(),
     paymentMethod: paymentMethod('payment_method').notNull(),
     scheduledAt: timestamp('scheduled_at', { precision: 3, mode: 'date' }),
     deliveredAt: timestamp('delivered_at', { precision: 3, mode: 'date' }),
@@ -452,11 +454,9 @@ export const deliveries = pgTable(
     trackingId: text('tracking_id').notNull(),
     pin: text(),
     price: doublePrecision(),
-    pool: boolean('pool').notNull().default(false),
     metadata: jsonb(),
-    pickupState: text('pickup_state'),
-    dropOffState: text('drop_off_state'),
     creatorPlatform: text('creator_platform'),
+    pool: boolean().default(false).notNull(),
     vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
   },
   (table) => [
@@ -486,17 +486,6 @@ export const deliveries = pgTable(
       table.status.asc().nullsLast().op('enum_ops'),
     ),
     index('deliveries_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
-    index('deliveries_pool_true_idx')
-      .using('btree', table.pool.asc().nullsLast().op('bool_ops'))
-      .where(sql`pool = true`),
-    index('deliveries_pool_status_rider_idx')
-      .using(
-        'btree',
-        table.pool.asc().nullsLast().op('bool_ops'),
-        table.status.asc().nullsLast().op('enum_ops'),
-        table.riderId.asc().nullsLast().op('text_ops'),
-      )
-      .where(sql`pool = true`),
     uniqueIndex('deliveries_tracking_id_key').using(
       'btree',
       table.trackingId.asc().nullsLast().op('text_ops'),
@@ -555,7 +544,6 @@ export const riders = pgTable(
     fullName: text('full_name').notNull(),
     vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
-    isAccepted: boolean('is_accepted').default(false).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
     lastLng: doublePrecision('last_lng'),
@@ -579,9 +567,9 @@ export const riders = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.status.asc().nullsLast().op('enum_ops'),
     ),
-    index('riders_company_id_is_accepted_idx')
+    index('riders_company_id_approval_status_idx')
       .using('btree', table.companyId.asc().nullsLast().op('text_ops'))
-      .where(sql`is_accepted = true`),
+      .where(sql`approval_status = ${ApprovalStatus.APPROVED}`),
     index('riders_company_id_updated_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
@@ -604,7 +592,7 @@ export const riders = pgTable(
   ],
 );
 
-export const transactions = pgTable(
+export const paymentTransactions = pgTable(
   'payment_transactions',
   {
     id: text()
@@ -617,10 +605,7 @@ export const transactions = pgTable(
     currency: currencyEnum().default(Currency.NGN).notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
-    provider: paymentProvider('provider').default(PaymentProvider.SQUAD),
-    tier: subscriptionTier('tier'),
-    periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
-    periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
+    provider: paymentProvider('provider'),
     description: text(),
     metadata: jsonb(),
     gatewayReference: text('gateway_reference'),
@@ -652,6 +637,55 @@ export const transactions = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: 'payment_transactions_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('restrict'),
+  ],
+);
+
+export const subscriptionTransactions = pgTable(
+  'subscription_transactions',
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId())
+      .notNull(),
+    companyId: text('company_id').notNull(),
+    amount: doublePrecision().notNull(),
+    currency: currencyEnum().default(Currency.NGN).notNull(),
+    status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
+    reference: text().notNull(),
+    provider: paymentProvider('provider'),
+    tier: subscriptionTier('tier').notNull(),
+    periodStart: timestamp('period_start', { precision: 3, mode: 'date' }).notNull(),
+    periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
+    description: text(),
+    metadata: jsonb(),
+    gatewayReference: text('gateway_reference'),
+    processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('subscription_transactions_company_id_created_at_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('subscription_transactions_status_idx').using(
+      'btree',
+      table.status.asc().nullsLast().op('enum_ops'),
+    ),
+    uniqueIndex('subscription_transactions_reference_key').using(
+      'btree',
+      table.reference.asc().nullsLast().op('text_ops'),
+    ),
+    index('subscription_transactions_gateway_reference_idx').on(table.gatewayReference),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'subscription_transactions_company_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('restrict'),
@@ -691,7 +725,7 @@ export const deliveryAllocations = pgTable(
       .onDelete('cascade'),
     foreignKey({
       columns: [table.transactionId],
-      foreignColumns: [transactions.id],
+      foreignColumns: [paymentTransactions.id],
       name: 'delivery_allocations_transaction_id_fkey',
     })
       .onUpdate('cascade')
@@ -749,7 +783,7 @@ export const eventLogs = pgTable(
     entityId: text('entity_id').notNull(),
     actorId: text('actor_id'),
     companyId: text('company_id'),
-    payload: jsonb(),
+    metadata: jsonb(),
     success: boolean().default(true).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -826,51 +860,43 @@ export const exportRequests = pgTable(
   ],
 );
 
-export const escalations = pgTable(
-  'escalations',
+export const jobQueue = pgTable(
+  'job_queue',
   {
     id: text()
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    conversationId: text('conversation_id').notNull(),
-    companyId: text('company_id'),
-    escalatedTo: escalatedTo('escalated_to').notNull(),
-    status: escalationStatus().default(EscalationStatus.OPEN).notNull(),
-    resolution: jsonb(),
+    type: text().notNull(),
+    payload: jsonb(),
+    status: jobStatusEnum().default(JobStatus.PENDING).notNull(),
+    priority: integer().default(0).notNull(),
+    maxRetries: integer('max_retries').default(3).notNull(),
+    retryCount: integer('retry_count').default(0).notNull(),
+    lastError: text('last_error'),
+    scheduledAt: timestamp('scheduled_at', { precision: 3, mode: 'date' }),
+    startedAt: timestamp('started_at', { precision: 3, mode: 'date' }),
+    completedAt: timestamp('completed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (table) => [
-    index('escalations_conversation_id_idx').using(
+    index('job_queue_type_status_idx').using(
       'btree',
-      table.conversationId.asc().nullsLast().op('text_ops'),
-    ),
-    index('escalations_company_id_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
-    index('escalations_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
-    index('escalations_escalated_to_status_idx').using(
-      'btree',
-      table.escalatedTo.asc().nullsLast().op('enum_ops'),
+      table.type.asc().nullsLast().op('text_ops'),
       table.status.asc().nullsLast().op('enum_ops'),
     ),
-    foreignKey({
-      columns: [table.conversationId],
-      foreignColumns: [conversations.id],
-      name: 'escalations_conversation_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'escalations_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('set null'),
+    index('job_queue_status_priority_created_at_idx').using(
+      'btree',
+      table.status.asc().nullsLast().op('enum_ops'),
+      table.priority.desc().nullsLast().op('int4_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('job_queue_scheduled_at_idx').using(
+      'btree',
+      table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
+    ),
   ],
 );
 
@@ -883,7 +909,6 @@ export const companyDailyMetrics = pgTable(
     deliveredCount: integer('delivered_count').notNull().default(0),
     cancelledCount: integer('cancelled_count').notNull().default(0),
     failedCount: integer('failed_count').notNull().default(0),
-    awaitingPaymentCount: integer('awaiting_payment_count').notNull().default(0),
     totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
     avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
     channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
@@ -903,41 +928,6 @@ export const companyDailyMetrics = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: 'cdm_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
-export const riderLocationLogs = pgTable(
-  'rider_location_logs',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    riderId: text('rider_id').notNull(),
-    lat: doublePrecision().notNull(),
-    lng: doublePrecision().notNull(),
-    status: riderStatus(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('rider_location_logs_created_at_idx').using(
-      'btree',
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    index('rider_location_logs_rider_id_created_at_idx').using(
-      'btree',
-      table.riderId.asc().nullsLast().op('text_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
-    ),
-    foreignKey({
-      columns: [table.riderId],
-      foreignColumns: [riders.id],
-      name: 'rider_location_logs_rider_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),

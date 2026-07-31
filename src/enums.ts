@@ -15,7 +15,6 @@ export enum DispatcherRole {
 }
 
 export enum DeliveryStatus {
-  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
   PENDING = 'PENDING',
   ASSIGNED = 'ASSIGNED',
   IN_TRANSIT = 'IN_TRANSIT',
@@ -27,6 +26,12 @@ export enum DeliveryStatus {
 export enum PaymentMethod {
   PREPAID = 'PREPAID',
   PAY_ON_DELIVERY = 'PAY_ON_DELIVERY',
+}
+
+export enum PaymentStatus {
+  AWAITING = 'awaiting',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
 }
 
 export enum RiderStatus {
@@ -112,12 +117,14 @@ export enum TransactionType {
 export enum LedgerAdjustmentType {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
+  CORRECTION = 'CORRECTION',
   CHANNEL_FEE = 'CHANNEL_FEE',
   OVERAGE = 'OVERAGE',
+  REFUND = 'REFUND',
 }
 
 export enum ChannelType {
-  PLATFORM_POOL = 'PLATFORM_POOL',
+  SYSTEM_POOL = 'SYSTEM_POOL',
   MY_CHANNEL = 'MY_CHANNEL',
 }
 
@@ -176,6 +183,7 @@ export enum UserAuditAction {
 export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
   OWNERSHIP = 'OWNERSHIP',
+  CONVERSATION = 'CONVERSATION',
 }
 
 export enum MessageStatus {
@@ -192,6 +200,7 @@ export enum EscalationStatus {
 export enum EscalatedTo {
   COMPANY = 'COMPANY',
   ADMIN = 'ADMIN',
+  DISPATCHER = 'DISPATCHER',
 }
 
 export enum SenderType {
@@ -205,6 +214,14 @@ export enum ExportRequestStatus {
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
+}
+
+export enum JobStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum SecurityEventType {
@@ -237,6 +254,7 @@ export enum ErrorCode {
 export enum SystemStatus {
   UP = 'UP',
   DOWN = 'DOWN',
+  DEGRADED = 'DEGRADED',
 }
 
 export enum LlmRole {
@@ -310,6 +328,10 @@ export enum ExportDataType {
   DELIVERIES = 'deliveries',
   BILLING = 'billing',
   CHAT = 'chat',
+}
+
+export enum FcmNotificationType {
+  SUBSCRIPTION_CANCELLED = 'SUBSCRIPTION_CANCELLED',
 }
 
 export enum DayOfWeek {

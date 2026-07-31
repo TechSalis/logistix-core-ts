@@ -28,7 +28,6 @@ describe('Enums', () => {
 
   describe('DeliveryStatus', () => {
     it('includes all lifecycle states', () => {
-      expect(DeliveryStatus.AWAITING_PAYMENT).toBe('AWAITING_PAYMENT');
       expect(DeliveryStatus.PENDING).toBe('PENDING');
       expect(DeliveryStatus.ASSIGNED).toBe('ASSIGNED');
       expect(DeliveryStatus.IN_TRANSIT).toBe('IN_TRANSIT');

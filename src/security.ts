@@ -54,11 +54,11 @@ const securityConfigSchema = z.object({
     jwtRefreshExpiresIn: z.string(),
   }),
   sudo: z.object({
-    tokenExpiresInMs: z.number().default(FIFTEEN_MINUTES_MS),
+    tokenExpiresInMs: z.number(),
   }),
   admin: z.object({
-    maxFailedSudoAttempts: z.number().default(5),
-    sudoLockoutMs: z.number().default(FIFTEEN_MINUTES_MS),
+    maxFailedSudoAttempts: z.number(),
+    sudoLockoutMs: z.number(),
   }),
   headers: z.record(z.string(), z.string()),
   maliciousPatterns: z.array(z.instanceof(RegExp)),
@@ -69,9 +69,9 @@ const securityConfigSchema = z.object({
     maxDescriptionLength: z.number(),
     maxPhoneLength: z.number(),
     maxAddressLength: z.number(),
-    securityPinLength: z.number().default(6),
-    securityPinMinRange: z.number().default(100000),
-    securityPinMaxRange: z.number().default(999999),
+    securityPinLength: z.number(),
+    securityPinMinRange: z.number(),
+    securityPinMaxRange: z.number(),
   }),
 });
 

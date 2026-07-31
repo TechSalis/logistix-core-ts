@@ -7,16 +7,7 @@ import {
   CompanyAccessLevel,
 } from './enums.js';
 import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.js';
-
-// Re-export time constants from time.ts for backward compatibility
-export {
-  MS_PER_DAY,
-  MS_PER_HOUR,
-  MS_PER_MINUTE,
-  FIVE_MINUTES_MS,
-  TEN_MINUTES_MS,
-  FIFTEEN_MINUTES_MS,
-} from './time.js';
+import { RETENTION_CONFIG } from './retention.js';
 
 import { MS_PER_DAY } from './time.js';
 
@@ -40,7 +31,7 @@ export const DATA_RETENTION: Record<SubscriptionTier, number> = {
  * Deducted from wallet in real-time, reconciled on monthly invoice.
  */
 export const CHANNEL_FEES: Record<ChannelType, number> = {
-  [ChannelType.PLATFORM_POOL]: 200_00, // ₦200 — covers network number + routing + AI
+  [ChannelType.SYSTEM_POOL]: 200_00, // ₦200 — covers network number + routing + AI
   [ChannelType.MY_CHANNEL]: 200_00, // ₦200 — covers AI only
 };
 
@@ -86,8 +77,9 @@ export const BILLING_CONFIG = {
 
   /**
    * Days after CANCELLED before company data is purged
+   * References RETENTION_CONFIG as single source of truth.
    */
-  PURGE_AFTER_CANCELLED_DAYS: 30,
+  PURGE_AFTER_CANCELLED_DAYS: RETENTION_CONFIG.lockedCompanyPurgeRetentionDays,
 
   /**
    * Message retention in days (archived after this period)
@@ -95,7 +87,7 @@ export const BILLING_CONFIG = {
   MESSAGE_RETENTION_DAYS: 30,
 
   /**
-   * Payment timeout for AWAITING_PAYMENT deliveries (in hours)
+   * Payment timeout for unconfirmed payment deliveries (in hours)
    */
   PAYMENT_TIMEOUT_HOURS: 0.5,
 
@@ -146,7 +138,12 @@ export const BILLING_CONFIG = {
  * Get subscription price for a tier with validation
  */
 export function getSubscriptionPrice(tier: SubscriptionTier): number {
-  return BILLING_CONFIG.PRICING[tier] ?? BILLING_CONFIG.PRICING[SubscriptionTier.STARTER];
+  const price = BILLING_CONFIG.PRICING[tier];
+  if (price === undefined) {
+    console.error(`[Billing] Unknown subscription tier: ${tier} — falling back to STARTER`);
+    return BILLING_CONFIG.PRICING[SubscriptionTier.STARTER] ?? 0;
+  }
+  return price;
 }
 
 /**
@@ -197,18 +194,6 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
   const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
   return daysSinceLastAttempt >= daysToWait;
-}
-
-/**
- * Returns the Date when the next retry attempt should occur, or null if max attempts exceeded.
- */
-export function getNextRetryDate(lastBillingDate: Date, retryAttempt: number): Date | null {
-  if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
-    return null;
-  }
-  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
-  const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
-  return new Date(lastBillingDate.getTime() + daysToWait * MS_PER_DAY);
 }
 
 /**

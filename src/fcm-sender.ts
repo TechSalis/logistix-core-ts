@@ -1,4 +1,5 @@
 import { extractErrorMessage } from './error-utils.js';
+import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { FIVE_MINUTES_MS, MS_PER_HOUR } from './time.js';
 
 /**
@@ -52,9 +53,10 @@ export class FcmService {
     try {
       const token = await this.getAccessToken();
 
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://fcm.googleapis.com/v1/projects/${this.credentials.projectId}/messages:send`,
         {
+          timeoutMs: 10_000,
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -89,11 +91,18 @@ export class FcmService {
 
   /** Send to multiple tokens. One failure does not block others. */
   async sendBatch(messages: FcmMessage[]): Promise<FcmResponse[]> {
-    return Promise.allSettled(messages.map((msg) => this.send(msg))).then((results) =>
-      results.map((r) =>
-        r.status === 'fulfilled' ? r.value : { success: false, error: String(r.reason) },
-      ),
-    );
+    const results: FcmResponse[] = [];
+    const CHUNK_SIZE = 10;
+    for (let i = 0; i < messages.length; i += CHUNK_SIZE) {
+      const chunk = messages.slice(i, i + CHUNK_SIZE);
+      const settled = await Promise.allSettled(chunk.map((msg) => this.send(msg)));
+      for (const r of settled) {
+        results.push(
+          r.status === 'fulfilled' ? r.value : { success: false, error: String(r.reason) },
+        );
+      }
+    }
+    return results;
   }
 
   /** Send a notification to an FCM topic. */
@@ -106,9 +115,10 @@ export class FcmService {
     try {
       const token = await this.getAccessToken();
 
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://fcm.googleapis.com/v1/projects/${this.credentials.projectId}/messages:send`,
         {
+          timeoutMs: 10_000,
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -161,7 +171,8 @@ export class FcmService {
           ? `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`
           : `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`;
 
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
+        timeoutMs: 10_000,
         method,
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       });
@@ -187,28 +198,6 @@ export class FcmService {
     this.cachedToken = { value: token, expiresAt: now + TOKEN_LIFETIME_MS };
     return token;
   }
-}
-
-/** Backward-compatible standalone function (used by workers). */
-export async function sendFcmPush(
-  message: FcmMessage,
-  projectId: string,
-  clientEmail: string,
-  privateKey: string,
-): Promise<FcmResponse> {
-  const svc = new FcmService({ projectId, clientEmail, privateKey });
-  return svc.send(message);
-}
-
-/** Backward-compatible standalone batch function (used by workers). */
-export async function sendFcmPushBatch(
-  messages: FcmMessage[],
-  projectId: string,
-  clientEmail: string,
-  privateKey: string,
-): Promise<FcmResponse[]> {
-  const svc = new FcmService({ projectId, clientEmail, privateKey });
-  return svc.sendBatch(messages);
 }
 
 // ── JWT helpers (Web Crypto, works in Node 16+ and CF Workers) ──────────

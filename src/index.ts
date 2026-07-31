@@ -15,6 +15,7 @@ export {
   DispatcherRole,
   DeliveryStatus,
   PaymentMethod,
+  PaymentStatus,
   RiderStatus,
   ApprovalStatus,
   CompanyAccessLevel,
@@ -42,6 +43,7 @@ export {
   ConversationHandlerType,
   ExportDataType,
   ExportRequestStatus,
+  JobStatus,
   SecurityEventType,
   SecuritySeverity,
   ErrorCode,
@@ -54,9 +56,11 @@ export {
   LogLevel,
   ApiTag,
   SseEventType,
+  FcmNotificationType,
   JwtTokenType,
   ContactCategory,
   safeEnumValue,
+  LEAD_CATEGORIES,
 } from './enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -66,16 +70,24 @@ export {
   BRAND_NAME,
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
+  SHARED_SYSTEM_CONFIG,
 } from './config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
-export { REGIONAL_CONFIG } from './regional.js';
+export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './regional.js';
 export type { RegionalConfig } from './regional.js';
+
+// ─── Timezone ─────────────────────────────────────────────────────────────────
+export { getMonthStartInTimezone, getStartOfDayInTimezone } from './timezone.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
 export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
 export type { TierLimits, LimitsConfig } from './limits.js';
+
+// ─── Retention ────────────────────────────────────────────────────────────────
+export { RETENTION_CONFIG } from './retention.js';
+export type { RetentionConfig } from './retention.js';
 
 // ─── Time constants ──────────────────────────────────────────────────────────
 export {
@@ -100,7 +112,6 @@ export {
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
-  getNextRetryDate,
   computeAllocationTargets,
   computeAccessLevel,
 } from './billing.js';
@@ -112,61 +123,29 @@ export {
   type EmailAttachment,
   type SendEmailOptions,
 } from './services/email.service.js';
+export {
+  queueService,
+  type QueueHandler,
+  type DrainOptions,
+  type DrainResult,
+  type EnqueueOptions,
+} from './services/queue.service.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';
 export type { SecurityConfig } from './security.js';
 
-// ─── Validation ──────────────────────────────────────────────────────────────
-export { InputValidator, sanitizeInput, containsSqlInjection, containsXss } from './validation.js';
-
-// ─── Pricing ──────────────────────────────────────────────────────────────────
-export { DEFAULT_PRICING_SCHEMES } from './pricing-constants.js';
-export type { PricingSchemeDefaults } from './pricing-constants.js';
-
-// ─── AI ───────────────────────────────────────────────────────────────────────
-export { AI_CONFIG } from './ai.js';
-export type { AIConfig } from './ai.js';
-
 // ─── Utilities ────────────────────────────────────────────────────────────────
-export { fetchWithTimeout } from './fetch-with-timeout.js';
+export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './fetch-with-timeout.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
 export {
   FcmService,
-  sendFcmPush,
-  sendFcmPushBatch,
   type FcmCredentials,
   type FcmMessage,
   type FcmResponse,
 } from './fcm-sender.js';
-
-// ─── Contact Form ─────────────────────────────────────────────────────────────
-export {
-  sendContactSubmissionAck,
-  type ContactSubmission,
-  type ContactNotifierOptions,
-} from './contact.js';
-
-// ─── Notifications ────────────────────────────────────────────────────────────
-export {
-  fetchActiveCompanyRecipients,
-  sendMaintenanceNotification,
-  sendBreachNotification,
-  logBreachIncident,
-  sendSettlementReceipt,
-  sendVerificationApprovedEmail,
-  sendVerificationRejectedEmail,
-  type BreachSeverity,
-  type CompanyRecipient,
-  type MaintenanceWindow,
-  type BreachIncident,
-  type SettlementReceiptData,
-} from './notifications.js';
-
-// ─── Offline / Local-First ────────────────────────────────────────────────────
-export { OFFLINE_DB_NAME } from './offline.js';
 
 // ─── Tracking ─────────────────────────────────────────────────────────────────
 export {
@@ -181,6 +160,19 @@ export type { DeliveryBase, RiderBase, DispatcherBase } from './domain.js';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 export { formatDeliveryStatus, formatEnumToTitleCase } from './formatters.js';
+
+// ─── Metadata Types ──────────────────────────────────────────────────────────
+export type {
+  ConversationMetadata,
+  CompanyChannelMetadata,
+  ExportRequestMetadata,
+  DeliveryMetadata,
+  RiderMetadata,
+  CompanyMetadata,
+  TransactionMetadata,
+  ChatMessageMetadata,
+  LedgerMetadata,
+} from './metadata.js';
 
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────
 export * from './drizzle/index.js';

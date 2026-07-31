@@ -65,13 +65,13 @@ async function run() {
   const [{ hasDrizzleTable }] = await db.execute<{ hasDrizzleTable: boolean }>(sql`
     SELECT EXISTS (
       SELECT FROM information_schema.tables
-      WHERE table_schema = 'public' AND table_name = '__drizzle_migrations'
+      WHERE table_schema = 'drizzle' AND table_name = '__drizzle_migrations'
     ) AS "hasDrizzleTable"
   `);
 
   if (hasDrizzleTable) {
     const [{ count }] = await db.execute<{ count: number }>(sql`
-      SELECT COUNT(*)::int AS count FROM "__drizzle_migrations"
+      SELECT COUNT(*)::int AS count FROM "drizzle"."__drizzle_migrations"
     `);
     if (count === 0) {
       console.log('[migrate] Tracking table exists but is empty — seeding from journal.');
@@ -101,8 +101,9 @@ async function seedTrackingTable(connection: postgres.Sql) {
     entries: { tag: string }[];
   };
 
+  await connection.unsafe(`CREATE SCHEMA IF NOT EXISTS "drizzle"`);
   await connection.unsafe(`
-    CREATE TABLE IF NOT EXISTS "__drizzle_migrations" (
+    CREATE TABLE IF NOT EXISTS "drizzle"."__drizzle_migrations" (
       id SERIAL PRIMARY KEY,
       hash TEXT NOT NULL,
       created_at BIGINT
@@ -112,7 +113,7 @@ async function seedTrackingTable(connection: postgres.Sql) {
   // Clear existing tracking entries — handles journal squash where old
   // entries (e.g. from 6 separate migrations) must be replaced by a
   // single squashed entry.
-  await connection.unsafe(`DELETE FROM "__drizzle_migrations"`);
+  await connection.unsafe(`DELETE FROM "drizzle"."__drizzle_migrations"`);
 
   for (const entry of journal.entries) {
     const sqlPath = resolve(MIGRATIONS_FOLDER, `${entry.tag}.sql`);
@@ -121,7 +122,7 @@ async function seedTrackingTable(connection: postgres.Sql) {
       : entry.tag;
 
     await connection.unsafe(
-      `INSERT INTO "__drizzle_migrations" (hash, created_at) VALUES ($1, $2)`,
+      `INSERT INTO "drizzle"."__drizzle_migrations" (hash, created_at) VALUES ($1, $2)`,
       [hash, Date.now()],
     );
   }

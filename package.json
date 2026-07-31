@@ -5,11 +5,11 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./src/index.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       },
       "require": {
@@ -55,7 +55,6 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "@types/nodemailer": "^8.0.1",
-    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "eslint": "^10.4.1",

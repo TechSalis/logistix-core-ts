@@ -1,11 +1,3 @@
-/**
- * Shared domain entity base interfaces.
- *
- * These define the common fields that overlapping API response shapes
- * share across admin (REST) and business (GraphQL) consumers.
- * App-specific consumers should extend these with their own fields.
- */
-
 import type { ApprovalStatus, DeliveryStatus, RiderStatus } from './enums.js';
 
 export interface DeliveryBase {
@@ -33,7 +25,6 @@ export interface RiderBase {
   phoneNumber: string | null;
   status: RiderStatus;
   approvalStatus: ApprovalStatus | null;
-  isAccepted: boolean;
 }
 
 export interface DispatcherBase {
