@@ -13,6 +13,7 @@ import {
   doublePrecision,
   pgEnum,
   primaryKey,
+  bigint,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import {
@@ -39,10 +40,20 @@ import {
   VehicleType,
   EventType,
   EntityType,
+  DayOfWeek,
 } from '../enums.js';
-import { DEFAULT_WORKING_HOURS } from '../config.js';
+import { WorkingHoursEntry } from '../config.js';
 
 const createId = () => randomUUID();
+
+const defaultWorkingHours: Partial<Record<DayOfWeek, WorkingHoursEntry>> = {
+  [DayOfWeek.MONDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.TUESDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.WEDNESDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.THURSDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.FRIDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.SATURDAY]: { start: '07:00', close: '19:00' },
+};
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
@@ -121,7 +132,7 @@ export const companySettings = pgTable(
     periodStart: timestamp('period_start', { precision: 3, mode: 'date' }),
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
     squadTokenId: text('squad_token_id'),
-    workingHours: jsonb('working_hours').default(DEFAULT_WORKING_HOURS).notNull(),
+    workingHours: jsonb('working_hours').default(defaultWorkingHours).notNull(),
     bankDetails: jsonb('bank_details'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
@@ -896,6 +907,29 @@ export const jobQueue = pgTable(
     index('job_queue_scheduled_at_idx').using(
       'btree',
       table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+  ],
+);
+
+export const eventOutbox = pgTable(
+  'event_outbox',
+  {
+    id: bigint({ mode: 'number' }).generatedAlwaysAsIdentity().notNull().primaryKey(),
+    channel: text().notNull(),
+    payload: jsonb().notNull(),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('event_outbox_channel_id_idx').using(
+      'btree',
+      table.channel.asc().nullsLast().op('text_ops'),
+      table.id.asc().nullsLast().op('int8_ops'),
+    ),
+    index('event_outbox_created_at_idx').using(
+      'btree',
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
   ],
 );

@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { formatDeliveryStatus, formatEnumToTitleCase } from '../src/formatters.js';
+import { DeliveryStatus, SubscriptionStatus } from '../src/enums.js';
 
 describe('formatDeliveryStatus', () => {
   it('formats ASSIGNED', () => {
-    expect(formatDeliveryStatus('ASSIGNED')).toBe('Assigned');
+    expect(formatDeliveryStatus(DeliveryStatus.ASSIGNED)).toBe('Assigned');
   });
 
   it('formats IN_TRANSIT', () => {
-    expect(formatDeliveryStatus('IN_TRANSIT')).toBe('In Transit');
+    expect(formatDeliveryStatus(DeliveryStatus.IN_TRANSIT)).toBe('In Transit');
   });
 
   it('returns Unknown for null', () => {
@@ -23,17 +24,17 @@ describe('formatDeliveryStatus', () => {
   });
 
   it('handles single-word status', () => {
-    expect(formatDeliveryStatus('PENDING')).toBe('Pending');
+    expect(formatDeliveryStatus(DeliveryStatus.PENDING)).toBe('Pending');
   });
 });
 
 describe('formatEnumToTitleCase', () => {
   it('formats single word', () => {
-    expect(formatEnumToTitleCase('ACTIVE')).toBe('Active');
+    expect(formatEnumToTitleCase(SubscriptionStatus.ACTIVE)).toBe('Active');
   });
 
   it('formats multi-word', () => {
-    expect(formatEnumToTitleCase('PAST_DUE')).toBe('Past Due');
+    expect(formatEnumToTitleCase(SubscriptionStatus.PAST_DUE)).toBe('Past Due');
   });
 
   it('returns empty string for null', () => {

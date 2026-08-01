@@ -66,7 +66,6 @@ export {
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {
   buildSystemConfig,
-  DEFAULT_WORKING_HOURS,
   BRAND_NAME,
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
@@ -88,16 +87,6 @@ export type { TierLimits, LimitsConfig } from './limits.js';
 // ─── Retention ────────────────────────────────────────────────────────────────
 export { RETENTION_CONFIG } from './retention.js';
 export type { RetentionConfig } from './retention.js';
-
-// ─── Time constants ──────────────────────────────────────────────────────────
-export {
-  MS_PER_DAY,
-  MS_PER_HOUR,
-  MS_PER_MINUTE,
-  FIVE_MINUTES_MS,
-  TEN_MINUTES_MS,
-  FIFTEEN_MINUTES_MS,
-} from './time.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
@@ -139,6 +128,9 @@ export type { SecurityConfig } from './security.js';
 export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './fetch-with-timeout.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
+// ─── Retry ────────────────────────────────────────────────────────────────────
+export { withRetry, sleep, isTransientHttpError, type WithRetryOptions } from './retry.js';
+
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
 export {
   FcmService,
@@ -160,6 +152,9 @@ export type { DeliveryBase, RiderBase, DispatcherBase } from './domain.js';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 export { formatDeliveryStatus, formatEnumToTitleCase } from './formatters.js';
+
+// ─── Enum Catalog ─────────────────────────────────────────────────────────────
+export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enum-catalog.js';
 
 // ─── Metadata Types ──────────────────────────────────────────────────────────
 export type {

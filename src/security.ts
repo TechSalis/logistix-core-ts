@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { SubscriptionTier } from './enums.js';
-import { MS_PER_MINUTE, MS_PER_HOUR, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './time.js';
+import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './time.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {
@@ -20,6 +20,16 @@ export interface SecurityConfig {
   readonly admin: {
     readonly maxFailedSudoAttempts: number;
     readonly sudoLockoutMs: number;
+  };
+  readonly blocks: {
+    // Escalation ladder for temporary (in-memory) auto-blocks: offense #1 → #2 → #3+.
+    readonly temporaryLadderMs: readonly number[];
+    // Promote a repeat IP offender to a persistent (DB) block after this many
+    // temporary blocks within `escalationWindowMs`.
+    readonly escalateAfterBlocks: number;
+    readonly escalationWindowMs: number;
+    readonly persistentEscalatedMs: number;
+    readonly maxPersistentMs: number;
   };
   readonly headers: {
     readonly [key: string]: string;
@@ -60,6 +70,13 @@ const securityConfigSchema = z.object({
     maxFailedSudoAttempts: z.number(),
     sudoLockoutMs: z.number(),
   }),
+  blocks: z.object({
+    temporaryLadderMs: z.array(z.number()),
+    escalateAfterBlocks: z.number(),
+    escalationWindowMs: z.number(),
+    persistentEscalatedMs: z.number(),
+    maxPersistentMs: z.number(),
+  }),
   headers: z.record(z.string(), z.string()),
   maliciousPatterns: z.array(z.instanceof(RegExp)),
   validation: z.object({
@@ -77,10 +94,10 @@ const securityConfigSchema = z.object({
 
 const rawSecurityConfig = {
   rateLimits: {
-    global: { max: 1000, windowMs: MS_PER_MINUTE },
+    global: { max: 1000, windowMs: 60_000 },
     auth: { max: 15, windowMs: FIFTEEN_MINUTES_MS },
     login: { max: 10, windowMs: FIVE_MINUTES_MS },
-    register: { max: 3, windowMs: MS_PER_HOUR },
+    register: { max: 3, windowMs: 3_600_000 },
     tiers: {
       [SubscriptionTier.STARTER]: { max: 500, windowMs: FIFTEEN_MINUTES_MS },
       [SubscriptionTier.PROFESSIONAL]: { max: 2000, windowMs: FIFTEEN_MINUTES_MS },
@@ -96,6 +113,13 @@ const rawSecurityConfig = {
   admin: {
     maxFailedSudoAttempts: 5,
     sudoLockoutMs: FIFTEEN_MINUTES_MS,
+  },
+  blocks: {
+    temporaryLadderMs: [3_600_000, 6 * 3_600_000, 24 * 3_600_000],
+    escalateAfterBlocks: 3,
+    escalationWindowMs: 7 * 86_400_000,
+    persistentEscalatedMs: 7 * 86_400_000,
+    maxPersistentMs: 90 * 86_400_000,
   },
   headers: {
     'X-Content-Type-Options': 'nosniff',

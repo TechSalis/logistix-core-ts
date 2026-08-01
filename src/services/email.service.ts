@@ -1,3 +1,5 @@
+import { withRetry } from '../retry.js';
+
 export interface EmailAttachment {
   filename: string;
   content: string;
@@ -13,8 +15,6 @@ export interface SendEmailOptions {
 }
 
 const DEFAULT_SMTP_PORT = 1025;
-const EMAIL_RETRY_MAX = 1;
-const EMAIL_RETRY_BASE_MS = 1_000;
 
 export interface SendEmailResult {
   id: string;
@@ -41,16 +41,11 @@ function getSmtpConfig(): SmtpConfig | null {
 
 async function sendViaSmtp(smtp: SmtpConfig, options: SendEmailOptions): Promise<SendEmailResult> {
   const nodemailer = await import('nodemailer');
-  const rejectUnauthorized =
-    typeof process !== 'undefined' && process.env?.SMTP_REJECT_UNAUTHORIZED === 'false'
-      ? false
-      : true;
   const transporter = nodemailer.createTransport({
     host: smtp.host,
     port: smtp.port,
     secure: smtp.port === 465,
     auth: smtp.user ? { user: smtp.user, pass: smtp.pass } : undefined,
-    tls: { rejectUnauthorized },
   });
 
   const info = await transporter.sendMail({
@@ -68,10 +63,6 @@ async function sendViaSmtp(smtp: SmtpConfig, options: SendEmailOptions): Promise
   return { id: info.messageId };
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function isRetryableEmailError(error: unknown): boolean {
   if (error && typeof error === 'object') {
     const err = error as { code?: string; message?: string };
@@ -85,21 +76,14 @@ function isRetryableEmailError(error: unknown): boolean {
 
 export class EmailService {
   async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
-    let lastError: unknown;
+    const smtp = getSmtpConfig();
+    if (!smtp) throw new Error('EmailService: no SMTP configured — email not sent');
 
-    for (let attempt = 1; attempt <= EMAIL_RETRY_MAX + 1; attempt++) {
-      try {
-        const smtp = getSmtpConfig();
-        if (!smtp) throw new Error('EmailService: no SMTP configured — email not sent');
-        return await sendViaSmtp(smtp, options);
-      } catch (error) {
-        lastError = error;
-        if (attempt > EMAIL_RETRY_MAX) break;
-        if (!isRetryableEmailError(error)) break;
-        const delay = EMAIL_RETRY_BASE_MS * Math.pow(2, attempt - 1);
-        await sleep(delay);
-      }
-    }
-    throw lastError;
+    return withRetry(() => sendViaSmtp(smtp, options), {
+      maxRetries: 2,
+      baseMs: 1_000,
+      isRetryable: isRetryableEmailError,
+      label: 'email.sendEmail',
+    });
   }
 }

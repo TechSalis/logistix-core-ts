@@ -45,8 +45,8 @@ describe('BILLING_CONFIG', () => {
     expect(BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS).toEqual([1, 3, 7]);
   });
 
-  it('has max 3 retry attempts', () => {
-    expect(BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS).toBe(3);
+  it('has max total attempts equal to 1 initial + retry intervals', () => {
+    expect(BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS).toBe(4);
   });
 });
 

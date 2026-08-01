@@ -119,7 +119,7 @@ npm test         # run unit tests
 | `LlmRole`                  | SYSTEM, USER, ASSISTANT                                     |
 | `ProviderRole`             | PRIMARY, FALLBACK, etc.                                     |
 | `ProviderCapability`       | CHAT, VISION, EMBEDDING, etc.                               |
-| `LogLevel`                 | DEBUG, INFO, WARN, ERROR, CRITICAL                          |
+| `LogLevel`                 | DEBUG, INFO, WARN, ERROR, SILENT                          |
 | `ApiTag`                   | API route tags                                              |
 | `UpdateReason`             | EDIT, SCHEDULE, CANCEL, etc.                                |
 | `SseEventType`             | MESSAGE, STATUS_CHANGE, TRACKING, etc.                      |
@@ -138,7 +138,6 @@ npm test         # run unit tests
 | Export                   | Type       | Description                                  |
 |--------------------------|------------|----------------------------------------------|
 | `buildSystemConfig()`   | `function` | Factory for browser/custom env contexts      |
-| `DEFAULT_WORKING_HOURS` | `object`   | Default working hours config                 |
 | `BRAND_NAME`            | `string`   | Default brand name (`'Logistix AI'`)         |
 | `DELETED_USER_SENTINEL` | `string`   | Sentinel ID for soft-deleted users           |
 
@@ -165,7 +164,6 @@ npm test         # run unit tests
 | `CHANNEL_FEES`               | `object`   | Per-platform channel fees                    |
 | `DEDICATED_TIERS`            | `object`   | Tiers that get dedicated instances           |
 | `KOBO_PER_NAIRA`             | `number`   | Kobo/Naira conversion constant               |
-| `MS_PER_DAY`                 | `number`   | Milliseconds per day constant                |
 | `getSubscriptionPrice()`     | `function` | Calculates subscription price for a tier     |
 | `formatAmount()`             | `function` | Formats an amount in kobo to display string  |
 | `formatNaira()`              | `function` | Formats a number as ₦ display string         |

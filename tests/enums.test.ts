@@ -101,8 +101,11 @@ describe('Enums', () => {
 
   describe('LogLevel', () => {
     it('uses lowercase values', () => {
+      expect(LogLevel.DEBUG).toBe('debug');
       expect(LogLevel.INFO).toBe('info');
+      expect(LogLevel.WARN).toBe('warn');
       expect(LogLevel.ERROR).toBe('error');
+      expect(LogLevel.SILENT).toBe('silent');
     });
   });
 });

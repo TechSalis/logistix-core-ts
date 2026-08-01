@@ -1,6 +1,6 @@
 import { extractErrorMessage } from './error-utils.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
-import { FIVE_MINUTES_MS, MS_PER_HOUR } from './time.js';
+import { FIVE_MINUTES_MS } from './time.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.
@@ -37,7 +37,7 @@ interface CachedToken {
 }
 
 const TOKEN_BUFFER_MS = FIVE_MINUTES_MS; // refresh 5 min early
-const TOKEN_LIFETIME_MS = MS_PER_HOUR; // tokens valid for 1 hour
+const TOKEN_LIFETIME_MS = 3_600_000; // tokens valid for 1 hour
 const TOKEN_EXPIRY_SECONDS = 3600; // JWT exp claim in seconds (1 hour)
 
 // FCM v1 error codes that indicate an invalid/unregistered token

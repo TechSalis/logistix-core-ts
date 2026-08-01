@@ -184,6 +184,7 @@ export enum ChatUpdateType {
   MESSAGE = 'MESSAGE',
   OWNERSHIP = 'OWNERSHIP',
   CONVERSATION = 'CONVERSATION',
+  CHANNEL = 'CHANNEL',
 }
 
 export enum MessageStatus {
@@ -275,9 +276,11 @@ export enum ProviderCapability {
 }
 
 export enum LogLevel {
+  DEBUG = 'debug',
   INFO = 'info',
   WARN = 'warn',
   ERROR = 'error',
+  SILENT = 'silent',
 }
 
 export enum ApiTag {
@@ -310,6 +313,9 @@ export enum JwtTokenType {
 export enum ContactCategory {
   PARTNERSHIP = 'Become a Partner',
   BUSINESS = 'For Business',
+  SUPPORT = 'Support',
+  TRACKING_INQUIRY = 'Tracking Inquiry',
+  FEEDBACK = 'Feedback',
 }
 
 export enum IdType {
@@ -325,9 +331,9 @@ export enum ConversationHandlerType {
 }
 
 export enum ExportDataType {
-  DELIVERIES = 'deliveries',
-  BILLING = 'billing',
-  CHAT = 'chat',
+  DELIVERIES = 'DELIVERIES',
+  BILLING = 'BILLING',
+  CHAT = 'CHAT',
 }
 
 export enum FcmNotificationType {

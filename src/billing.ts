@@ -9,8 +9,6 @@ import {
 import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.js';
 import { RETENTION_CONFIG } from './retention.js';
 
-import { MS_PER_DAY } from './time.js';
-
 /**
  * 1 Naira = 100 Kobo.
  * Use this constant for ALL kobo ↔ naira conversions.
@@ -82,11 +80,6 @@ export const BILLING_CONFIG = {
   PURGE_AFTER_CANCELLED_DAYS: RETENTION_CONFIG.lockedCompanyPurgeRetentionDays,
 
   /**
-   * Message retention in days (archived after this period)
-   */
-  MESSAGE_RETENTION_DAYS: 30,
-
-  /**
    * Payment timeout for unconfirmed payment deliveries (in hours)
    */
   PAYMENT_TIMEOUT_HOURS: 0.5,
@@ -126,10 +119,11 @@ export const BILLING_CONFIG = {
   /**
    * Retry configuration for failed payments.
    * Retries on specific days after failure (1, 3, 7 days).
-   * If all retries fail, moves to PAST_DUE. After PAST_DUE window, cancels.
+   * MAX_ATTEMPTS = total payment attempts (1 initial + 1 retry per INTERVALS_DAYS entry).
+   * If all attempts fail, moves to PAST_DUE. After PAST_DUE window, cancels.
    */
   PAYMENT_RETRY: {
-    MAX_ATTEMPTS: 3,
+    MAX_ATTEMPTS: 4,
     INTERVALS_DAYS: [1, 3, 7] as const,
   },
 } as const;
@@ -176,22 +170,23 @@ export function isBillableTier(tier: SubscriptionTier): boolean {
  */
 export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date): boolean {
   const referenceDate = lastBillingDate || activationDate;
-  const daysSinceReference = Math.floor((Date.now() - referenceDate.getTime()) / MS_PER_DAY);
+  const daysSinceReference = Math.floor((Date.now() - referenceDate.getTime()) / 86_400_000);
   return daysSinceReference >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
 }
 
 /**
  * Check if we should retry a failed payment.
- * Retries on specific days: 1, 3, 7 after the last billing attempt.
+ * `retryAttempt` is a 0-based retry index (0 = first retry, 1-day interval).
+ * Retries are capped by the number of configured intervals.
  */
 export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number): boolean {
-  if (retryAttempt >= BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS) {
+  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
+  if (retryAttempt >= intervals.length) {
     return false;
   }
 
-  const intervals = BILLING_CONFIG.PAYMENT_RETRY.INTERVALS_DAYS;
   const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
-  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
+  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / 86_400_000);
 
   return daysSinceLastAttempt >= daysToWait;
 }
