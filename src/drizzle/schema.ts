@@ -619,7 +619,6 @@ export const paymentTransactions = pgTable(
     provider: paymentProvider('provider'),
     description: text(),
     metadata: jsonb(),
-    gatewayReference: text('gateway_reference'),
     processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -643,7 +642,6 @@ export const paymentTransactions = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
     ),
-    index('payment_transactions_gateway_reference_idx').on(table.gatewayReference),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -672,7 +670,6 @@ export const subscriptionTransactions = pgTable(
     periodEnd: timestamp('period_end', { precision: 3, mode: 'date' }),
     description: text(),
     metadata: jsonb(),
-    gatewayReference: text('gateway_reference'),
     processedAt: timestamp('processed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -692,7 +689,6 @@ export const subscriptionTransactions = pgTable(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
-    index('subscription_transactions_gateway_reference_idx').on(table.gatewayReference),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],

@@ -92,19 +92,9 @@ export const BILLING_CONFIG = {
   OUTSOURCE_CUT_KOBO: 200_00,
 
   /**
-   * Minimum balance required to avoid grace period (in Kobo)
-   */
-  MINIMUM_BALANCE: 1000, // ₦10.00
-
-  /**
    * Per-delivery overage charge when monthly limit exceeded (in Kobo)
    */
   OVERAGE_PRICE_PER_DELIVERY_KOBO: 5_000, // ₦50
-
-  /**
-   * Maximum ledger deduction attempts before locking
-   */
-  MAX_LEDGER_DEDUCTION_ATTEMPTS: 3,
 
   /**
    * Number of days after purchase within which a refund may be requested.

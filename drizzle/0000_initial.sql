@@ -253,7 +253,6 @@ CREATE TABLE "payment_transactions" (
 	"provider" "PaymentProvider",
 	"description" text,
 	"metadata" jsonb,
-	"gateway_reference" text,
 	"processed_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -271,7 +270,6 @@ CREATE TABLE "subscription_transactions" (
 	"period_end" timestamp (3),
 	"description" text,
 	"metadata" jsonb,
-	"gateway_reference" text,
 	"processed_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -382,11 +380,9 @@ CREATE INDEX "payment_transactions_company_id_created_at_idx" ON "payment_transa
 CREATE INDEX "payment_transactions_type_idx" ON "payment_transactions" USING btree ("type" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "payment_transactions_reference_key" ON "payment_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE INDEX "payment_transactions_status_idx" ON "payment_transactions" USING btree ("status" enum_ops);--> statement-breakpoint
-CREATE INDEX "payment_transactions_gateway_reference_idx" ON "payment_transactions" USING btree ("gateway_reference");
 CREATE INDEX "subscription_transactions_company_id_created_at_idx" ON "subscription_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_status_idx" ON "subscription_transactions" USING btree ("status" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
-CREATE INDEX "subscription_transactions_gateway_reference_idx" ON "subscription_transactions" USING btree ("gateway_reference");--> statement-breakpoint
 CREATE INDEX "job_queue_type_status_idx" ON "job_queue" USING btree ("type" text_ops,"status" enum_ops);--> statement-breakpoint
 CREATE INDEX "job_queue_status_priority_created_at_idx" ON "job_queue" USING btree ("status" enum_ops,"priority" int4_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "job_queue_scheduled_at_idx" ON "job_queue" USING btree ("scheduled_at" timestamp_ops);

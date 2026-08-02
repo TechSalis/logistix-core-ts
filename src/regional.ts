@@ -1,12 +1,10 @@
 import { z } from 'zod';
-import { Currency } from './enums.js';
 
 export interface RegionalConfig {
   readonly defaultCountryCode: string;
   readonly defaultIsoCountryCode: string;
   readonly timeZone: string;
   readonly currencySymbol: string;
-  readonly currencyCode: string;
   readonly states: readonly string[];
 }
 
@@ -15,7 +13,6 @@ const regionalConfigSchema = z.object({
   defaultIsoCountryCode: z.string(),
   timeZone: z.string(),
   currencySymbol: z.string(),
-  currencyCode: z.string(),
   states: z.array(z.string()),
 });
 
@@ -26,7 +23,6 @@ const rawRegionalConfig = {
   defaultIsoCountryCode: 'ng',
   timeZone: 'Africa/Lagos',
   currencySymbol: '₦',
-  currencyCode: Currency.NGN,
   states: [
     'Abia',
     'Adamawa',

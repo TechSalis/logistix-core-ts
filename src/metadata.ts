@@ -91,13 +91,11 @@ export interface TransactionMetadata {
   platformId?: string;
   initializedAt?: string;
   deliveryCount?: number;
-  gatewayReference?: string;
   channelFeePerDelivery?: number;
   narration?: string;
   squadResponse?: Record<string, unknown>;
   ledgerRestored?: boolean;
   error?: string;
-  type?: string;
   reconciledAt?: string;
   checkoutUrl?: string;
   fundWallet?: boolean;

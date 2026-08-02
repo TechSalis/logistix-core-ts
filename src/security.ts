@@ -42,7 +42,6 @@ export interface SecurityConfig {
     readonly maxDescriptionLength: number;
     readonly maxPhoneLength: number;
     readonly maxAddressLength: number;
-    readonly securityPinLength: number;
     readonly securityPinMinRange: number;
     readonly securityPinMaxRange: number;
   };
@@ -86,7 +85,6 @@ const securityConfigSchema = z.object({
     maxDescriptionLength: z.number(),
     maxPhoneLength: z.number(),
     maxAddressLength: z.number(),
-    securityPinLength: z.number(),
     securityPinMinRange: z.number(),
     securityPinMaxRange: z.number(),
   }),
@@ -142,7 +140,6 @@ const rawSecurityConfig = {
     maxDescriptionLength: 1000,
     maxPhoneLength: 20,
     maxAddressLength: 300,
-    securityPinLength: 6,
     securityPinMinRange: 100000,
     securityPinMaxRange: 999999,
   },

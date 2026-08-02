@@ -1,4 +1,4 @@
-import { and, eq, sql, lt } from 'drizzle-orm';
+import { and, eq, sql, lt, inArray } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { jobQueue } from '../drizzle/schema.js';
 import { JobStatus } from '../enums.js';
@@ -39,7 +39,11 @@ const DEFAULT_OPTIONS: DrainOptions = {
   batchSize: 5,
 };
 
+const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
+
 class QueueService {
+  private lastPruneAtMs = 0;
+
   async enqueue(
     db: DrizzleDB,
     type: string,
@@ -177,7 +181,12 @@ class QueueService {
     return result ? 1 : 0;
   }
 
-  async clearCompleted(
+  /**
+   * Delete terminal jobs (COMPLETED / FAILED / CANCELLED) older than `olderThanMs`.
+   * Without this the job_queue table grows forever — completed/failed/cancelled
+   * rows are never re-processed. Called from drain() on a time-gated schedule.
+   */
+  async pruneTerminal(
     db: DrizzleDB,
     type: string,
     olderThanMs: number = 24 * 60 * 60 * 1000,
@@ -188,7 +197,7 @@ class QueueService {
       .where(
         and(
           eq(jobQueue.type, type),
-          eq(jobQueue.status, JobStatus.COMPLETED),
+          inArray(jobQueue.status, [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]),
           lt(jobQueue.completedAt, cutoff),
         ),
       )
@@ -218,6 +227,17 @@ class QueueService {
     const opts = { ...DEFAULT_OPTIONS, ...options };
     const startTime = Date.now();
     const stats: DrainResult = { processed: 0, succeeded: 0, failed: 0 };
+
+    // Prune terminal (COMPLETED/FAILED/CANCELLED) rows on a time gate so the
+    // table never grows unbounded without paying for a DELETE on every poll.
+    if (Date.now() - this.lastPruneAtMs >= PRUNE_INTERVAL_MS) {
+      this.lastPruneAtMs = Date.now();
+      try {
+        await this.pruneTerminal(db, type);
+      } catch (e) {
+        console.error('[Queue] Failed to prune terminal jobs', e);
+      }
+    }
 
     // Retry stalled jobs before processing new ones
     try {

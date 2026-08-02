@@ -11,12 +11,6 @@ describe('LIMITS_CONFIG', () => {
     expect(LIMITS_CONFIG.dbBatchSize).toBe(100);
   });
 
-  it('has tracking frequency config', () => {
-    expect(LIMITS_CONFIG.trackingFrequencyConfig.baseIntervalMs).toBe(3000);
-    expect(LIMITS_CONFIG.trackingFrequencyConfig.farDistanceMeters).toBe(3000);
-    expect(LIMITS_CONFIG.trackingFrequencyConfig.farIntervalMs).toBe(60_000);
-  });
-
   it('has max rider active deliveries', () => {
     expect(LIMITS_CONFIG.maxRiderActiveDeliveries).toBe(5);
   });

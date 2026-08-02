@@ -38,6 +38,5 @@ describe('SECURITY_CONFIG', () => {
     expect(SECURITY_CONFIG.validation.maxEmailLength).toBe(254);
     expect(SECURITY_CONFIG.validation.maxPasswordLength).toBe(128);
     expect(SECURITY_CONFIG.validation.maxNameLength).toBe(150);
-    expect(SECURITY_CONFIG.validation.securityPinLength).toBe(6);
   });
 });

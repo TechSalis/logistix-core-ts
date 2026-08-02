@@ -24,11 +24,6 @@ export interface LimitsConfig {
   readonly maxQueryLimit: number; // Fallback for non-tier-aware services
   readonly locationDeduplicationRadiusMeters: number;
   readonly externalApiTimeoutMs: number;
-  readonly trackingFrequencyConfig: {
-    readonly baseIntervalMs: number; // Interval when close to destination (e.g. 3s)
-    readonly farDistanceMeters: number; // Distance threshold to consider 'far' (e.g. 3km)
-    readonly farIntervalMs: number; // Interval when far from destination (e.g. 60s)
-  };
   readonly maxRiderActiveDeliveries: number;
   readonly maxSearchQueryLength: number;
 }
@@ -41,11 +36,6 @@ const limitsConfigSchema = z.object({
   maxQueryLimit: z.number(),
   locationDeduplicationRadiusMeters: z.number(),
   externalApiTimeoutMs: z.number(),
-  trackingFrequencyConfig: z.object({
-    baseIntervalMs: z.number(),
-    farDistanceMeters: z.number(),
-    farIntervalMs: z.number(),
-  }),
   maxRiderActiveDeliveries: z.number(),
   maxSearchQueryLength: z.number(),
 });
@@ -58,11 +48,6 @@ const rawLimitsConfig = {
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
   locationDeduplicationRadiusMeters: 200, // Drop duplicate location results within this range
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
-  trackingFrequencyConfig: {
-    baseIntervalMs: 3000, // 3 seconds — minimum interval when very close to destination
-    farDistanceMeters: 3000, // 3km — distance threshold to switch from close to far interval
-    farIntervalMs: 60_000, // 60 seconds — maximum interval when far from destination
-  },
   maxRiderActiveDeliveries: 5,
   maxSearchQueryLength: 100,
 } as const;

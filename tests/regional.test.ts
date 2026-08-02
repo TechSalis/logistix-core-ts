@@ -13,7 +13,6 @@ describe('REGIONAL_CONFIG', () => {
 
   it('has naira currency', () => {
     expect(REGIONAL_CONFIG.currencySymbol).toBe('₦');
-    expect(REGIONAL_CONFIG.currencyCode).toBe('NGN');
   });
 
   it('has Nigerian states', () => {
