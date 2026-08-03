@@ -41,6 +41,16 @@ const DEFAULT_OPTIONS: DrainOptions = {
 
 const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
 
+// Exponential retry backoff: a failing job is scheduled for retry instead of
+// being re-dequeued instantly, so one poisoned job can't burn its entire
+// retry budget (and starve the drain loop) within a single call.
+const RETRY_BACKOFF_BASE_MS = 1_000;
+const RETRY_BACKOFF_MAX_MS = 60_000;
+
+function retryBackoffMs(retryCount: number): number {
+  return Math.min(RETRY_BACKOFF_MAX_MS, RETRY_BACKOFF_BASE_MS * 2 ** (retryCount - 1));
+}
+
 class QueueService {
   private lastPruneAtMs = 0;
 
@@ -63,41 +73,21 @@ class QueueService {
     return job;
   }
 
-  async enqueueBatch(
-    db: DrizzleDB,
-    jobs: Array<{ type: string; payload?: Record<string, unknown>; options?: EnqueueOptions }>,
-  ): Promise<JobRow[]> {
-    if (jobs.length === 0) return [];
-    const rows = await db
-      .insert(jobQueue)
-      .values(
-        jobs.map((j) => ({
-          type: j.type,
-          payload: j.payload ?? {},
-          priority: j.options?.priority ?? 0,
-          maxRetries: j.options?.maxRetries ?? 3,
-          scheduledAt: j.options?.scheduledAt ?? null,
-        })),
-      )
-      .returning();
-    return rows;
-  }
-
   private async dequeue(db: DrizzleDB, type: string, batchSize: number): Promise<JobRow[]> {
     const now = new Date();
     const result = await db.execute(
       sql`
         UPDATE ${jobQueue}
         SET
-          status = ${JobStatus.PROCESSING}::text,
-          started_at = ${now},
+          status = ${JobStatus.PROCESSING}::"JobStatus",
+          started_at = ${now.toISOString()},
           retry_count = ${jobQueue.retryCount} + 1
         WHERE id IN (
           SELECT id FROM ${jobQueue}
           WHERE
             type = ${type}
-            AND status = ${JobStatus.PENDING}::text
-            AND (scheduled_at IS NULL OR scheduled_at <= ${now})
+            AND status = ${JobStatus.PENDING}::"JobStatus"
+            AND (scheduled_at IS NULL OR scheduled_at <= ${now.toISOString()})
           ORDER BY priority DESC, created_at ASC
           LIMIT ${batchSize}
           FOR UPDATE SKIP LOCKED
@@ -105,7 +95,10 @@ class QueueService {
         RETURNING *
       `,
     );
-    return result.rows as unknown as JobRow[]; // Safe: Raw SQL result rows match JobRow shape.
+    // drizzle-orm returns different shapes per driver: postgres-js resolves raw
+    // `db.execute` to the rows array, node-postgres wraps it as `{ rows }`.
+    const rows = Array.isArray(result) ? result : result.rows;
+    return rows as unknown as JobRow[]; // Safe: Raw SQL result rows match JobRow shape.
   }
 
   private async retryStalled(db: DrizzleDB, type: string, stalenessMs: number): Promise<number> {
@@ -160,6 +153,11 @@ class QueueService {
           lastError: error,
           startedAt: null,
           completedAt: null,
+          // Backoff: don't re-dequeue the job instantly. `dequeue` only picks
+          // up PENDING jobs whose scheduled_at is null or in the past, so this
+          // spaces out retries and prevents a poisoned job from monopolizing a
+          // single drain call by re-failing back-to-back.
+          scheduledAt: new Date(Date.now() + retryBackoffMs(job.retryCount)),
         })
         .where(eq(jobQueue.id, jobId));
     }
@@ -170,15 +168,6 @@ class QueueService {
       .update(jobQueue)
       .set({ status: JobStatus.CANCELLED, completedAt: new Date() })
       .where(eq(jobQueue.id, jobId));
-  }
-
-  async cancelType(db: DrizzleDB, type: string): Promise<number> {
-    const [result] = await db
-      .update(jobQueue)
-      .set({ status: JobStatus.CANCELLED, completedAt: new Date() })
-      .where(and(eq(jobQueue.type, type), eq(jobQueue.status, JobStatus.PENDING)))
-      .returning({ id: jobQueue.id });
-    return result ? 1 : 0;
   }
 
   /**
@@ -203,14 +192,6 @@ class QueueService {
       )
       .returning({ id: jobQueue.id });
     return result ? 1 : 0;
-  }
-
-  async countPending(db: DrizzleDB, type: string): Promise<number> {
-    const [result] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(jobQueue)
-      .where(and(eq(jobQueue.type, type), eq(jobQueue.status, JobStatus.PENDING)));
-    return result?.count ?? 0;
   }
 
   /**
