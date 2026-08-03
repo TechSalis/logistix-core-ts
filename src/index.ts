@@ -78,7 +78,11 @@ export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './regional.js';
 export type { RegionalConfig } from './regional.js';
 
 // ─── Timezone ─────────────────────────────────────────────────────────────────
-export { getMonthStartInTimezone, getStartOfDayInTimezone } from './timezone.js';
+export {
+  getMonthStartInTimezone,
+  getStartOfDayInTimezone,
+  getRetentionCutoff,
+} from './timezone.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
 export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
@@ -134,7 +138,7 @@ export type { SecurityConfig } from './security.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './fetch-with-timeout.js';
-export { MS_PER_DAY } from './time.js';
+export { MS_PER_DAY, addDays } from './time.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
 // ─── Retry ────────────────────────────────────────────────────────────────────
