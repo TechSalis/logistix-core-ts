@@ -33,6 +33,21 @@ export interface RetentionConfig {
    * older than tier windows, and independent of DATA_RETENTION.
    */
   readonly eventLogRetentionMonths: number;
+
+  /**
+   * Fixed retention floor (months) for the company_daily_metrics rollup table.
+   * Rows are tiny (one per company per day) and feed the live trend-analytics
+   * chart, so they are pruned at a flat 12-month floor — same class as
+   * event_logs, independent of DATA_RETENTION.
+   */
+  readonly dailyMetricsRetentionMonths: number;
+
+  /**
+   * Days after reaching a terminal status (COMPLETED/FAILED) before an
+   * export_requests row is pruned. PENDING rows are never pruned here —
+   * the export runner owns them.
+   */
+  readonly exportRequestRetentionDays: number;
 }
 
 const retentionConfigSchema = z.object({
@@ -40,6 +55,8 @@ const retentionConfigSchema = z.object({
   companyPurgeRetentionDays: z.number(),
   lockedCompanyPurgeRetentionDays: z.number(),
   eventLogRetentionMonths: z.number(),
+  dailyMetricsRetentionMonths: z.number(),
+  exportRequestRetentionDays: z.number(),
 });
 
 const rawRetentionConfig = {
@@ -47,6 +64,8 @@ const rawRetentionConfig = {
   companyPurgeRetentionDays: 180,
   lockedCompanyPurgeRetentionDays: 30,
   eventLogRetentionMonths: 12,
+  dailyMetricsRetentionMonths: 12,
+  exportRequestRetentionDays: 30,
 } as const;
 
 // Runtime validation guard — keeps config in sync with schema
