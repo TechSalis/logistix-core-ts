@@ -134,6 +134,7 @@ export type { SecurityConfig } from './security.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './fetch-with-timeout.js';
+export { MS_PER_DAY } from './time.js';
 export { extractErrorMessage, extractErrorContext } from './error-utils.js';
 
 // ─── Retry ────────────────────────────────────────────────────────────────────

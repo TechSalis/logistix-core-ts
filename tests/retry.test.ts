@@ -116,6 +116,17 @@ describe('isTransientHttpError', () => {
     expect(isTransientHttpError(new Error('getaddrinfo EAI_AGAIN host'))).toBe(true);
   });
 
+  it('classifies axios and fetch timeouts as transient', () => {
+    expect(isTransientHttpError(Object.assign(new Error('x'), { code: 'ECONNABORTED' }))).toBe(
+      true,
+    );
+    expect(isTransientHttpError(new Error('timeout of 10000ms exceeded'))).toBe(true);
+    expect(isTransientHttpError(new Error('connect ECONNABORTED 1.2.3.4:443'))).toBe(true);
+    expect(
+      isTransientHttpError(Object.assign(new Error('x'), { code: 'UND_ERR_CONNECT_TIMEOUT' })),
+    ).toBe(true);
+  });
+
   it('returns false for plain errors', () => {
     expect(isTransientHttpError(new Error('plain'))).toBe(false);
     expect(isTransientHttpError('not an error')).toBe(false);

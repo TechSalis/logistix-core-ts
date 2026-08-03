@@ -66,14 +66,19 @@ export function isTransientHttpError(error: unknown): boolean {
       code === 'ECONNRESET' ||
       code === 'ECONNREFUSED' ||
       code === 'ETIMEDOUT' ||
-      code === 'EAI_AGAIN'
+      code === 'ECONNABORTED' ||
+      code === 'EAI_AGAIN' ||
+      code === 'UND_ERR_CONNECT_TIMEOUT' ||
+      code === 'UND_ERR_HEADERS_TIMEOUT'
     )
       return true;
     if (
       msg.includes('etimedout') ||
       msg.includes('econnrefused') ||
       msg.includes('econnreset') ||
-      msg.includes('eai_again')
+      msg.includes('econnaborted') ||
+      msg.includes('eai_again') ||
+      msg.includes('timeout of')
     )
       return true;
   }
