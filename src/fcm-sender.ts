@@ -1,6 +1,6 @@
 import { extractErrorMessage } from './error-utils.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
-import { FIVE_MINUTES_MS } from './time.js';
+import { FCM_SERVICE_CONFIG } from './services/service-config.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.
@@ -36,9 +36,9 @@ interface CachedToken {
   expiresAt: number;
 }
 
-const TOKEN_BUFFER_MS = FIVE_MINUTES_MS; // refresh 5 min early
-const TOKEN_LIFETIME_MS = 3_600_000; // tokens valid for 1 hour
-const TOKEN_EXPIRY_SECONDS = 3600; // JWT exp claim in seconds (1 hour)
+const TOKEN_BUFFER_MS = FCM_SERVICE_CONFIG.tokenBufferMs; // refresh 5 min early
+const TOKEN_LIFETIME_MS = FCM_SERVICE_CONFIG.tokenLifetimeMs; // tokens valid for 1 hour
+const TOKEN_EXPIRY_SECONDS = FCM_SERVICE_CONFIG.tokenExpirySeconds; // JWT exp claim in seconds (1 hour)
 
 // FCM v1 error codes that indicate an invalid/unregistered token
 const INVALID_TOKEN_CODES = new Set(['UNREGISTERED']);
@@ -92,7 +92,7 @@ export class FcmService {
   /** Send to multiple tokens. One failure does not block others. */
   async sendBatch(messages: FcmMessage[]): Promise<FcmResponse[]> {
     const results: FcmResponse[] = [];
-    const CHUNK_SIZE = 10;
+    const CHUNK_SIZE = FCM_SERVICE_CONFIG.sendChunkSize;
     for (let i = 0; i < messages.length; i += CHUNK_SIZE) {
       const chunk = messages.slice(i, i + CHUNK_SIZE);
       const settled = await Promise.allSettled(chunk.map((msg) => this.send(msg)));

@@ -607,7 +607,7 @@ export const paymentTransactions = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    companyId: text('company_id').notNull(),
+    companyId: text('company_id'),
     type: transactionType('type').notNull(),
     amount: doublePrecision().notNull(),
     currency: currencyEnum().default(Currency.NGN).notNull(),

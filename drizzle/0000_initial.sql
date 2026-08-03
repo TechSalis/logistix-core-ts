@@ -244,7 +244,7 @@ CREATE TABLE "riders" (
 --> statement-breakpoint
 CREATE TABLE "payment_transactions" (
 	"id" text PRIMARY KEY NOT NULL,
-	"company_id" text NOT NULL,
+	"company_id" text,
 	"type" "TransactionType" NOT NULL,
 	"amount" double precision NOT NULL,
 	"currency" "Currency" DEFAULT 'NGN' NOT NULL,

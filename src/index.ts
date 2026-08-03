@@ -131,6 +131,7 @@ export {
   type DrainResult,
   type EnqueueOptions,
 } from './services/queue.service.js';
+export { QUEUE_SERVICE_CONFIG, FCM_SERVICE_CONFIG } from './services/service-config.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './security.js';

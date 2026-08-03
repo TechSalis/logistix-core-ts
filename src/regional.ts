@@ -38,6 +38,7 @@ const rawRegionalConfig = {
     'Edo',
     'Ekiti',
     'Enugu',
+    'Federal Capital Territory',
     'Gombe',
     'Imo',
     'Jigawa',
@@ -60,7 +61,6 @@ const rawRegionalConfig = {
     'Taraba',
     'Yobe',
     'Zamfara',
-    'Federal Capital Territory',
   ],
 } as const;
 

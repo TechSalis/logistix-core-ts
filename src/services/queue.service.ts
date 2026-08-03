@@ -3,6 +3,7 @@ import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { jobQueue } from '../drizzle/schema.js';
 import { JobStatus } from '../enums.js';
 import { extractErrorMessage } from '../error-utils.js';
+import { QUEUE_SERVICE_CONFIG } from './service-config.js';
 
 // Accepts both NodePgDatabase (workers) and PgDatabase<postgres-js> (backend).
 // The three `any` params are for TQueryResult, TFullSchema, and TSchema generics —
@@ -33,22 +34,13 @@ export interface DrainResult {
 
 export type QueueHandler = (job: JobRow) => Promise<void>;
 
-const DEFAULT_OPTIONS: DrainOptions = {
-  timeBudgetMs: 12 * 60 * 1000,
-  maxJobs: 200,
-  batchSize: 5,
-};
-
-const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
-
-// Exponential retry backoff: a failing job is scheduled for retry instead of
-// being re-dequeued instantly, so one poisoned job can't burn its entire
-// retry budget (and starve the drain loop) within a single call.
-const RETRY_BACKOFF_BASE_MS = 1_000;
-const RETRY_BACKOFF_MAX_MS = 60_000;
+const DEFAULT_OPTIONS: DrainOptions = { ...QUEUE_SERVICE_CONFIG.defaultDrainOptions };
 
 function retryBackoffMs(retryCount: number): number {
-  return Math.min(RETRY_BACKOFF_MAX_MS, RETRY_BACKOFF_BASE_MS * 2 ** (retryCount - 1));
+  return Math.min(
+    QUEUE_SERVICE_CONFIG.retryBackoffMaxMs,
+    QUEUE_SERVICE_CONFIG.retryBackoffBaseMs * 2 ** (retryCount - 1),
+  );
 }
 
 class QueueService {
@@ -211,7 +203,7 @@ class QueueService {
 
     // Prune terminal (COMPLETED/FAILED/CANCELLED) rows on a time gate so the
     // table never grows unbounded without paying for a DELETE on every poll.
-    if (Date.now() - this.lastPruneAtMs >= PRUNE_INTERVAL_MS) {
+    if (Date.now() - this.lastPruneAtMs >= QUEUE_SERVICE_CONFIG.pruneIntervalMs) {
       this.lastPruneAtMs = Date.now();
       try {
         await this.pruneTerminal(db, type);
