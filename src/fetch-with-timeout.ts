@@ -5,7 +5,7 @@
 
 export const DEFAULT_TIMEOUT_MS = 20_000;
 
-export interface FetchWithTimeoutOptions extends Omit<RequestInit, 'signal'> {
+interface FetchWithTimeoutOptions extends Omit<RequestInit, 'signal'> {
   /** Timeout in milliseconds. Defaults to 20 000 ms. */
   timeoutMs?: number;
   /** Custom fetch implementation (useful for testing). */

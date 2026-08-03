@@ -16,7 +16,7 @@ export interface SendEmailOptions {
 
 const DEFAULT_SMTP_PORT = 1025;
 
-export interface SendEmailResult {
+interface SendEmailResult {
   id: string;
 }
 
