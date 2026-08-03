@@ -106,6 +106,14 @@ export {
 } from './billing.js';
 export type { AllocationDeliveryInput, AllocationTarget } from './billing.js';
 
+// ─── Shared payment allocation ───────────────────────────────────────────────
+export {
+  getTotalPaidForDeliveries,
+  applyPaymentStatusUpdate,
+  processPaymentAllocation,
+} from './payments.js';
+export type { PaymentAllocationTransaction, PaymentAllocationResult } from './payments.js';
+
 // ─── Services ────────────────────────────────────────────────────────────────
 export {
   EmailService,

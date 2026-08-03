@@ -15,12 +15,24 @@ import {
   computeAccessLevel,
 } from '../src/billing.js';
 import {
+  getTotalPaidForDeliveries,
+  applyPaymentStatusUpdate,
+  processPaymentAllocation,
+} from '../src/payments.js';
+import type { PaymentAllocationTransaction } from '../src/payments.js';
+import {
   SubscriptionTier,
   SubscriptionStatus,
   ApprovalStatus,
   CompanyAccessLevel,
   ChannelType,
 } from '../src/enums.js';
+import {
+  deliveries,
+  deliveryAllocations,
+  companySettings,
+  ledgerTransactions,
+} from '../src/drizzle/schema.js';
 
 describe('BILLING_CONFIG', () => {
   it('has valid currency', () => {
@@ -352,5 +364,283 @@ describe('computeAccessLevel', () => {
 
   it('returns RESTRICTED when both are undefined', () => {
     expect(computeAccessLevel(undefined, undefined)).toBe(CompanyAccessLevel.RESTRICTED);
+  });
+});
+
+// ─── Shared payment allocation (backend webhook + workers reconciliation) ────
+
+function makeBuilderChain(result?: unknown) {
+  const chain: Record<string, unknown> = {};
+  for (const m of [
+    'set',
+    'where',
+    'returning',
+    'from',
+    'orderBy',
+    'limit',
+    'for',
+    'groupBy',
+    'innerJoin',
+    'values',
+  ] as const) {
+    chain[m] = vi.fn().mockReturnValue(chain);
+  }
+  (chain as { then?: unknown }).then = (resolve: (v: unknown) => void) => resolve(result);
+  return chain;
+}
+
+function mockTx(
+  opts: {
+    deliveryRows?: Array<Record<string, unknown>>;
+    paidRows?: Array<{ deliveryId: string; total: string | number | null }>;
+    updatedRows?: Array<{ id: string }>;
+  } = {},
+) {
+  const deliveryRows = opts.deliveryRows ?? [];
+  const paidRows = opts.paidRows ?? [];
+  const updatedRows = opts.updatedRows ?? [];
+
+  const sets: Array<{ table: unknown; value: unknown }> = [];
+  const insertValues: Array<{ table: unknown; values: unknown }> = [];
+  const wheres: Array<{ table: unknown; args: unknown[] }> = [];
+
+  const tx = {
+    select: vi.fn(() => {
+      const chain = makeBuilderChain();
+      chain.from = vi.fn((table: unknown) =>
+        table === deliveries ? makeBuilderChain(deliveryRows) : makeBuilderChain(paidRows),
+      );
+      return chain;
+    }),
+    update: vi.fn((table: unknown) => {
+      const chain = makeBuilderChain();
+      chain.set = vi.fn((value: unknown) => {
+        sets.push({ table, value });
+        return chain;
+      });
+      chain.where = vi.fn((...args: unknown[]) => {
+        wheres.push({ table, args });
+        return chain;
+      });
+      chain.returning = vi.fn().mockResolvedValue(table === deliveries ? updatedRows : []);
+      return chain;
+    }),
+    delete: vi.fn(() => makeBuilderChain()),
+    insert: vi.fn((table: unknown) => {
+      const chain = makeBuilderChain();
+      chain.values = vi.fn((values: unknown) => {
+        insertValues.push({ table, values });
+        return chain;
+      });
+      return chain;
+    }),
+  };
+
+  return { tx, sets, insertValues, wheres };
+}
+
+describe('getTotalPaidForDeliveries', () => {
+  it('sums only SUCCESS allocations per delivery', async () => {
+    const { tx } = mockTx({
+      paidRows: [
+        { deliveryId: 'D1', totalAmount: '1500' },
+        { deliveryId: 'D2', totalAmount: null },
+      ],
+    });
+
+    const map = await getTotalPaidForDeliveries(['D1', 'D2'], tx as never);
+
+    expect(map.get('D1')).toBe(1500);
+    expect(map.get('D2')).toBe(0);
+  });
+
+  it('returns empty map when no allocations exist', async () => {
+    const { tx } = mockTx({ paidRows: [] });
+
+    const map = await getTotalPaidForDeliveries(['D1'], tx as never);
+
+    expect(map.size).toBe(0);
+  });
+});
+
+describe('applyPaymentStatusUpdate', () => {
+  it('updates fully-paid deliveries and returns updated ids', async () => {
+    const { tx } = mockTx({ updatedRows: [{ id: 'D1' }] });
+
+    const updated = await applyPaymentStatusUpdate(tx as never, ['D1', 'D2'], 'C1');
+
+    expect(updated).toEqual(['D1']);
+    expect(tx.update).toHaveBeenCalledWith(deliveries);
+  });
+});
+
+describe('processPaymentAllocation', () => {
+  it('allocates across deliveries and credits the owner ledger', async () => {
+    const { tx } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 1000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+        {
+          id: 'D2',
+          price: 2000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-02'),
+          metadata: null,
+        },
+      ],
+      paidRows: [],
+      updatedRows: [{ id: 'D1' }],
+    });
+    const transaction: PaymentAllocationTransaction = {
+      id: 'T1',
+      amount: 1500,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }, { deliveryId: 'D2' }],
+    };
+
+    const result = await processPaymentAllocation(tx as never, transaction);
+
+    expect(result.fullyPaidIds).toEqual(['D1']);
+    expect(result.updatedDeliveryIds).toEqual(['D1']);
+    expect(result.creditedCompanyIds).toEqual(['C1']);
+    expect(tx.update).toHaveBeenCalledWith(companySettings);
+    expect(tx.insert).toHaveBeenCalledWith(deliveryAllocations);
+    expect(tx.insert).not.toHaveBeenCalledWith(ledgerTransactions);
+  });
+
+  it('routes pool payment to the fulfiller minus the fixed kobo outsource cut', async () => {
+    const { tx } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 1000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: { fulfilledByCompanyId: 'C2', outsourcedCut: 200_00 },
+        },
+      ],
+      paidRows: [],
+      updatedRows: [{ id: 'D1' }],
+    });
+    const transaction: PaymentAllocationTransaction = {
+      id: 'T1',
+      amount: 1000,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+    };
+
+    const result = await processPaymentAllocation(tx as never, transaction);
+
+    expect(result.creditedCompanyIds).toEqual(['C2']);
+    expect(tx.update).toHaveBeenCalledWith(companySettings);
+  });
+
+  it('credits leftover overpayment to the payer ledger', async () => {
+    const { tx } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 500,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+      ],
+      paidRows: [],
+    });
+
+    const result = await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 700,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+    });
+
+    expect(result.fullyPaidIds).toEqual(['D1']);
+    expect(result.creditedCompanyIds).toEqual(['C1']);
+  });
+
+  it('writes CHANNEL_FEE ledger entries when channelFeePerDelivery is set', async () => {
+    const { tx, insertValues } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 1000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+      ],
+      paidRows: [],
+    });
+
+    await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 1000,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+      metadata: { channelFeePerDelivery: 200 },
+    });
+
+    const chFee = insertValues.find((v) => v.table === ledgerTransactions);
+    expect(chFee).toBeDefined();
+    expect((chFee!.values as { amount: number }).amount).toBe(-200);
+  });
+
+  it('spreads leftover across all deliveries via proportional fallback', async () => {
+    const { tx, insertValues } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: null,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+        {
+          id: 'D2',
+          price: null,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-02'),
+          metadata: null,
+        },
+      ],
+      paidRows: [],
+    });
+
+    const result = await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 100,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }, { deliveryId: 'D2' }],
+    });
+
+    expect(result.fullyPaidIds).toEqual([]);
+    const alloc = insertValues.find((v) => v.table === deliveryAllocations);
+    expect(alloc!.values).toEqual([
+      { transactionId: 'T1', deliveryId: 'D1', amount: 50 },
+      { transactionId: 'T1', deliveryId: 'D2', amount: 50 },
+    ]);
+  });
+
+  it('does nothing when there are no linked allocations', async () => {
+    const { tx } = mockTx({});
+
+    const result = await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 500,
+      companyId: 'C1',
+      deliveryAllocations: [],
+    });
+
+    expect(result).toEqual({ fullyPaidIds: [], updatedDeliveryIds: [], creditedCompanyIds: [] });
+    expect(tx.select).not.toHaveBeenCalled();
+    expect(tx.update).not.toHaveBeenCalled();
+    expect(tx.insert).not.toHaveBeenCalled();
   });
 });
