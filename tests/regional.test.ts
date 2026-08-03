@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from '../src/regional.js';
+import { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from '../src/config/regional.config.js';
 
 describe('REGIONAL_CONFIG', () => {
   it('has Nigeria country code', () => {

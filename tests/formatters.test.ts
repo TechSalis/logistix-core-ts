@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatDeliveryStatus, formatEnumToTitleCase } from '../src/formatters.js';
-import { DeliveryStatus, SubscriptionStatus } from '../src/enums.js';
+import { formatDeliveryStatus, formatEnumToTitleCase } from '../src/utils/formatters.js';
+import { DeliveryStatus, SubscriptionStatus } from '../src/enums/enums.js';
 
 describe('formatDeliveryStatus', () => {
   it('formats ASSIGNED', () => {

@@ -1,4 +1,4 @@
-import { withRetry } from '../retry.js';
+import { withRetry } from '../utils/retry.js';
 
 export interface EmailAttachment {
   filename: string;

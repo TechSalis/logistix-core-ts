@@ -1,16 +1,21 @@
 import { and, asc, eq, inArray, sql, sum } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { randomUUID } from 'node:crypto';
-import { computeAllocationTargets, KOBO_PER_NAIRA } from './billing.js';
-import { PaymentStatus, DeliveryStatus, TransactionStatus, LedgerAdjustmentType } from './enums.js';
-import { LIMITS_CONFIG } from './limits.js';
+import { computeAllocationTargets, KOBO_PER_NAIRA } from '../config/billing.config.js';
+import {
+  PaymentStatus,
+  DeliveryStatus,
+  TransactionStatus,
+  LedgerAdjustmentType,
+} from '../enums/enums.js';
+import { LIMITS_CONFIG } from '../config/limits.config.js';
 import {
   deliveries,
   deliveryAllocations,
   companySettings,
   ledgerTransactions,
   paymentTransactions,
-} from './drizzle/schema.js';
+} from '../drizzle/schema.js';
 
 // ─── Shared payment allocation (backend webhook + workers reconciliation) ────
 //

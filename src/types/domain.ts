@@ -1,4 +1,4 @@
-import type { ApprovalStatus, DeliveryStatus, RiderStatus } from './enums.js';
+import type { ApprovalStatus, DeliveryStatus, RiderStatus } from '../enums/enums.js';
 
 export interface DeliveryBase {
   id: string;

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildSystemConfig, SHARED_SYSTEM_CONFIG, BRAND_NAME } from '../src/config.js';
+import {
+  buildSystemConfig,
+  SHARED_SYSTEM_CONFIG,
+  BRAND_NAME,
+} from '../src/config/system.config.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {

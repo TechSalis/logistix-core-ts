@@ -4,7 +4,7 @@ import {
   TRACKING_ID_SUFFIX_LENGTH,
   TRACKING_ID_LENGTH,
   TRACKING_ID_CHARS,
-} from '../src/tracking.js';
+} from '../src/utils/tracking.js';
 
 describe('tracking constants', () => {
   it('has correct prefix', () => {

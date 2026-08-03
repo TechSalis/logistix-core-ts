@@ -1,4 +1,9 @@
-import type { PaymentProvider, PaymentStatus, EscalatedTo, EscalationStatus } from './enums.js';
+import type {
+  PaymentProvider,
+  PaymentStatus,
+  EscalatedTo,
+  EscalationStatus,
+} from '../enums/enums.js';
 
 export interface ConversationMetadata {
   escalatedTo?: EscalatedTo;

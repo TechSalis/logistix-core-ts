@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { withRetry, isTransientHttpError, sleep } from '../src/retry.js';
+import { withRetry, isTransientHttpError, sleep } from '../src/utils/retry.js';
 
 describe('sleep', () => {
   it('resolves after the specified milliseconds', async () => {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { SubscriptionTier } from './enums.js';
-import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from './time.js';
+import { SubscriptionTier } from '../enums/enums.js';
+import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from '../utils/time.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {

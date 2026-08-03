@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { SubscriptionTier } from './enums.js';
-import { DATA_RETENTION } from './billing.js';
+import { SubscriptionTier } from '../enums/enums.js';
+import { DATA_RETENTION } from './billing.config.js';
 
 export interface TierLimits {
   readonly maxAIDeliveriesPerAction: number;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from '../src/limits.js';
-import { SubscriptionTier } from '../src/enums.js';
+import { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from '../src/config/limits.config.js';
+import { SubscriptionTier } from '../src/enums/enums.js';
 
 describe('LIMITS_CONFIG', () => {
   it('has max batch size', () => {

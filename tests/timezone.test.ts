@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getRetentionCutoff, getStartOfDayInTimezone } from '../src/timezone.js';
+import { getRetentionCutoff, getStartOfDayInTimezone } from '../src/utils/timezone.js';
 
 afterEach(() => {
   vi.useRealTimers();

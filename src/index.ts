@@ -61,7 +61,7 @@ export {
   ContactCategory,
   safeEnumValue,
   LEAD_CATEGORIES,
-} from './enums.js';
+} from './enums/enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {
@@ -70,27 +70,27 @@ export {
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
   SHARED_SYSTEM_CONFIG,
-} from './config.js';
-export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config.js';
+} from './config/system.config.js';
+export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
-export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './regional.js';
-export type { RegionalConfig } from './regional.js';
+export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional.config.js';
+export type { RegionalConfig } from './config/regional.config.js';
 
 // ─── Timezone ─────────────────────────────────────────────────────────────────
 export {
   getMonthStartInTimezone,
   getStartOfDayInTimezone,
   getRetentionCutoff,
-} from './timezone.js';
+} from './utils/timezone.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
-export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './limits.js';
-export type { TierLimits, LimitsConfig } from './limits.js';
+export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './config/limits.config.js';
+export type { TierLimits, LimitsConfig } from './config/limits.config.js';
 
 // ─── Retention ────────────────────────────────────────────────────────────────
-export { RETENTION_CONFIG } from './retention.js';
-export type { RetentionConfig } from './retention.js';
+export { RETENTION_CONFIG } from './config/retention.config.js';
+export type { RetentionConfig } from './config/retention.config.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
@@ -107,16 +107,16 @@ export {
   shouldRetryPayment,
   computeAllocationTargets,
   computeAccessLevel,
-} from './billing.js';
-export type { AllocationDeliveryInput, AllocationTarget } from './billing.js';
+} from './config/billing.config.js';
+export type { AllocationDeliveryInput, AllocationTarget } from './config/billing.config.js';
 
 // ─── Shared payment allocation ───────────────────────────────────────────────
 export {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
   processPaymentAllocation,
-} from './payments.js';
-export type { PaymentAllocationTransaction, PaymentAllocationResult } from './payments.js';
+} from './services/payments.js';
+export type { PaymentAllocationTransaction, PaymentAllocationResult } from './services/payments.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export {
@@ -131,19 +131,19 @@ export {
   type DrainResult,
   type EnqueueOptions,
 } from './services/queue.service.js';
-export { QUEUE_SERVICE_CONFIG, FCM_SERVICE_CONFIG } from './services/service-config.js';
+export { QUEUE_SERVICE_CONFIG, FCM_SERVICE_CONFIG } from './config/service.config.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
-export { SECURITY_CONFIG } from './security.js';
-export type { SecurityConfig } from './security.js';
+export { SECURITY_CONFIG } from './config/security.config.js';
+export type { SecurityConfig } from './config/security.config.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './fetch-with-timeout.js';
-export { MS_PER_DAY, addDays } from './time.js';
-export { extractErrorMessage, extractErrorContext } from './error-utils.js';
+export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './utils/fetch-with-timeout.js';
+export { MS_PER_DAY, addDays } from './utils/time.js';
+export { extractErrorMessage, extractErrorContext } from './utils/error-utils.js';
 
 // ─── Retry ────────────────────────────────────────────────────────────────────
-export { withRetry, sleep, isTransientHttpError, type WithRetryOptions } from './retry.js';
+export { withRetry, sleep, isTransientHttpError, type WithRetryOptions } from './utils/retry.js';
 
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
 export {
@@ -151,7 +151,7 @@ export {
   type FcmCredentials,
   type FcmMessage,
   type FcmResponse,
-} from './fcm-sender.js';
+} from './services/fcm-sender.js';
 
 // ─── Tracking ─────────────────────────────────────────────────────────────────
 export {
@@ -159,16 +159,16 @@ export {
   TRACKING_ID_SUFFIX_LENGTH,
   TRACKING_ID_LENGTH,
   TRACKING_ID_CHARS,
-} from './tracking.js';
+} from './utils/tracking.js';
 
 // ─── Domain Entity Types ─────────────────────────────────────────────────────
-export type { DeliveryBase, RiderBase, DispatcherBase } from './domain.js';
+export type { DeliveryBase, RiderBase, DispatcherBase } from './types/domain.js';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
-export { formatDeliveryStatus, formatEnumToTitleCase } from './formatters.js';
+export { formatDeliveryStatus, formatEnumToTitleCase } from './utils/formatters.js';
 
 // ─── Enum Catalog ─────────────────────────────────────────────────────────────
-export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enum-catalog.js';
+export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enums/enum-catalog.js';
 
 // ─── Metadata Types ──────────────────────────────────────────────────────────
 export type {
@@ -181,7 +181,7 @@ export type {
   TransactionMetadata,
   ChatMessageMetadata,
   LedgerMetadata,
-} from './metadata.js';
+} from './types/metadata.js';
 
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────
 export * from './drizzle/index.js';

@@ -11,7 +11,7 @@ import {
   TransactionStatus,
   VehicleType,
 } from './enums.js';
-import { formatEnumToTitleCase } from './formatters.js';
+import { formatEnumToTitleCase } from '../utils/formatters.js';
 
 export interface EnumValue {
   name: string;

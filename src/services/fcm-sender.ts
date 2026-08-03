@@ -1,6 +1,6 @@
-import { extractErrorMessage } from './error-utils.js';
-import { fetchWithTimeout } from './fetch-with-timeout.js';
-import { FCM_SERVICE_CONFIG } from './services/service-config.js';
+import { extractErrorMessage } from '../utils/error-utils.js';
+import { fetchWithTimeout } from '../utils/fetch-with-timeout.js';
+import { FCM_SERVICE_CONFIG } from '../config/service.config.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.

@@ -1,4 +1,4 @@
-import { REGIONAL_CONFIG } from './regional.js';
+import { REGIONAL_CONFIG } from '../config/regional.config.js';
 
 /**
  * Midnight (00:00:00.000) of the given calendar month in the timezone.

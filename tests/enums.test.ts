@@ -11,7 +11,7 @@ import {
   SystemStatus,
   ChannelPlatform,
   LogLevel,
-} from '../src/enums.js';
+} from '../src/enums/enums.js';
 
 describe('Enums', () => {
   describe('UserRole', () => {

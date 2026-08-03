@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { SECURITY_CONFIG } from '../src/security.js';
-import { SubscriptionTier } from '../src/enums.js';
+import { SECURITY_CONFIG } from '../src/config/security.config.js';
+import { SubscriptionTier } from '../src/enums/enums.js';
 
 describe('SECURITY_CONFIG', () => {
   it('has all rate limit tiers', () => {

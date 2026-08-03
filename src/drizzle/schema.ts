@@ -41,8 +41,8 @@ import {
   EventType,
   EntityType,
   DayOfWeek,
-} from '../enums.js';
-import { WorkingHoursEntry } from '../config.js';
+} from '../enums/enums.js';
+import { WorkingHoursEntry } from '../config/system.config.js';
 
 const createId = () => randomUUID();
 

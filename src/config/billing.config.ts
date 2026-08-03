@@ -5,9 +5,9 @@ import {
   ApprovalStatus,
   SubscriptionStatus,
   CompanyAccessLevel,
-} from './enums.js';
-import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.js';
-import { RETENTION_CONFIG } from './retention.js';
+} from '../enums/enums.js';
+import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.config.js';
+import { RETENTION_CONFIG } from './retention.config.js';
 
 /**
  * 1 Naira = 100 Kobo.

@@ -12,7 +12,7 @@ describe('fetchWithTimeout', () => {
   });
 
   it('resolves with response when fetch succeeds within timeout', async () => {
-    const { fetchWithTimeout } = await import('../src/fetch-with-timeout.js');
+    const { fetchWithTimeout } = await import('../src/utils/fetch-with-timeout.js');
     const mockResponse = { ok: true, status: 200 } as Response;
     mockFetch.mockResolvedValue(mockResponse);
 
@@ -28,7 +28,7 @@ describe('fetchWithTimeout', () => {
   });
 
   it('throws on timeout', async () => {
-    const { fetchWithTimeout } = await import('../src/fetch-with-timeout.js');
+    const { fetchWithTimeout } = await import('../src/utils/fetch-with-timeout.js');
     mockFetch.mockImplementation((_url: string, options: RequestInit) => {
       return new Promise((_resolve, reject) => {
         (options.signal as AbortSignal).addEventListener('abort', () => {
@@ -42,12 +42,12 @@ describe('fetchWithTimeout', () => {
   }, 10000);
 
   it('has DEFAULT_TIMEOUT_MS of 20000', async () => {
-    const { DEFAULT_TIMEOUT_MS } = await import('../src/fetch-with-timeout.js');
+    const { DEFAULT_TIMEOUT_MS } = await import('../src/utils/fetch-with-timeout.js');
     expect(DEFAULT_TIMEOUT_MS).toBe(20_000);
   });
 
   it('re-throws fetch errors', async () => {
-    const { fetchWithTimeout } = await import('../src/fetch-with-timeout.js');
+    const { fetchWithTimeout } = await import('../src/utils/fetch-with-timeout.js');
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     await expect(fetchWithTimeout('https://example.com', { fetch: mockFetch })).rejects.toThrow(

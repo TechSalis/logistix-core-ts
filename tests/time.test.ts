@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { addDays, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from '../src/time.js';
+import { addDays, FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from '../src/utils/time.js';
 
 describe('time constants', () => {
   it('FIVE_MINUTES_MS is 300000', () => {

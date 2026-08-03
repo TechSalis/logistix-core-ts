@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { ENUM_CATALOG } from '../src/enum-catalog.js';
+import { ENUM_CATALOG } from '../src/enums/enum-catalog.js';
 import {
   DeliveryStatus,
   ExportDataType,
   VehicleType,
   SubscriptionStatus,
   ChannelType,
-} from '../src/enums.js';
+} from '../src/enums/enums.js';
 
 describe('ENUM_CATALOG', () => {
   it('serves every ExportDataType value as its wire name', () => {

@@ -13,20 +13,20 @@ import {
   shouldRetryPayment,
   computeAllocationTargets,
   computeAccessLevel,
-} from '../src/billing.js';
+} from '../src/config/billing.config.js';
 import {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
   processPaymentAllocation,
-} from '../src/payments.js';
-import type { PaymentAllocationTransaction } from '../src/payments.js';
+} from '../src/services/payments.js';
+import type { PaymentAllocationTransaction } from '../src/services/payments.js';
 import {
   SubscriptionTier,
   SubscriptionStatus,
   ApprovalStatus,
   CompanyAccessLevel,
   ChannelType,
-} from '../src/enums.js';
+} from '../src/enums/enums.js';
 import {
   deliveries,
   deliveryAllocations,
