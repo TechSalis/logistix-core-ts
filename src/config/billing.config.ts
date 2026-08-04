@@ -11,7 +11,9 @@ import { RETENTION_CONFIG } from './retention.config.js';
 
 /**
  * 1 Naira = 100 Kobo.
- * Use this constant for ALL kobo ↔ naira conversions.
+ * All money in the system is stored in Kobo ("kobo everywhere").
+ * This constant is retained only for display formatting (see `formatAmount`)
+ * and for documenting the legacy naira → kobo ×100 migration.
  */
 export const KOBO_PER_NAIRA = 100;
 
@@ -50,8 +52,8 @@ export const BILLING_CONFIG = {
   CURRENCY: Currency.NGN,
 
   /**
-   * Monthly subscription pricing (in Kobo - Nigerian currency)
-   * 1 Naira = 100 Kobo
+   * Monthly subscription pricing (in Kobo — single currency unit)
+   * ₦15,000 = 1_500_000 kobo, ₦30,000 = 3_000_000 kobo.
    */
   PRICING: {
     [SubscriptionTier.STARTER]: 1_500_000, // ₦15,000
@@ -131,7 +133,8 @@ export function getSubscriptionPrice(tier: SubscriptionTier): number {
 }
 
 /**
- * Format amount from Kobo to Naira string
+ * Format a kobo amount to a display string (₦ with decimals).
+ * All money in the system is kobo, so this is the canonical money formatter.
  */
 export function formatAmount(kobo: number): string {
   const value = kobo / KOBO_PER_NAIRA;
@@ -139,8 +142,9 @@ export function formatAmount(kobo: number): string {
 }
 
 /**
- * Format a Naira amount (already in Naira, not kobo) to a display string.
- * Use this for values already converted from kobo, or raw naira amounts.
+ * Legacy: format a raw kobo amount using `formatAmount` instead.
+ * This helper only exists for the transition; new code must not pass
+ * naira-denominated values here.
  */
 export function formatNaira(amount: number, decimals = 2): string {
   return `${REGIONAL_CONFIG.currencySymbol}${amount.toLocaleString(REGIONAL_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;

@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, sql, sum } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { randomUUID } from 'node:crypto';
-import { computeAllocationTargets, KOBO_PER_NAIRA } from '../config/billing.config.js';
+import { computeAllocationTargets } from '../config/billing.config.js';
 import {
   PaymentStatus,
   DeliveryStatus,
@@ -270,10 +270,7 @@ async function applyLedgerCredits(
 
     if (fulfillerId && outsourcedCut != null) {
       // outsourcedCut is a FIXED fee in kobo (e.g. ₦200 = 20000), not a percentage.
-      const logistixFee = Math.min(
-        Math.round(outsourcedCut / KOBO_PER_NAIRA),
-        target.amountToApply,
-      );
+      const logistixFee = Math.min(outsourcedCut, target.amountToApply);
       const fulfillerShare = target.amountToApply - logistixFee;
       ledgerCredits.set(fulfillerId, (ledgerCredits.get(fulfillerId) || 0) + fulfillerShare);
     } else {

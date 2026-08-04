@@ -19,11 +19,6 @@ describe('SECURITY_CONFIG', () => {
     expect(SECURITY_CONFIG.jwt.jwtRefreshExpiresIn).toBe('30d');
   });
 
-  it('has sudo config', () => {
-    expect(SECURITY_CONFIG.sudo.tokenExpiresInMs).toBeGreaterThan(0);
-    expect(SECURITY_CONFIG.admin.maxFailedSudoAttempts).toBe(5);
-  });
-
   it('has security headers', () => {
     expect(SECURITY_CONFIG.headers['X-Content-Type-Options']).toBe('nosniff');
     expect(SECURITY_CONFIG.headers['X-Frame-Options']).toBe('DENY');

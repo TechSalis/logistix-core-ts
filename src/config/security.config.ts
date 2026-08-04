@@ -14,13 +14,6 @@ export interface SecurityConfig {
     readonly jwtExpiresIn: string;
     readonly jwtRefreshExpiresIn: string;
   };
-  readonly sudo: {
-    readonly tokenExpiresInMs: number;
-  };
-  readonly admin: {
-    readonly maxFailedSudoAttempts: number;
-    readonly sudoLockoutMs: number;
-  };
   readonly blocks: {
     // Escalation ladder for temporary (in-memory) auto-blocks: offense #1 → #2 → #3+.
     readonly temporaryLadderMs: readonly number[];
@@ -62,13 +55,6 @@ const securityConfigSchema = z.object({
     jwtExpiresIn: z.string(),
     jwtRefreshExpiresIn: z.string(),
   }),
-  sudo: z.object({
-    tokenExpiresInMs: z.number(),
-  }),
-  admin: z.object({
-    maxFailedSudoAttempts: z.number(),
-    sudoLockoutMs: z.number(),
-  }),
   blocks: z.object({
     temporaryLadderMs: z.array(z.number()),
     escalateAfterBlocks: z.number(),
@@ -104,13 +90,6 @@ const rawSecurityConfig = {
   jwt: {
     jwtExpiresIn: '1h',
     jwtRefreshExpiresIn: '30d',
-  },
-  sudo: {
-    tokenExpiresInMs: FIFTEEN_MINUTES_MS,
-  },
-  admin: {
-    maxFailedSudoAttempts: 5,
-    sudoLockoutMs: FIFTEEN_MINUTES_MS,
   },
   blocks: {
     temporaryLadderMs: [3_600_000, 6 * 3_600_000, 24 * 3_600_000],
