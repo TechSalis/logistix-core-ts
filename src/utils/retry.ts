@@ -49,38 +49,61 @@ export async function withRetry<T>(
   throw lastError;
 }
 
-export function isTransientHttpError(error: unknown): boolean {
-  if (error && typeof error === 'object') {
-    const err = error as {
-      status?: number;
-      response?: { status?: number };
-      code?: string;
-      message?: string;
-    };
-    const status = err.status ?? err.response?.status ?? 0;
-    const msg = (err.message ?? '').toLowerCase();
-    const code = (err.code ?? '').toUpperCase();
-    if (status >= 500 && status <= 599) return true;
-    if (status === 429) return true;
-    if (
-      code === 'ECONNRESET' ||
-      code === 'ECONNREFUSED' ||
-      code === 'ETIMEDOUT' ||
-      code === 'ECONNABORTED' ||
-      code === 'EAI_AGAIN' ||
-      code === 'UND_ERR_CONNECT_TIMEOUT' ||
-      code === 'UND_ERR_HEADERS_TIMEOUT'
-    )
-      return true;
-    if (
-      msg.includes('etimedout') ||
-      msg.includes('econnrefused') ||
-      msg.includes('econnreset') ||
-      msg.includes('econnaborted') ||
-      msg.includes('eai_again') ||
-      msg.includes('timeout of')
-    )
-      return true;
+interface TransientHttpErrorShape {
+  status?: number;
+  response?: { status?: number };
+  code?: string;
+  message?: string;
+  cause?: unknown;
+}
+
+function classifyTransientError(err: TransientHttpErrorShape): boolean {
+  const status = err.status ?? err.response?.status ?? 0;
+  const msg = (err.message ?? '').toLowerCase();
+  const code = (err.code ?? '').toUpperCase();
+  if (status >= 500 && status <= 599) return true;
+  if (status === 429) return true;
+  if (
+    code === 'ECONNRESET' ||
+    code === 'ECONNREFUSED' ||
+    code === 'ETIMEDOUT' ||
+    code === 'ECONNABORTED' ||
+    code === 'EAI_AGAIN' ||
+    code === 'UND_ERR_CONNECT_TIMEOUT' ||
+    code === 'UND_ERR_HEADERS_TIMEOUT'
+  )
+    return true;
+  if (
+    msg.includes('etimedout') ||
+    msg.includes('econnrefused') ||
+    msg.includes('econnreset') ||
+    msg.includes('econnaborted') ||
+    msg.includes('eai_again') ||
+    msg.includes('timeout of')
+  )
+    return true;
+  return false;
+}
+
+function hasTransientSignature(error: unknown, seen: Set<object>): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  if (seen.has(error)) return false;
+  seen.add(error);
+  const err = error as TransientHttpErrorShape;
+  if (classifyTransientError(err)) return true;
+  if (typeof err.cause === 'object' && err.cause !== null) {
+    return hasTransientSignature(err.cause, seen);
   }
   return false;
+}
+
+/**
+ * Classifies an error as transient (retryable) from HTTP status codes, known
+ * network/timeout error codes, and message substrings. Also unwraps
+ * `error.cause` chains — real Node fetch failures surface as
+ * `TypeError: fetch failed` with the transient code nested on `cause`.
+ * Strict superset of top-level-only classification (cycle-safe).
+ */
+export function isTransientHttpError(error: unknown): boolean {
+  return hasTransientSignature(error, new Set<object>());
 }

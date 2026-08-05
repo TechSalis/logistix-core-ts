@@ -259,8 +259,12 @@ describe('SquadClient', () => {
       );
     });
 
-    it('retries a transient network failure (TypeError) then rethrows', async () => {
-      const networkError = Object.assign(new TypeError('fetch failed'), { code: 'ECONNRESET' });
+    it('retries a transient network failure (TypeError with nested cause) then rethrows', async () => {
+      const networkError = Object.assign(new TypeError('fetch failed'), {
+        cause: Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:56593'), {
+          code: 'ECONNREFUSED',
+        }),
+      });
       fetchImpl.mockRejectedValue(networkError);
       const client = makeClient(fetchImpl);
 

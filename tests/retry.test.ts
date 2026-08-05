@@ -131,4 +131,63 @@ describe('isTransientHttpError', () => {
     expect(isTransientHttpError(new Error('plain'))).toBe(false);
     expect(isTransientHttpError('not an error')).toBe(false);
   });
+
+  it('classifies a fetch failure via cause code', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('connect ECONNRESET 1.2.3.4:443'), { code: 'ECONNRESET' }),
+    });
+    expect(isTransientHttpError(err)).toBe(true);
+  });
+
+  it('classifies a fetch failure via cause message', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: new Error('getaddrinfo EAI_AGAIN host'),
+    });
+    expect(isTransientHttpError(err)).toBe(true);
+  });
+
+  it('classifies a fetch failure via cause status', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('upstream exploded'), { status: 503 }),
+    });
+    expect(isTransientHttpError(err)).toBe(true);
+  });
+
+  it('classifies a fetch failure via cause response.status (429)', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('rate limited'), { response: { status: 429 } }),
+    });
+    expect(isTransientHttpError(err)).toBe(true);
+  });
+
+  it('recurses through deep cause chains', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('wrapped'), {
+        cause: Object.assign(new Error('connect ETIMEDOUT'), { code: 'ETIMEDOUT' }),
+      }),
+    });
+    expect(isTransientHttpError(err)).toBe(true);
+  });
+
+  it('does not classify a non-transient cause as transient', () => {
+    const err = Object.assign(new TypeError('fetch failed'), {
+      cause: Object.assign(new Error('bad thing'), { code: 'ERR_FOO' }),
+    });
+    expect(isTransientHttpError(err)).toBe(false);
+  });
+
+  it('does not classify a cause-only transient when the top-level message is transient-free', () => {
+    const err = Object.assign(new Error('a plain message'), {
+      cause: Object.assign(new Error('still fine'), { code: 'ERR_FOO' }),
+    });
+    expect(isTransientHttpError(err)).toBe(false);
+  });
+
+  it('terminates on cyclic cause chains', () => {
+    const a = new Error('a');
+    const b = new Error('b');
+    Object.assign(a, { cause: b });
+    Object.assign(b, { cause: a });
+    expect(isTransientHttpError(a)).toBe(false);
+  });
 });
