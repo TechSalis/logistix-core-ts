@@ -6,6 +6,7 @@ import {
   date,
   integer,
   uniqueIndex,
+  unique,
   index,
   boolean,
   foreignKey,
@@ -987,16 +988,15 @@ export const companyLifetimeMetrics = pgTable(
       .notNull(),
   },
   (table) => [
-    // One row per company via a partial unique index (a single-column PRIMARY
-    // KEY forces NOT NULL, which would reject the system-wide company_id IS NULL
-    // row — Postgres cannot drop NOT NULL from a PK column).
-    uniqueIndex('clm_company_idx')
-      .on(table.companyId)
-      .where(sql`${table.companyId} IS NOT NULL`),
-    // System-wide pool deliveries (company_id IS NULL) get a single lifetime row.
-    uniqueIndex('clm_system_idx')
-      .on(table.companyId)
-      .where(sql`${table.companyId} IS NULL`),
+    // One row per company AND at most one system-wide row (company_id IS NULL)
+    // via a single unique constraint. A partial unique index cannot express the
+    // system row: Postgres treats NULLs as DISTINCT in unique indexes, so
+    // `UNIQUE (company_id) WHERE company_id IS NULL` would allow unbounded NULL
+    // rows (reproduced live). NULLS NOT DISTINCT makes the NULL company_id
+    // conflict like any value — one row per company_id plus exactly one system
+    // row. (A PRIMARY KEY would force NOT NULL on company_id, rejecting the
+    // system row.)
+    unique('clm_company_idx').on(table.companyId).nullsNotDistinct(),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
