@@ -1,5 +1,5 @@
 {
-  "id": "e097cd2e-dc3e-4509-a6a7-6222a49f170b",
+  "id": "14d84480-3cde-4e72-b3b7-efab16245266",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -493,7 +493,7 @@
           "name": "company_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "date": {
           "name": "date",
@@ -549,6 +549,13 @@
           "notNull": true,
           "default": "'{}'::jsonb"
         },
+        "extra_metrics": {
+          "name": "extra_metrics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
         "peak_hour": {
           "name": "peak_hour",
           "type": "integer",
@@ -578,6 +585,28 @@
         }
       },
       "indexes": {
+        "cdm_company_date_idx": {
+          "name": "cdm_company_date_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_daily_metrics\".\"company_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "cdm_date_idx": {
           "name": "cdm_date_idx",
           "columns": [
@@ -590,6 +619,22 @@
             }
           ],
           "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cdm_system_date_idx": {
+          "name": "cdm_system_date_idx",
+          "columns": [
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_daily_metrics\".\"company_id\" IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -610,15 +655,115 @@
           "onUpdate": "cascade"
         }
       },
-      "compositePrimaryKeys": {
-        "company_daily_metrics_company_id_date_pk": {
-          "name": "company_daily_metrics_company_id_date_pk",
-          "columns": [
-            "company_id",
-            "date"
-          ]
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.company_lifetime_metrics": {
+      "name": "company_lifetime_metrics",
+      "schema": "",
+      "columns": {
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_deliveries": {
+          "name": "total_deliveries",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "delivered_count": {
+          "name": "delivered_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "total_revenue_kobo": {
+          "name": "total_revenue_kobo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "channel_breakdown": {
+          "name": "channel_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "extra_metrics": {
+          "name": "extra_metrics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
         }
       },
+      "indexes": {
+        "clm_company_idx": {
+          "name": "clm_company_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_lifetime_metrics\".\"company_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "clm_system_idx": {
+          "name": "clm_system_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_lifetime_metrics\".\"company_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "clm_company_id_fkey": {
+          "name": "clm_company_id_fkey",
+          "tableFrom": "company_lifetime_metrics",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -3058,7 +3203,7 @@
             }
           ],
           "isUnique": false,
-          "where": "approval_status = $1",
+          "where": "approval_status = 'APPROVED'",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -3339,6 +3484,14 @@
     }
   },
   "enums": {
+    "public.AdminRole": {
+      "name": "AdminRole",
+      "schema": "public",
+      "values": [
+        "ADMIN",
+        "SUPER_ADMIN"
+      ]
+    },
     "public.ApprovalStatus": {
       "name": "ApprovalStatus",
       "schema": "public",
@@ -3350,12 +3503,49 @@
         "DISABLED"
       ]
     },
+    "public.ChannelPlatform": {
+      "name": "ChannelPlatform",
+      "schema": "public",
+      "values": [
+        "WHATSAPP",
+        "INSTAGRAM",
+        "FACEBOOK",
+        "TIKTOK"
+      ]
+    },
     "public.ChannelType": {
       "name": "ChannelType",
       "schema": "public",
       "values": [
         "SYSTEM_POOL",
         "MY_CHANNEL"
+      ]
+    },
+    "public.Currency": {
+      "name": "Currency",
+      "schema": "public",
+      "values": [
+        "NGN"
+      ]
+    },
+    "public.DeliveryStatus": {
+      "name": "DeliveryStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "ASSIGNED",
+        "IN_TRANSIT",
+        "DELIVERED",
+        "CANCELLED",
+        "FAILED"
+      ]
+    },
+    "public.DispatcherRole": {
+      "name": "DispatcherRole",
+      "schema": "public",
+      "values": [
+        "OWNER",
+        "DISPATCHER"
       ]
     },
     "public.EntityType": {
@@ -3413,12 +3603,69 @@
         "MESSAGE_DELETED"
       ]
     },
+    "public.ExportRequestStatus": {
+      "name": "ExportRequestStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "public.JobStatus": {
+      "name": "JobStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    "public.LedgerAdjustmentType": {
+      "name": "LedgerAdjustmentType",
+      "schema": "public",
+      "values": [
+        "CREDIT",
+        "DEBIT",
+        "CORRECTION",
+        "CHANNEL_FEE",
+        "OVERAGE",
+        "REFUND"
+      ]
+    },
+    "public.MessageStatus": {
+      "name": "MessageStatus",
+      "schema": "public",
+      "values": [
+        "SENT",
+        "FAILED"
+      ]
+    },
     "public.PaymentMethod": {
       "name": "PaymentMethod",
       "schema": "public",
       "values": [
         "PREPAID",
         "PAY_ON_DELIVERY"
+      ]
+    },
+    "public.PaymentProvider": {
+      "name": "PaymentProvider",
+      "schema": "public",
+      "values": [
+        "SQUAD",
+        "SYSTEM"
+      ]
+    },
+    "public.RiderStatus": {
+      "name": "RiderStatus",
+      "schema": "public",
+      "values": [
+        "ONLINE",
+        "OFFLINE",
+        "BUSY"
       ]
     },
     "public.SenderType": {
@@ -3447,6 +3694,27 @@
       "values": [
         "STARTER",
         "PROFESSIONAL"
+      ]
+    },
+    "public.TransactionStatus": {
+      "name": "TransactionStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "SUCCESS",
+        "FAILED",
+        "REVERSED"
+      ]
+    },
+    "public.TransactionType": {
+      "name": "TransactionType",
+      "schema": "public",
+      "values": [
+        "DELIVERY_PAYMENT",
+        "SUBSCRIPTION",
+        "ADJUSTMENT",
+        "SETTLEMENT",
+        "REFUND"
       ]
     },
     "public.VehicleType": {

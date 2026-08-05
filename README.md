@@ -205,31 +205,6 @@ npm test         # run unit tests
 | `formatDeliveryStatus()`  | `function` | Formats DeliveryStatus enum to display text  |
 | `formatEnumToTitleCase()` | `function` | Formats any enum value to Title Case         |
 
-### Contact Form
-
-| Export                       | Type       | Description                                  |
-|------------------------------|------------|----------------------------------------------|
-| `sendContactSubmissionAck()` | `function` | Sends acknowledgement email for contact form |
-
-### Notifications
-
-| Export                          | Type       | Description                                  |
-|---------------------------------|------------|----------------------------------------------|
-| `fetchActiveCompanyRecipients()` | `function` | Fetches active notification recipients      |
-| `sendMaintenanceEmail()`        | `function` | Sends maintenance window notification        |
-| `sendBreachEmail()`             | `function` | Sends security breach notification           |
-| `logBreachIncident()`           | `function` | Logs a breach incident                       |
-| `sendSettlementReceipt()`       | `function` | Sends settlement receipt email               |
-| `getSeverityLabel()`            | `function` | Maps severity enum to human-readable label   |
-| `formatDuration()`              | `function` | Formats milliseconds to human-readable duration |
-| `settlementReceiptEmailTemplate()` | `function` | Returns HTML email template for settlements |
-
-### Offline / Local-First
-
-| Export            | Type     | Description                              |
-|-------------------|----------|------------------------------------------|
-| `OFFLINE_DB_NAME` | `string` | IndexedDB database name for offline mode |
-
 ### Tracking
 
 | Export                       | Type     | Description                              |

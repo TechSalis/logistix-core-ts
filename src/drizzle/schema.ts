@@ -57,31 +57,34 @@ const defaultWorkingHours: Partial<Record<DayOfWeek, WorkingHoursEntry>> = {
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
 
-const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
-const exportRequestStatus = pgEnum('ExportRequestStatus', enumValues(ExportRequestStatus));
-const jobStatusEnum = pgEnum('JobStatus', enumValues(JobStatus));
-const ledgerAdjustmentType = pgEnum('LedgerAdjustmentType', enumValues(LedgerAdjustmentType));
-const channelPlatform = pgEnum('ChannelPlatform', enumValues(ChannelPlatform));
-const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
+export const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
+export const exportRequestStatus = pgEnum('ExportRequestStatus', enumValues(ExportRequestStatus));
+export const jobStatusEnum = pgEnum('JobStatus', enumValues(JobStatus));
+export const ledgerAdjustmentType = pgEnum(
+  'LedgerAdjustmentType',
+  enumValues(LedgerAdjustmentType),
+);
+export const channelPlatform = pgEnum('ChannelPlatform', enumValues(ChannelPlatform));
+export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const approvalStatus = pgEnum('ApprovalStatus', enumValues(ApprovalStatus));
-const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
+export const riderStatus = pgEnum('RiderStatus', enumValues(RiderStatus));
 export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
-const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
-const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
+export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
+export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
 // NOTE: Only BIKE is used in production. CAR/VAN/TRUCK are intentional future-proofing —
 // pricing defined in DEFAULT_PRICING_SCHEMES, schema accepts all, but every code path defaults to BIKE.
-const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
+export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
 export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
-const currencyEnum = pgEnum('Currency', enumValues(Currency));
-const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
-const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
+export const currencyEnum = pgEnum('Currency', enumValues(Currency));
+export const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
+export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
 
 export const companies = pgTable(
   'companies',
@@ -576,7 +579,7 @@ export const riders = pgTable(
     ),
     index('riders_company_id_approval_status_idx')
       .using('btree', table.companyId.asc().nullsLast().op('text_ops'))
-      .where(sql`approval_status = ${ApprovalStatus.APPROVED}`),
+      .where(sql`approval_status = ${sql.raw(`'${ApprovalStatus.APPROVED}'`)}`),
     index('riders_company_id_updated_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
