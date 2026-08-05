@@ -118,6 +118,15 @@ export {
 } from './services/payments.js';
 export type { PaymentAllocationTransaction, PaymentAllocationResult } from './services/payments.js';
 
+// ─── Squad client ────────────────────────────────────────────────────────────
+export {
+  SquadClient,
+  SquadRequestError,
+  type SquadClientOptions,
+  type ChargeCardParams,
+  type ChargeCardResult,
+} from './services/squad-client.js';
+
 // ─── Services ────────────────────────────────────────────────────────────────
 export {
   EmailService,
