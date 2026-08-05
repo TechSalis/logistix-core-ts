@@ -930,7 +930,7 @@ export const eventOutbox = pgTable(
 export const companyDailyMetrics = pgTable(
   'company_daily_metrics',
   {
-    companyId: text('company_id').notNull(),
+    companyId: text('company_id'),
     date: date('date').notNull(),
     totalDeliveries: integer('total_deliveries').notNull().default(0),
     deliveredCount: integer('delivered_count').notNull().default(0),
@@ -952,6 +952,10 @@ export const companyDailyMetrics = pgTable(
   (table) => [
     primaryKey({ columns: [table.companyId, table.date] }),
     index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('date_ops')),
+    // System-wide pool deliveries (company_id IS NULL) get one bar per day.
+    uniqueIndex('cdm_system_date_idx')
+      .on(table.date)
+      .where(sql`${table.companyId} IS NULL`),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -962,34 +966,10 @@ export const companyDailyMetrics = pgTable(
   ],
 );
 
-export const systemDailyMetrics = pgTable(
-  'system_daily_metrics',
-  {
-    date: date('date').notNull(),
-    totalDeliveries: integer('total_deliveries').notNull().default(0),
-    deliveredCount: integer('delivered_count').notNull().default(0),
-    cancelledCount: integer('cancelled_count').notNull().default(0),
-    failedCount: integer('failed_count').notNull().default(0),
-    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
-    avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
-    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
-    extraMetrics: jsonb('extra_metrics').default({}).notNull(),
-    peakHour: integer('peak_hour'),
-    uniqueRidersActive: integer('unique_riders_active').notNull().default(0),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.date] })],
-);
-
 export const companyLifetimeMetrics = pgTable(
   'company_lifetime_metrics',
   {
-    companyId: text('company_id').notNull(),
+    companyId: text('company_id'),
     totalDeliveries: integer('total_deliveries').notNull().default(0),
     deliveredCount: integer('delivered_count').notNull().default(0),
     totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
@@ -1001,6 +981,10 @@ export const companyLifetimeMetrics = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.companyId] }),
+    // System-wide pool deliveries (company_id IS NULL) get a single lifetime row.
+    uniqueIndex('clm_system_idx')
+      .on(table.companyId)
+      .where(sql`${table.companyId} IS NULL`),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -1009,20 +993,4 @@ export const companyLifetimeMetrics = pgTable(
       .onUpdate('cascade')
       .onDelete('cascade'),
   ],
-);
-
-export const systemLifetimeMetrics = pgTable(
-  'system_lifetime_metrics',
-  {
-    id: integer('id').notNull().default(1),
-    totalDeliveries: integer('total_deliveries').notNull().default(0),
-    deliveredCount: integer('delivered_count').notNull().default(0),
-    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
-    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
-    extraMetrics: jsonb('extra_metrics').default({}).notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.id] })],
 );
