@@ -960,3 +960,27 @@ export const companyDailyMetrics = pgTable(
       .onDelete('cascade'),
   ],
 );
+
+export const companyLifetimeMetrics = pgTable(
+  'company_lifetime_metrics',
+  {
+    companyId: text('company_id').notNull(),
+    totalDeliveries: integer('total_deliveries').notNull().default(0),
+    deliveredCount: integer('delivered_count').notNull().default(0),
+    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
+    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.companyId] }),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'clm_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+  ],
+);

@@ -84,6 +84,16 @@ CREATE TABLE "company_daily_metrics" (
 	CONSTRAINT "company_daily_metrics_company_id_date_pk" PRIMARY KEY("company_id","date")
 );
 --> statement-breakpoint
+CREATE TABLE "company_lifetime_metrics" (
+	"company_id" text NOT NULL,
+	"total_deliveries" integer DEFAULT 0 NOT NULL,
+	"delivered_count" integer DEFAULT 0 NOT NULL,
+	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
+	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "company_lifetime_metrics_company_id_pk" PRIMARY KEY("company_id")
+);
+--> statement-breakpoint
 CREATE TABLE "company_settings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
@@ -302,6 +312,7 @@ CREATE INDEX "event_outbox_created_at_idx" ON "event_outbox" USING btree ("creat
 --> statement-breakpoint
 ALTER TABLE "company_channels" ADD CONSTRAINT "company_channels_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_daily_metrics" ADD CONSTRAINT "cdm_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "company_lifetime_metrics" ADD CONSTRAINT "clm_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_settings" ADD CONSTRAINT "company_settings_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "conversations" ADD CONSTRAINT "conversations_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "deliveries" ADD CONSTRAINT "deliveries_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
