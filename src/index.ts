@@ -42,6 +42,7 @@ export {
   IdType,
   ConversationHandlerType,
   ExportDataType,
+  ExportReason,
   ExportRequestStatus,
   JobStatus,
   SecurityEventType,
@@ -87,6 +88,14 @@ export {
 // ─── Limits ───────────────────────────────────────────────────────────────────
 export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './config/limits.config.js';
 export type { TierLimits, LimitsConfig } from './config/limits.config.js';
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+export {
+  VALID_DATA_TYPES,
+  MONTH_REQUIRED_TYPES,
+  EXPORT_JOB_TYPE,
+} from './config/export.config.js';
+export type { DataType } from './config/export.config.js';
 
 // ─── Retention ────────────────────────────────────────────────────────────────
 export { RETENTION_CONFIG } from './config/retention.config.js';

@@ -33,12 +33,24 @@ describe('TIER_LIMITS', () => {
     expect(limits.maxAIDeliveriesPerAction).toBe(20);
   });
 
+  it('STARTER allows 2 exports/day and 5/month', () => {
+    const limits = TIER_LIMITS[SubscriptionTier.STARTER];
+    expect(limits.maxExportsPerDay).toBe(2);
+    expect(limits.maxExportsPerMonth).toBe(5);
+  });
+
   it('PROFESSIONAL has realistic limits', () => {
     const limits = TIER_LIMITS[SubscriptionTier.PROFESSIONAL];
     expect(limits.maxDispatchers).toBe(10);
     expect(limits.maxRiders).toBe(100);
     expect(limits.maxDeliveriesPerMonth).toBe(5000);
     expect(limits.maxAIDeliveriesPerAction).toBe(50);
+  });
+
+  it('PROFESSIONAL allows 5 exports/day and 15/month', () => {
+    const limits = TIER_LIMITS[SubscriptionTier.PROFESSIONAL];
+    expect(limits.maxExportsPerDay).toBe(5);
+    expect(limits.maxExportsPerMonth).toBe(15);
   });
 });
 

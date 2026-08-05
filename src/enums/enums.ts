@@ -333,6 +333,12 @@ export enum ExportDataType {
   CHAT = 'CHAT',
 }
 
+export enum ExportReason {
+  QUEUED = 'QUEUED',
+  DUPLICATE = 'DUPLICATE',
+  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
+}
+
 export enum FcmNotificationType {
   SUBSCRIPTION_CANCELLED = 'SUBSCRIPTION_CANCELLED',
   DELIVERY_ASSIGNED = 'DELIVERY_ASSIGNED',

@@ -14,6 +14,8 @@ export interface TierLimits {
   readonly maxRiders: number;
   readonly maxDeliveriesPerMonth: number;
   readonly maxActiveDeliveries: number;
+  readonly maxExportsPerDay: number;
+  readonly maxExportsPerMonth: number;
 }
 
 export interface LimitsConfig {
@@ -70,6 +72,8 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxRiders: 20,
     maxDeliveriesPerMonth: 500,
     maxActiveDeliveries: 20,
+    maxExportsPerDay: 2,
+    maxExportsPerMonth: 5,
   },
   [SubscriptionTier.PROFESSIONAL]: {
     maxAIDeliveriesPerAction: 50,
@@ -81,6 +85,8 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
     maxRiders: 100,
     maxDeliveriesPerMonth: 5000,
     maxActiveDeliveries: 50,
+    maxExportsPerDay: 5,
+    maxExportsPerMonth: 15,
   },
 };
 
