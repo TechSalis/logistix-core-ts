@@ -77,11 +77,29 @@ CREATE TABLE "company_daily_metrics" (
 	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
 	"avg_delivery_time_minutes" double precision,
 	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"extra_metrics" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"peak_hour" integer,
 	"unique_riders_active" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT "company_daily_metrics_company_id_date_pk" PRIMARY KEY("company_id","date")
+);
+--> statement-breakpoint
+CREATE TABLE "system_daily_metrics" (
+	"date" text NOT NULL,
+	"total_deliveries" integer DEFAULT 0 NOT NULL,
+	"delivered_count" integer DEFAULT 0 NOT NULL,
+	"cancelled_count" integer DEFAULT 0 NOT NULL,
+	"failed_count" integer DEFAULT 0 NOT NULL,
+	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
+	"avg_delivery_time_minutes" double precision,
+	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"extra_metrics" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"peak_hour" integer,
+	"unique_riders_active" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "system_daily_metrics_date_pk" PRIMARY KEY("date")
 );
 --> statement-breakpoint
 CREATE TABLE "company_lifetime_metrics" (
@@ -90,8 +108,20 @@ CREATE TABLE "company_lifetime_metrics" (
 	"delivered_count" integer DEFAULT 0 NOT NULL,
 	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
 	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"extra_metrics" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT "company_lifetime_metrics_company_id_pk" PRIMARY KEY("company_id")
+);
+--> statement-breakpoint
+CREATE TABLE "system_lifetime_metrics" (
+	"id" integer DEFAULT 1 NOT NULL,
+	"total_deliveries" integer DEFAULT 0 NOT NULL,
+	"delivered_count" integer DEFAULT 0 NOT NULL,
+	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
+	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"extra_metrics" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "system_lifetime_metrics_id_pk" PRIMARY KEY("id")
 );
 --> statement-breakpoint
 CREATE TABLE "company_settings" (
