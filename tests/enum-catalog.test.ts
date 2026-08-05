@@ -26,6 +26,10 @@ describe('ENUM_CATALOG', () => {
     expect(ENUM_CATALOG.vehicleTypes.map((v) => v.name)).toEqual(Object.values(VehicleType));
   });
 
+  it('VehicleType is BIKE-only (trimmed)', () => {
+    expect(Object.values(VehicleType)).toEqual([VehicleType.BIKE]);
+  });
+
   it('covers every DeliveryStatus member', () => {
     expect(ENUM_CATALOG.deliveryStatuses.map((v) => v.name)).toEqual(Object.values(DeliveryStatus));
   });
