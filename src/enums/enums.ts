@@ -29,9 +29,9 @@ export enum PaymentMethod {
 }
 
 export enum PaymentStatus {
-  AWAITING = 'awaiting',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
+  AWAITING = 'AWAITING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
 }
 
 export enum RiderStatus {

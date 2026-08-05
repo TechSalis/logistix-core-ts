@@ -4,6 +4,7 @@ import {
   DeliveryStatus,
   RiderStatus,
   PaymentMethod,
+  PaymentStatus,
   SubscriptionTier,
   EntityType,
   EventType,
@@ -49,6 +50,14 @@ describe('Enums', () => {
     it('has PREPAID and PAY_ON_DELIVERY', () => {
       expect(PaymentMethod.PREPAID).toBe('PREPAID');
       expect(PaymentMethod.PAY_ON_DELIVERY).toBe('PAY_ON_DELIVERY');
+    });
+  });
+
+  describe('PaymentStatus', () => {
+    it('uses uppercase wire values matching the backend enum', () => {
+      expect(PaymentStatus.AWAITING).toBe('AWAITING');
+      expect(PaymentStatus.COMPLETED).toBe('COMPLETED');
+      expect(PaymentStatus.FAILED).toBe('FAILED');
     });
   });
 
