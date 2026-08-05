@@ -12,6 +12,7 @@ import {
   SystemStatus,
   ChannelPlatform,
   LogLevel,
+  MessageStatus,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -115,6 +116,15 @@ describe('Enums', () => {
       expect(LogLevel.WARN).toBe('warn');
       expect(LogLevel.ERROR).toBe('error');
       expect(LogLevel.SILENT).toBe('silent');
+    });
+  });
+
+  describe('MessageStatus', () => {
+    it('has SENT, DELIVERED, READ, FAILED', () => {
+      expect(MessageStatus.SENT).toBe('SENT');
+      expect(MessageStatus.DELIVERED).toBe('DELIVERED');
+      expect(MessageStatus.READ).toBe('READ');
+      expect(MessageStatus.FAILED).toBe('FAILED');
     });
   });
 });
