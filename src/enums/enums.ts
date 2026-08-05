@@ -297,15 +297,14 @@ export enum SseEventType {
   DELIVERY = 'delivery',
   RIDER = 'rider',
   MESSAGE = 'message',
-  ASSIGNMENT = 'assignment',
-
+  INITIAL = 'initial',
+  COMPANY = 'company',
   RIDER_LOCATION = 'rider-location',
 }
 
 export enum JwtTokenType {
   ACCESS = 'access',
   REFRESH = 'refresh',
-  SSE = 'sse',
 }
 
 export enum ContactCategory {
@@ -336,6 +335,10 @@ export enum ExportDataType {
 
 export enum FcmNotificationType {
   SUBSCRIPTION_CANCELLED = 'SUBSCRIPTION_CANCELLED',
+  DELIVERY_ASSIGNED = 'DELIVERY_ASSIGNED',
+  COMPANY_STATUS_CHANGED = 'COMPANY_STATUS_CHANGED',
+  SETTLEMENT_FAILED = 'SETTLEMENT_FAILED',
+  SETTLEMENT_REVERSAL = 'SETTLEMENT_REVERSAL',
 }
 
 export enum DayOfWeek {

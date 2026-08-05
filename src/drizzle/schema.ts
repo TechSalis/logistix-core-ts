@@ -136,7 +136,7 @@ export const companySettings = pgTable(
     bankDetails: jsonb('bank_details'),
     ledgerBalance: doublePrecision('ledger_balance').default(0).notNull(),
     companyCode: text('company_code'),
-    escalatedTo: escalatedTo('escalated_to').default('COMPANY').notNull(),
+    escalatedTo: escalatedTo('escalated_to').default(EscalatedTo.COMPANY).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

@@ -138,7 +138,7 @@ export { SECURITY_CONFIG } from './config/security.config.js';
 export type { SecurityConfig } from './config/security.config.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-export { fetchWithTimeout, DEFAULT_TIMEOUT_MS } from './utils/fetch-with-timeout.js';
+export { fetchWithTimeout } from './utils/fetch-with-timeout.js';
 export { MS_PER_DAY, addDays } from './utils/time.js';
 export { mergeChannelCounts } from './utils/metrics.js';
 export { extractErrorMessage, extractErrorContext } from './utils/error-utils.js';

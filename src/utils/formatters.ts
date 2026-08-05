@@ -14,8 +14,7 @@ function splitEnum(value: string): string {
 }
 
 export function formatDeliveryStatus(status: string | undefined | null): string {
-  if (!status) return 'Unknown';
-  return splitEnum(status);
+  return formatEnumToTitleCase(status) || 'Unknown';
 }
 
 export function formatEnumToTitleCase(value: string | undefined | null): string {

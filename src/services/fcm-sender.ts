@@ -1,6 +1,7 @@
 import { extractErrorMessage } from '../utils/error-utils.js';
 import { fetchWithTimeout } from '../utils/fetch-with-timeout.js';
 import { FCM_SERVICE_CONFIG } from '../config/service.config.js';
+import { LIMITS_CONFIG } from '../config/limits.config.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.
@@ -56,7 +57,7 @@ export class FcmService {
       const res = await fetchWithTimeout(
         `https://fcm.googleapis.com/v1/projects/${this.credentials.projectId}/messages:send`,
         {
-          timeoutMs: 10_000,
+          timeoutMs: LIMITS_CONFIG.externalApiTimeoutMs,
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -118,7 +119,7 @@ export class FcmService {
       const res = await fetchWithTimeout(
         `https://fcm.googleapis.com/v1/projects/${this.credentials.projectId}/messages:send`,
         {
-          timeoutMs: 10_000,
+          timeoutMs: LIMITS_CONFIG.externalApiTimeoutMs,
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -172,7 +173,7 @@ export class FcmService {
           : `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`;
 
       const res = await fetchWithTimeout(url, {
-        timeoutMs: 10_000,
+        timeoutMs: LIMITS_CONFIG.externalApiTimeoutMs,
         method,
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       });
