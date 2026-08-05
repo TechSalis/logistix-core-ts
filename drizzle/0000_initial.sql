@@ -81,10 +81,12 @@ CREATE TABLE "company_daily_metrics" (
 	"peak_hour" integer,
 	"unique_riders_active" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT "company_daily_metrics_company_id_date_pk" PRIMARY KEY("company_id","date")
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+-- One bar per company per day is enforced by the partial unique index
+-- cdm_company_date_idx below (a composite PRIMARY KEY forces NOT NULL on every
+-- PK column and would reject the system-wide company_id IS NULL bars).
 CREATE TABLE "company_lifetime_metrics" (
 	"company_id" text,
 	"total_deliveries" integer DEFAULT 0 NOT NULL,
@@ -92,10 +94,12 @@ CREATE TABLE "company_lifetime_metrics" (
 	"total_revenue_kobo" integer DEFAULT 0 NOT NULL,
 	"channel_breakdown" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"extra_metrics" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT "company_lifetime_metrics_company_id_pk" PRIMARY KEY("company_id")
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+-- One row per company is enforced by the partial unique index clm_company_idx
+-- below (a single-column PRIMARY KEY would force NOT NULL and reject the
+-- system-wide company_id IS NULL row).
 CREATE TABLE "company_settings" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
@@ -340,7 +344,9 @@ CREATE INDEX "company_channels_company_id_is_active_idx" ON "company_channels" U
 CREATE UNIQUE INDEX "company_channels_platform_company_id_key" ON "company_channels" USING btree ("platform" enum_ops,"company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_channels_platform_platform_id_key" ON "company_channels" USING btree ("platform" enum_ops,"platform_id" text_ops);--> statement-breakpoint
 CREATE INDEX "cdm_date_idx" ON "company_daily_metrics" USING btree ("date" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "cdm_company_date_idx" ON "company_daily_metrics" USING btree ("company_id" text_ops,"date" text_ops) WHERE "company_id" IS NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "cdm_system_date_idx" ON "company_daily_metrics" USING btree ("date" text_ops) WHERE "company_id" IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "clm_company_idx" ON "company_lifetime_metrics" USING btree ("company_id" text_ops) WHERE "company_id" IS NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "clm_system_idx" ON "company_lifetime_metrics" USING btree ("company_id" text_ops) WHERE "company_id" IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "company_settings_company_id_key" ON "company_settings" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_settings_company_code_key" ON "company_settings" USING btree ("company_code" text_ops);--> statement-breakpoint

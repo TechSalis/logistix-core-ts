@@ -12,7 +12,6 @@ import {
   jsonb,
   doublePrecision,
   pgEnum,
-  primaryKey,
   bigint,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
@@ -950,7 +949,12 @@ export const companyDailyMetrics = pgTable(
       .notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.companyId, table.date] }),
+    // One bar per company per day via a partial unique index (a composite
+    // PRIMARY KEY forces NOT NULL on every PK column in Postgres, which would
+    // reject the system-wide company_id IS NULL bars).
+    uniqueIndex('cdm_company_date_idx')
+      .on(table.companyId, table.date)
+      .where(sql`${table.companyId} IS NOT NULL`),
     index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('date_ops')),
     // System-wide pool deliveries (company_id IS NULL) get one bar per day.
     uniqueIndex('cdm_system_date_idx')
@@ -980,7 +984,12 @@ export const companyLifetimeMetrics = pgTable(
       .notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.companyId] }),
+    // One row per company via a partial unique index (a single-column PRIMARY
+    // KEY forces NOT NULL, which would reject the system-wide company_id IS NULL
+    // row — Postgres cannot drop NOT NULL from a PK column).
+    uniqueIndex('clm_company_idx')
+      .on(table.companyId)
+      .where(sql`${table.companyId} IS NOT NULL`),
     // System-wide pool deliveries (company_id IS NULL) get a single lifetime row.
     uniqueIndex('clm_system_idx')
       .on(table.companyId)
