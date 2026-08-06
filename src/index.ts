@@ -36,6 +36,7 @@ export {
   UserAuditAction,
   ChatUpdateType,
   MessageStatus,
+  MESSAGE_STATUS_RANK,
   EscalationStatus,
   EscalatedTo,
   SenderType,

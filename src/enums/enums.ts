@@ -191,6 +191,13 @@ export enum MessageStatus {
   FAILED = 'FAILED',
 }
 
+export const MESSAGE_STATUS_RANK: Record<MessageStatus, number> = {
+  [MessageStatus.SENT]: 1,
+  [MessageStatus.DELIVERED]: 2,
+  [MessageStatus.READ]: 3,
+  [MessageStatus.FAILED]: 4,
+};
+
 export enum EscalationStatus {
   OPEN = 'OPEN',
   RESOLVED = 'RESOLVED',

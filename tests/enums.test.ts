@@ -13,6 +13,7 @@ import {
   ChannelPlatform,
   LogLevel,
   MessageStatus,
+  MESSAGE_STATUS_RANK,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -125,6 +126,20 @@ describe('Enums', () => {
       expect(MessageStatus.DELIVERED).toBe('DELIVERED');
       expect(MessageStatus.READ).toBe('READ');
       expect(MessageStatus.FAILED).toBe('FAILED');
+    });
+  });
+
+  describe('MESSAGE_STATUS_RANK', () => {
+    it('orders SENT < DELIVERED < READ < FAILED monotonically', () => {
+      expect(MESSAGE_STATUS_RANK[MessageStatus.SENT]).toBeLessThan(
+        MESSAGE_STATUS_RANK[MessageStatus.DELIVERED],
+      );
+      expect(MESSAGE_STATUS_RANK[MessageStatus.DELIVERED]).toBeLessThan(
+        MESSAGE_STATUS_RANK[MessageStatus.READ],
+      );
+      expect(MESSAGE_STATUS_RANK[MessageStatus.READ]).toBeLessThan(
+        MESSAGE_STATUS_RANK[MessageStatus.FAILED],
+      );
     });
   });
 });
