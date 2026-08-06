@@ -175,9 +175,8 @@ export const companyChannels = pgTable(
     isActive: boolean('is_active').default(false).notNull(),
     metadata: jsonb(),
     aiDisabled: boolean('ai_disabled').default(false).notNull(),
-    removalRequested: boolean('removal_requested').default(false).notNull(),
-    removalReason: text('removal_reason'),
-    removalRequestedAt: timestamp('removal_requested_at', { precision: 3, mode: 'date' }),
+    rejectionReason: text('rejection_reason'),
+    rejectedAt: timestamp('rejected_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

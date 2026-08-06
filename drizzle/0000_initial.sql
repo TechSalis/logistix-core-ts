@@ -60,9 +60,8 @@ CREATE TABLE "company_channels" (
 	"is_active" boolean DEFAULT false NOT NULL,
 	"metadata" jsonb,
 	"ai_disabled" boolean DEFAULT false NOT NULL,
-	"removal_requested" boolean DEFAULT false NOT NULL,
-	"removal_reason" text,
-	"removal_requested_at" timestamp (3),
+	"rejection_reason" text,
+	"rejected_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint

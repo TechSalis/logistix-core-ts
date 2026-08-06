@@ -29,9 +29,8 @@ export interface CompanyChannelMetadata {
   webhookVerifiedAt?: string;
   botEnabled?: boolean;
   aiDisabled?: boolean;
-  removalRequested?: boolean;
-  removalReason?: string;
-  removalRequestedAt?: string;
+  rejectionReason?: string;
+  rejectedAt?: string;
 }
 
 export interface DeliveryMetadata {
