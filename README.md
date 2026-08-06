@@ -110,7 +110,6 @@ npm test         # run unit tests
 | `EscalationStatus`         | OPEN, IN_PROGRESS, RESOLVED, etc.                           |
 | `EscalatedTo`              | DISPATCHER, ADMIN, etc.                                     |
 | `SenderType`               | CUSTOMER, RIDER, DISPATCHER, SYSTEM, AI                     |
-| `ExportRequestStatus`      | PENDING, PROCESSING, COMPLETED, FAILED                      |
 | `SecurityEventType`        | RATE_LIMIT, BRUTE_FORCE, INJECTION, etc.                    |
 | `SecuritySeverity`         | LOW, MEDIUM, HIGH, CRITICAL                                 |
 | `ErrorCode`                | Standardized error codes                                    |
@@ -232,7 +231,7 @@ npm test         # run unit tests
 
 All Drizzle table definitions and relations are re-exported via `export * from './drizzle/index.js'`. This includes:
 
-- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `exportRequests`, `companyDailyMetrics`
+- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `jobQueue`, `companyDailyMetrics`
 - **pgEnums:** `deliveryStatus`, `exportRequestStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`
 - **Relations:** All table relations for query building
 

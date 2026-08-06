@@ -34,14 +34,6 @@ export interface CompanyChannelMetadata {
   removalRequestedAt?: string;
 }
 
-export interface ExportRequestMetadata {
-  userEmail?: string;
-  requestedBy?: string;
-  targetMonth?: string;
-  riderId?: string;
-  dataTypes?: string[];
-}
-
 export interface DeliveryMetadata {
   pickupPlaceId?: string;
   dropOffPlaceId?: string;

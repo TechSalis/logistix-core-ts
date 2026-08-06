@@ -190,7 +190,6 @@ export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enums/enum-cat
 export type {
   ConversationMetadata,
   CompanyChannelMetadata,
-  ExportRequestMetadata,
   DeliveryMetadata,
   RiderMetadata,
   CompanyMetadata,
