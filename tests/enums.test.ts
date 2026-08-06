@@ -11,6 +11,7 @@ import {
   ErrorCode,
   SystemStatus,
   ChannelPlatform,
+  CompanyChannelStatus,
   LogLevel,
   MessageStatus,
   MESSAGE_STATUS_RANK,
@@ -107,6 +108,16 @@ describe('Enums', () => {
       expect(ChannelPlatform.INSTAGRAM).toBe('INSTAGRAM');
       expect(ChannelPlatform.FACEBOOK).toBe('FACEBOOK');
       expect(ChannelPlatform.TIKTOK).toBe('TIKTOK');
+    });
+  });
+
+  describe('CompanyChannelStatus', () => {
+    it('exposes lifecycle states as wire values', () => {
+      expect(CompanyChannelStatus.PENDING).toBe('PENDING');
+      expect(CompanyChannelStatus.ACTIVE).toBe('ACTIVE');
+      expect(CompanyChannelStatus.DEACTIVATED).toBe('DEACTIVATED');
+      expect(CompanyChannelStatus.REJECTED).toBe('REJECTED');
+      expect(CompanyChannelStatus.REMOVED).toBe('REMOVED');
     });
   });
 

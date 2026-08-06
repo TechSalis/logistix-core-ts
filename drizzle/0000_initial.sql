@@ -1,6 +1,7 @@
 CREATE TYPE "public"."AdminRole" AS ENUM('ADMIN', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED', 'DISABLED');--> statement-breakpoint
 CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
+CREATE TYPE "public"."CompanyChannelStatus" AS ENUM('PENDING', 'ACTIVE', 'DEACTIVATED', 'REJECTED', 'REMOVED');--> statement-breakpoint
 CREATE TYPE "public"."ChannelType" AS ENUM('SYSTEM_POOL', 'MY_CHANNEL');--> statement-breakpoint
 CREATE TYPE "public"."Currency" AS ENUM('NGN');--> statement-breakpoint
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED', 'FAILED');--> statement-breakpoint
@@ -57,11 +58,12 @@ CREATE TABLE "company_channels" (
 	"platform" "ChannelPlatform" NOT NULL,
 	"platform_id" text NOT NULL,
 	"company_id" text NOT NULL,
-	"is_active" boolean DEFAULT false NOT NULL,
+	"status" "CompanyChannelStatus" NOT NULL,
 	"metadata" jsonb,
 	"ai_disabled" boolean DEFAULT false NOT NULL,
 	"rejection_reason" text,
 	"rejected_at" timestamp (3),
+	"removed_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -320,8 +322,8 @@ CREATE UNIQUE INDEX "blocked_ips_ip_address_idx" ON "blocked_ips" USING btree ("
 CREATE INDEX "companies_name_idx" ON "companies" USING btree ("name" text_ops);--> statement-breakpoint
 CREATE INDEX "companies_verification_status_idx" ON "companies" USING btree ("verification_status" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "companies_cac_key" ON "companies" USING btree ("cac");--> statement-breakpoint
-CREATE INDEX "company_channels_is_active_idx" ON "company_channels" USING btree ("is_active" bool_ops);--> statement-breakpoint
-CREATE INDEX "company_channels_company_id_is_active_idx" ON "company_channels" USING btree ("company_id" text_ops,"is_active" bool_ops);--> statement-breakpoint
+CREATE INDEX "company_channels_status_idx" ON "company_channels" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "company_channels_company_id_status_idx" ON "company_channels" USING btree ("company_id" text_ops,"status" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_channels_platform_company_id_key" ON "company_channels" USING btree ("platform" enum_ops,"company_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "company_channels_platform_platform_id_key" ON "company_channels" USING btree ("platform" enum_ops,"platform_id" text_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "cdm_company_date_idx" ON "company_daily_metrics" USING btree ("company_id","date") WHERE "company_daily_metrics"."company_id" IS NOT NULL;--> statement-breakpoint

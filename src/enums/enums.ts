@@ -73,6 +73,14 @@ export enum ChannelPlatform {
   TIKTOK = 'TIKTOK',
 }
 
+export enum CompanyChannelStatus {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  DEACTIVATED = 'DEACTIVATED',
+  REJECTED = 'REJECTED',
+  REMOVED = 'REMOVED',
+}
+
 export enum NodeEnv {
   Development = 'development',
   Staging = 'staging',

@@ -26,6 +26,7 @@ import {
   JobStatus,
   LedgerAdjustmentType,
   ChannelPlatform,
+  CompanyChannelStatus,
   MessageStatus,
   PaymentMethod,
   PaymentProvider,
@@ -65,6 +66,10 @@ export const ledgerAdjustmentType = pgEnum(
   enumValues(LedgerAdjustmentType),
 );
 export const channelPlatform = pgEnum('ChannelPlatform', enumValues(ChannelPlatform));
+export const companyChannelStatus = pgEnum(
+  'CompanyChannelStatus',
+  enumValues(CompanyChannelStatus),
+);
 export const messageStatus = pgEnum('MessageStatus', enumValues(MessageStatus));
 export const paymentMethod = pgEnum('PaymentMethod', enumValues(PaymentMethod));
 export const approvalStatus = pgEnum('ApprovalStatus', enumValues(ApprovalStatus));
@@ -172,24 +177,25 @@ export const companyChannels = pgTable(
     platform: channelPlatform().notNull(),
     platformId: text('platform_id').notNull(),
     companyId: text('company_id').notNull(),
-    isActive: boolean('is_active').default(false).notNull(),
+    status: companyChannelStatus('status').notNull(),
     metadata: jsonb(),
     aiDisabled: boolean('ai_disabled').default(false).notNull(),
     rejectionReason: text('rejection_reason'),
     rejectedAt: timestamp('rejected_at', { precision: 3, mode: 'date' }),
+    removedAt: timestamp('removed_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
   (table) => [
-    index('company_channels_is_active_idx').using(
+    index('company_channels_status_idx').using(
       'btree',
-      table.isActive.asc().nullsLast().op('bool_ops'),
+      table.status.asc().nullsLast().op('enum_ops'),
     ),
-    index('company_channels_company_id_is_active_idx').using(
+    index('company_channels_company_id_status_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
-      table.isActive.asc().nullsLast().op('bool_ops'),
+      table.status.asc().nullsLast().op('enum_ops'),
     ),
     uniqueIndex('company_channels_platform_company_id_key').using(
       'btree',

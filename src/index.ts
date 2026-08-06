@@ -21,6 +21,7 @@ export {
   CompanyAccessLevel,
   EntityType,
   ChannelPlatform,
+  CompanyChannelStatus,
   NodeEnv,
   VehicleType,
   SubscriptionTier,
