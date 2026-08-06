@@ -210,12 +210,6 @@ export enum SenderType {
   SYSTEM = 'SYSTEM',
 }
 
-export enum ExportRequestStatus {
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-}
-
 export enum JobStatus {
   PENDING = 'PENDING',
   PROCESSING = 'PROCESSING',

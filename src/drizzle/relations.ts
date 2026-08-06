@@ -12,7 +12,6 @@ import {
   paymentTransactions,
   subscriptionTransactions,
   eventLogs,
-  exportRequests,
   ledgerTransactions,
   companyDailyMetrics,
 } from './schema.js';
@@ -34,7 +33,6 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   paymentTransactions: many(paymentTransactions),
   subscriptionTransactions: many(subscriptionTransactions),
   eventLogs: many(eventLogs),
-  exportRequests: many(exportRequests),
   ledgerTransactions: many(ledgerTransactions),
   companyDailyMetrics: many(companyDailyMetrics),
 }));
@@ -124,13 +122,6 @@ export const eventLogsRelations = relations(eventLogs, ({ one }) => ({
 export const companyDailyMetricsRelations = relations(companyDailyMetrics, ({ one }) => ({
   company: one(companies, {
     fields: [companyDailyMetrics.companyId],
-    references: [companies.id],
-  }),
-}));
-
-export const exportRequestsRelations = relations(exportRequests, ({ one }) => ({
-  company: one(companies, {
-    fields: [exportRequests.companyId],
     references: [companies.id],
   }),
 }));

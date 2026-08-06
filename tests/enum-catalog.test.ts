@@ -9,6 +9,10 @@ import {
 } from '../src/enums/enums.js';
 
 describe('ENUM_CATALOG', () => {
+  it('keeps ExportDataType exported', () => {
+    expect(ExportDataType).toBeDefined();
+  });
+
   it('serves every ExportDataType value as its wire name', () => {
     expect(ENUM_CATALOG.exportDataTypes.map((v) => v.name)).toEqual(Object.values(ExportDataType));
   });

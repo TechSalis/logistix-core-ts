@@ -43,7 +43,6 @@ export {
   ConversationHandlerType,
   ExportDataType,
   ExportReason,
-  ExportRequestStatus,
   JobStatus,
   SecurityEventType,
   SecuritySeverity,
@@ -90,11 +89,7 @@ export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './config/limits.confi
 export type { TierLimits, LimitsConfig } from './config/limits.config.js';
 
 // ─── Export ───────────────────────────────────────────────────────────────────
-export {
-  VALID_DATA_TYPES,
-  MONTH_REQUIRED_TYPES,
-  EXPORT_JOB_TYPE,
-} from './config/export.config.js';
+export { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES, EXPORT_JOB_TYPE } from './config/export.config.js';
 export type { DataType } from './config/export.config.js';
 
 // ─── Retention ────────────────────────────────────────────────────────────────
@@ -144,10 +139,12 @@ export {
 } from './services/email.service.js';
 export {
   queueService,
+  PermanentJobError,
   type QueueHandler,
   type DrainOptions,
   type DrainResult,
   type EnqueueOptions,
+  type EnqueueWithDedupeOptions,
 } from './services/queue.service.js';
 export { QUEUE_SERVICE_CONFIG, FCM_SERVICE_CONFIG } from './config/service.config.js';
 

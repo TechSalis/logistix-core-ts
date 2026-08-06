@@ -16,13 +16,13 @@ import {
   bigint,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import type { IndexBuilder } from 'drizzle-orm/pg-core';
 import {
   AdminRole,
   ChannelType,
   DeliveryStatus,
   DispatcherRole,
   EscalatedTo,
-  ExportRequestStatus,
   JobStatus,
   LedgerAdjustmentType,
   ChannelPlatform,
@@ -59,7 +59,6 @@ const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[
   Object.values(e) as [string, ...string[]];
 
 export const deliveryStatus = pgEnum('DeliveryStatus', enumValues(DeliveryStatus));
-export const exportRequestStatus = pgEnum('ExportRequestStatus', enumValues(ExportRequestStatus));
 export const jobStatusEnum = pgEnum('JobStatus', enumValues(JobStatus));
 export const ledgerAdjustmentType = pgEnum(
   'LedgerAdjustmentType',
@@ -833,40 +832,6 @@ export const eventLogs = pgTable(
   ],
 );
 
-export const exportRequests = pgTable(
-  'export_requests',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    companyId: text('company_id').notNull(),
-    status: exportRequestStatus().default(ExportRequestStatus.PENDING).notNull(),
-    metadata: jsonb(),
-    requestedAt: timestamp('requested_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('export_requests_company_id_status_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.status.asc().nullsLast().op('enum_ops'),
-    ),
-    index('export_requests_status_idx').using(
-      'btree',
-      table.status.asc().nullsLast().op('enum_ops'),
-    ),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'export_requests_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
 export const jobQueue = pgTable(
   'job_queue',
   {
@@ -884,6 +849,8 @@ export const jobQueue = pgTable(
     scheduledAt: timestamp('scheduled_at', { precision: 3, mode: 'date' }),
     startedAt: timestamp('started_at', { precision: 3, mode: 'date' }),
     completedAt: timestamp('completed_at', { precision: 3, mode: 'date' }),
+    companyId: text('company_id'),
+    dedupeKey: text('dedupe_key'),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -904,7 +871,19 @@ export const jobQueue = pgTable(
       'btree',
       table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    jobQueueDedupeKeyUnique,
+    jobQueueExportCountIdx,
   ],
+);
+
+export const jobQueueDedupeKeyUnique: IndexBuilder = uniqueIndex('job_queue_dedupe_key_unique')
+  .on(sql`${jobQueue.dedupeKey}`)
+  .where(sql`${jobQueue.dedupeKey} IS NOT NULL AND ${jobQueue.status} IN ('PENDING','PROCESSING')`);
+
+export const jobQueueExportCountIdx: IndexBuilder = index('job_queue_export_count_idx').on(
+  sql`${jobQueue.type}`,
+  sql`${jobQueue.companyId}`,
+  sql`${jobQueue.createdAt}`,
 );
 
 export const eventOutbox = pgTable(
