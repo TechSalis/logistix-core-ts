@@ -93,7 +93,7 @@ export const companies = pgTable(
       .primaryKey()
       .$defaultFn(() => createId())
       .notNull(),
-    name: text().notNull(),
+    name: text(),
     cac: text(),
     nipostLicenseNumber: text('nipost_license_number'),
     contactPhone: text('contact_phone'),

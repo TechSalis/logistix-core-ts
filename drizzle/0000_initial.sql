@@ -42,7 +42,7 @@ CREATE TABLE "blocked_ips" (
 --> statement-breakpoint
 CREATE TABLE "companies" (
 	"id" text PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
+	"name" text,
 	"cac" text,
 	"nipost_license_number" text,
 	"contact_phone" text,
