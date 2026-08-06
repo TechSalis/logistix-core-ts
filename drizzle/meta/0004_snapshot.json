@@ -1,6 +1,6 @@
 {
-  "id": "0d3b6961-747b-4fd2-b26f-9e773b6da953",
-  "prevId": "eb7352b1-baed-4e43-8ac2-4991250fe638",
+  "id": "4e1d7f52-35ef-4d2d-a059-af6396a2b92b",
+  "prevId": "1b17ca89-6675-49e1-90dd-c3d03f9f99fc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2255,18 +2255,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dedupe_key": {
-          "name": "dedupe_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "payload": {
           "name": "payload",
           "type": "jsonb",
@@ -2323,6 +2311,18 @@
         "completed_at": {
           "name": "completed_at",
           "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dedupe_key": {
+          "name": "dedupe_key",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -2408,15 +2408,14 @@
           "name": "job_queue_dedupe_key_unique",
           "columns": [
             {
-              "expression": "dedupe_key",
-              "isExpression": false,
+              "expression": "\"dedupe_key\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             }
           ],
           "isUnique": true,
-          "where": "\"dedupe_key\" IS NOT NULL AND \"status\" IN ('PENDING','PROCESSING')",
+          "where": "\"job_queue\".\"dedupe_key\" IS NOT NULL AND \"job_queue\".\"status\" IN ('PENDING', 'PROCESSING')",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2425,25 +2424,22 @@
           "name": "job_queue_export_count_idx",
           "columns": [
             {
-              "expression": "type",
-              "isExpression": false,
+              "expression": "\"type\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             },
             {
-              "expression": "company_id",
-              "isExpression": false,
+              "expression": "\"company_id\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             },
             {
-              "expression": "created_at",
-              "isExpression": false,
+              "expression": "\"created_at\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
+              "isExpression": true,
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -3565,6 +3561,8 @@
       "schema": "public",
       "values": [
         "SENT",
+        "DELIVERED",
+        "READ",
         "FAILED"
       ]
     },
@@ -3646,10 +3644,7 @@
       "name": "VehicleType",
       "schema": "public",
       "values": [
-        "BIKE",
-        "CAR",
-        "VAN",
-        "TRUCK"
+        "BIKE"
       ]
     }
   },

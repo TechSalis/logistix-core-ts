@@ -1,6 +1,6 @@
 {
-  "id": "0d3b6961-747b-4fd2-b26f-9e773b6da953",
-  "prevId": "eb7352b1-baed-4e43-8ac2-4991250fe638",
+  "id": "1b17ca89-6675-49e1-90dd-c3d03f9f99fc",
+  "prevId": "0d3b6961-747b-4fd2-b26f-9e773b6da953",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3646,10 +3646,7 @@
       "name": "VehicleType",
       "schema": "public",
       "values": [
-        "BIKE",
-        "CAR",
-        "VAN",
-        "TRUCK"
+        "BIKE"
       ]
     }
   },

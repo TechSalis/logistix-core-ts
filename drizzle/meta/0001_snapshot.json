@@ -1,6 +1,6 @@
 {
-  "id": "0d3b6961-747b-4fd2-b26f-9e773b6da953",
-  "prevId": "eb7352b1-baed-4e43-8ac2-4991250fe638",
+  "id": "eb7352b1-baed-4e43-8ac2-4991250fe638",
+  "prevId": "14d84480-3cde-4e72-b3b7-efab16245266",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -714,7 +714,40 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "clm_company_idx": {
+          "name": "clm_company_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_lifetime_metrics\".\"company_id\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "clm_system_idx": {
+          "name": "clm_system_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"company_lifetime_metrics\".\"company_id\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "clm_company_id_fkey": {
           "name": "clm_company_id_fkey",
@@ -731,15 +764,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "clm_company_idx": {
-          "name": "clm_company_idx",
-          "nullsNotDistinct": true,
-          "columns": [
-            "company_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
