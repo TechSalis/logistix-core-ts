@@ -41,13 +41,6 @@ export interface RetentionConfig {
    * event_logs, independent of DATA_RETENTION.
    */
   readonly dailyMetricsRetentionMonths: number;
-
-  /**
-   * Days after reaching a terminal status (COMPLETED/FAILED) before an
-   * export_requests row is pruned. PENDING rows are never pruned here —
-   * the export runner owns them.
-   */
-  readonly exportRequestRetentionDays: number;
 }
 
 const retentionConfigSchema = z.object({
@@ -56,7 +49,6 @@ const retentionConfigSchema = z.object({
   lockedCompanyPurgeRetentionDays: z.number(),
   eventLogRetentionMonths: z.number(),
   dailyMetricsRetentionMonths: z.number(),
-  exportRequestRetentionDays: z.number(),
 });
 
 const rawRetentionConfig = {
@@ -65,7 +57,6 @@ const rawRetentionConfig = {
   lockedCompanyPurgeRetentionDays: 30,
   eventLogRetentionMonths: 12,
   dailyMetricsRetentionMonths: 12,
-  exportRequestRetentionDays: 30,
 } as const;
 
 // Runtime validation guard — keeps config in sync with schema

@@ -21,8 +21,4 @@ describe('RETENTION_CONFIG', () => {
   it('prunes daily metrics rollups at a fixed 12-month floor', () => {
     expect(RETENTION_CONFIG.dailyMetricsRetentionMonths).toBe(12);
   });
-
-  it('prunes terminal export requests after 30 days', () => {
-    expect(RETENTION_CONFIG.exportRequestRetentionDays).toBe(30);
-  });
 });

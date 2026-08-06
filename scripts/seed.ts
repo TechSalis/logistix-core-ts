@@ -22,7 +22,6 @@ import {
   EntityType,
   EscalatedTo,
   EventType,
-  ExportRequestStatus,
   JobStatus,
   LedgerAdjustmentType,
   MessageStatus,
@@ -169,14 +168,9 @@ async function run() {
         ('seed-ev-4', '${EventType.CHANNEL_ACTIVATED}'::"EventType", '${EntityType.COMPANY_CHANNEL}'::"EntityType", 'seed-chan-pro', 'seed-user-admin-super', 'seed-co-pro', '{}'::jsonb, true)
         ON CONFLICT ("id") DO NOTHING`);
 
-      await insert(sql`INSERT INTO "export_requests" ("id", "company_id", "status", "metadata") VALUES
-        ('seed-exp-1', 'seed-co-starter', '${ExportRequestStatus.COMPLETED}'::"ExportRequestStatus", '{"dataTypes":["DELIVERIES"],"url":"https://example.test/export.csv"}'::jsonb),
-        ('seed-exp-2', 'seed-co-pro', '${ExportRequestStatus.PENDING}'::"ExportRequestStatus", '{"dataTypes":["BILLING"]}'::jsonb)
-        ON CONFLICT ("id") DO NOTHING`);
-
       await insert(sql`INSERT INTO "job_queue" ("id", "type", "payload", "status", "priority", "max_retries", "retry_count") VALUES
         ('seed-job-1', 'delivery-payment-capture', '{"deliveryId":"seed-del-5"}'::jsonb, '${JobStatus.COMPLETED}'::"JobStatus", 0, 3, 0),
-        ('seed-job-2', 'export', '{"requestId":"seed-exp-2"}'::jsonb, '${JobStatus.PENDING}'::"JobStatus", 0, 3, 0)
+        ('seed-job-2', 'export', '{"userEmail":"owner@logistix.test","requestedBy":"seed-user-owner1","targetMonth":null,"dataTypes":["BILLING"]}'::jsonb, '${JobStatus.PENDING}'::"JobStatus", 0, 3, 0)
         ON CONFLICT ("id") DO NOTHING`);
 
       await insert(sql`INSERT INTO "blocked_ips" ("id", "ip_address", "reason", "blocked_by", "expires_at") VALUES
@@ -198,12 +192,12 @@ async function run() {
         ("company_id", "total_deliveries", "delivered_count", "total_revenue_kobo", "channel_breakdown", "extra_metrics") VALUES
         ('seed-co-starter', 25, 10, 4500000, '{"WHATSAPP":25}'::jsonb, '{}'::jsonb),
         ('seed-co-pro', 18, 9, 12000000, '{"WHATSAPP":18}'::jsonb, '{}'::jsonb)
-        ON CONFLICT (company_id) DO NOTHING`);
+        ON CONFLICT (company_id) WHERE company_id IS NOT NULL DO NOTHING`);
 
       await insert(sql`INSERT INTO "company_lifetime_metrics"
         ("company_id", "total_deliveries", "delivered_count", "total_revenue_kobo", "channel_breakdown", "extra_metrics") VALUES
         (NULL, 40, 30, 12000000, '{}'::jsonb, '{}'::jsonb)
-        ON CONFLICT (company_id) DO NOTHING`);
+        ON CONFLICT (company_id) WHERE company_id IS NULL DO NOTHING`);
 
       return 'ok';
     });

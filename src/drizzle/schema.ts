@@ -878,7 +878,9 @@ export const jobQueue = pgTable(
 
 export const jobQueueDedupeKeyUnique: IndexBuilder = uniqueIndex('job_queue_dedupe_key_unique')
   .on(sql`${jobQueue.dedupeKey}`)
-  .where(sql`${jobQueue.dedupeKey} IS NOT NULL AND ${jobQueue.status} IN ('PENDING','PROCESSING')`);
+  .where(
+    sql`${jobQueue.dedupeKey} IS NOT NULL AND ${jobQueue.status} IN (${sql.raw(`'${JobStatus.PENDING}', '${JobStatus.PROCESSING}'`)})`,
+  );
 
 export const jobQueueExportCountIdx: IndexBuilder = index('job_queue_export_count_idx').on(
   sql`${jobQueue.type}`,
