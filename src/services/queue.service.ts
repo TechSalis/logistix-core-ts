@@ -1,4 +1,4 @@
-import { and, eq, sql, lt, inArray } from 'drizzle-orm';
+import { and, eq, sql, lt, inArray, count, gte } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { jobQueue } from '../drizzle/schema.js';
 import { JobStatus } from '../enums/enums.js';
@@ -18,6 +18,20 @@ export interface EnqueueOptions {
   priority?: number;
   maxRetries?: number;
   scheduledAt?: Date;
+}
+
+export interface EnqueueWithDedupeOptions extends EnqueueOptions {
+  companyId?: string | null;
+  dedupeKey?: string | null;
+}
+
+// Thrown by a QueueHandler when a job can never succeed and must fail
+// immediately without backoff retries (e.g. export jobs with no data).
+export class PermanentJobError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PermanentJobError';
+  }
 }
 
 export interface DrainOptions {
@@ -63,6 +77,51 @@ class QueueService {
       })
       .returning();
     return job;
+  }
+
+  /**
+   * Insert a job, deduped by (dedupeKey, PENDING/PROCESSING) via the partial
+   * unique index job_queue_dedupe_key_unique. Returns the inserted row, or
+   * null when an identical job is already pending or processing.
+   */
+  async enqueueWithDedupe(
+    db: DrizzleDB,
+    type: string,
+    payload?: Record<string, unknown>,
+    options?: EnqueueWithDedupeOptions,
+  ): Promise<JobRow | null> {
+    const [job] = await db
+      .insert(jobQueue)
+      .values({
+        type,
+        payload: payload ?? {},
+        priority: options?.priority ?? 0,
+        maxRetries: options?.maxRetries ?? 3,
+        scheduledAt: options?.scheduledAt ?? null,
+        companyId: options?.companyId ?? null,
+        dedupeKey: options?.dedupeKey ?? null,
+      })
+      .onConflictDoNothing({
+        target: jobQueue.dedupeKey,
+        where: sql`${jobQueue.dedupeKey} IS NOT NULL AND ${jobQueue.status} IN (${sql.raw(`'${JobStatus.PENDING}', '${JobStatus.PROCESSING}'`)})`,
+      })
+      .returning();
+    return job ?? null;
+  }
+
+  /** COUNT of jobs of `type` for `companyId` created at/after `since` (quota check). */
+  async countRecent(db: DrizzleDB, type: string, companyId: string, since: Date): Promise<number> {
+    const [row] = await db
+      .select({ count: count() })
+      .from(jobQueue)
+      .where(
+        and(
+          eq(jobQueue.type, type),
+          eq(jobQueue.companyId, companyId),
+          gte(jobQueue.createdAt, since),
+        ),
+      );
+    return Number(row?.count ?? 0);
   }
 
   private async dequeue(db: DrizzleDB, type: string, batchSize: number): Promise<JobRow[]> {
@@ -162,6 +221,18 @@ class QueueService {
       .where(eq(jobQueue.id, jobId));
   }
 
+  /** Fail a job immediately, ignoring maxRetries/backoff (used for PermanentJobError). */
+  async failPermanent(db: DrizzleDB, jobId: string, error: string): Promise<void> {
+    await db
+      .update(jobQueue)
+      .set({
+        status: JobStatus.FAILED,
+        lastError: error,
+        completedAt: new Date(),
+      })
+      .where(eq(jobQueue.id, jobId));
+  }
+
   /**
    * Delete terminal jobs (COMPLETED / FAILED / CANCELLED) older than `olderThanMs`.
    * Without this the job_queue table grows forever — completed/failed/cancelled
@@ -250,7 +321,11 @@ class QueueService {
         } catch (error) {
           stats.failed++;
           try {
-            await this.fail(db, job.id, extractErrorMessage(error));
+            if (error instanceof PermanentJobError) {
+              await this.failPermanent(db, job.id, extractErrorMessage(error));
+            } else {
+              await this.fail(db, job.id, extractErrorMessage(error));
+            }
           } catch {
             console.error('[Queue] Failed to mark job as failed');
           }
