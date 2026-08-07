@@ -22,6 +22,9 @@ export interface CompanyChannelMetadata {
   displayPhoneNumber?: string;
   credentials?: {
     accessToken?: string;
+    wabaId?: string;
+    phoneNumberId?: string;
+    tokenExpiresAt?: number | null;
     [key: string]: unknown;
   };
   webhookUrl?: string;
