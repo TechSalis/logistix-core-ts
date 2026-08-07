@@ -15,14 +15,18 @@ export const FCM_SERVICE_CONFIG = {
 } as const;
 
 export const QUEUE_SERVICE_CONFIG = {
-  // Default drain bounds when a caller supplies no options.
-  defaultDrainOptions: {
-    timeBudgetMs: 12 * 60 * 1000,
-    maxJobs: 200,
-    batchSize: 5,
-  } as const,
+  // Shared neutral defaults. Backend drains (long-lived poll loops) are bounded
+  // by maxJobs + the poll tick — no wall-clock budget is needed there. Worker
+  // cron drains MUST pass an explicit timeBudgetMs (SCALING_CONFIG.cronTimeBudgetMs)
+  // so an invocation returns within the Cloudflare cron window.
+  batchSize: 5,
+  defaultMaxRetries: 3, // total attempts; the first attempt counts
   // How often the drain loop prunes finished jobs from the queue table.
   pruneIntervalMs: 60 * 60 * 1000,
+  // Terminal rows older than this are deleted by the prune pass.
+  pruneTerminalAfterMs: 24 * 60 * 60 * 1000,
+  // PROCESSING jobs with started_at older than this are reset to PENDING.
+  retryStalledAfterMs: 30_000,
   // Exponential retry backoff bounds (base * 2^(retry-1), capped at max).
   retryBackoffBaseMs: 1_000,
   retryBackoffMaxMs: 60_000,

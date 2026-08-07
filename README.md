@@ -124,6 +124,8 @@ npm test         # run unit tests
 | `SseEventType`             | MESSAGE, STATUS_CHANGE, TRACKING, etc.                      |
 | `JwtTokenType`             | ACCESS, REFRESH, SSE, OTP                                   |
 | `ContactCategory`          | GENERAL, SUPPORT, BILLING, etc.                             |
+| `JobType`                  | DELIVERY_NOTIFICATION, SQUAD_WEBHOOK, EXPORT, AI_BATCH       |
+| `JobStatus`                | QUEUED, PROCESSING, SUCCEEDED, FAILED, CANCELLED             |
 
 **Enum helpers:**
 
@@ -197,6 +199,27 @@ npm test         # run unit tests
 | `fetchWithTimeout()`     | `function` | Fetch with configurable timeout              |
 | `extractErrorMessage()`  | `function` | Extracts error message from unknown throwables |
 
+### Queue Service
+
+| Export                        | Type        | Description                                  |
+|-------------------------------|-------------|----------------------------------------------|
+| `queueService`                | `object`    | `job_queue` drain/enqueue singleton          |
+| `queueService.enqueue()`      | `function`  | Insert a job (retries use `defaultMaxRetries` unless `maxRetries` passed) |
+| `queueService.enqueueWithDedupe()` | `function` | Insert a job unless one with the same `dedupeKey` is pending |
+| `queueService.dequeue()`      | `function` | Atomically claim a batch (`UPDATE ... SKIP LOCKED`) |
+| `queueService.drain()`        | `function` | Poll loop; `maxJobs` **required**, `timeBudgetMs` optional (cron wall-clock) |
+| `queueService.countRecent()`  | `function` | Count jobs for a type/company since a cutoff  |
+| `queueService.retryStalled()` | `function` | Move PROCESSING jobs older than `retryStalledAfterMs` back to QUEUED |
+| `queueService.pruneTerminal()`| `function` | Delete terminal jobs older than `pruneTerminalAfterMs` |
+| `QUEUE_SERVICE_CONFIG`        | `object`    | SSOT: `batchSize`, `defaultMaxRetries`, prune/retry windows, retry backoff |
+
+**Queue contract:**
+
+- `drain()`'s `maxRetries` option is the **total attempts** (the first attempt counts).
+- `batchSize` is the per-claim lock scope (`SELECT ... LIMIT n FOR UPDATE SKIP LOCKED`), not a time concept.
+- Workers pass `timeBudgetMs` for Cloudflare-cron wall-clock compliance; the backend poll loop relies on `maxJobs` + its poll tick instead.
+- Dedupe uniqueness is enforced by the `job_queue_dedupe_key_unique` partial unique index (dedupe key is NULL for non-dedupe jobs, so only pending dedupe-keyed jobs block re-enqueue).
+
 ### Formatters
 
 | Export                    | Type       | Description                                  |
@@ -232,7 +255,7 @@ npm test         # run unit tests
 All Drizzle table definitions and relations are re-exported via `export * from './drizzle/index.js'`. This includes:
 
 - **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `jobQueue`, `companyDailyMetrics`
-- **pgEnums:** `deliveryStatus`, `exportRequestStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`
+- **pgEnums:** `deliveryStatus`, `jobStatus`, `companyChannelStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`, `adminRole`, `dispatcherRole`
 - **Relations:** All table relations for query building
 
 > **Note:** Drizzle exports are primarily for backend/workers that use Drizzle ORM directly. Web apps should use the typed API clients instead.

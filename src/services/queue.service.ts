@@ -35,8 +35,14 @@ export class PermanentJobError extends Error {
 }
 
 export interface DrainOptions {
+  /** Hard cap on jobs processed in one pass. REQUIRED — the primary bound for
+   * backend poll loops, which may omit timeBudgetMs. */
+  maxJobs: number;
+  /** Wall-clock budget for one pass. Workers (Cloudflare cron) MUST pass this
+   * so the invocation returns inside the cron window. Backend poll loops may
+   * omit it — the pass is bounded by maxJobs + the poll tick. */
   timeBudgetMs?: number;
-  maxJobs?: number;
+  /** Dequeue claim batch size. Default QUEUE_SERVICE_CONFIG.batchSize (5). */
   batchSize?: number;
 }
 
@@ -47,8 +53,6 @@ export interface DrainResult {
 }
 
 export type QueueHandler = (job: JobRow) => Promise<void>;
-
-const DEFAULT_OPTIONS: DrainOptions = { ...QUEUE_SERVICE_CONFIG.defaultDrainOptions };
 
 function retryBackoffMs(retryCount: number): number {
   return Math.min(
@@ -72,7 +76,7 @@ class QueueService {
         type,
         payload: payload ?? {},
         priority: options?.priority ?? 0,
-        maxRetries: options?.maxRetries ?? 3,
+        maxRetries: options?.maxRetries ?? QUEUE_SERVICE_CONFIG.defaultMaxRetries,
         scheduledAt: options?.scheduledAt ?? null,
       })
       .returning();
@@ -96,7 +100,7 @@ class QueueService {
         type,
         payload: payload ?? {},
         priority: options?.priority ?? 0,
-        maxRetries: options?.maxRetries ?? 3,
+        maxRetries: options?.maxRetries ?? QUEUE_SERVICE_CONFIG.defaultMaxRetries,
         scheduledAt: options?.scheduledAt ?? null,
         companyId: options?.companyId ?? null,
         dedupeKey: options?.dedupeKey ?? null,
@@ -148,13 +152,32 @@ class QueueService {
     );
     // drizzle-orm returns different shapes per driver: postgres-js resolves raw
     // `db.execute` to the rows array, node-postgres wraps it as `{ rows }`.
-    const rows = Array.isArray(result) ? result : result.rows;
-    return rows as unknown as JobRow[]; // Safe: Raw SQL result rows match JobRow shape.
+    // Raw SQL `RETURNING *` yields snake_case keys, but JobRow (and every queue
+    // handler) expects camelCase — map the columns before handing rows over.
+    const rawRows: Array<Record<string, unknown>> = Array.isArray(result)
+      ? (result as Array<Record<string, unknown>>)
+      : result.rows;
+    return rawRows.map((row) => ({
+      id: row.id,
+      type: row.type,
+      payload: row.payload,
+      status: row.status,
+      priority: row.priority,
+      maxRetries: row.max_retries,
+      retryCount: row.retry_count,
+      lastError: row.last_error,
+      scheduledAt: row.scheduled_at,
+      startedAt: row.started_at,
+      completedAt: row.completed_at,
+      createdAt: row.created_at,
+      companyId: row.company_id,
+      dedupeKey: row.dedupe_key,
+    })) as unknown as JobRow[];
   }
 
-  private async retryStalled(db: DrizzleDB, type: string, stalenessMs: number): Promise<number> {
-    const cutoff = new Date(Date.now() - stalenessMs);
-    const [result] = await db
+  private async retryStalled(db: DrizzleDB, type: string): Promise<number> {
+    const cutoff = new Date(Date.now() - QUEUE_SERVICE_CONFIG.retryStalledAfterMs);
+    const result = await db
       .update(jobQueue)
       .set({ status: JobStatus.PENDING, startedAt: null })
       .where(
@@ -165,7 +188,7 @@ class QueueService {
         ),
       )
       .returning({ id: jobQueue.id });
-    return result ? 1 : 0;
+    return result.length;
   }
 
   async complete(db: DrizzleDB, jobId: string): Promise<void> {
@@ -214,15 +237,11 @@ class QueueService {
     }
   }
 
-  async cancel(db: DrizzleDB, jobId: string): Promise<void> {
-    await db
-      .update(jobQueue)
-      .set({ status: JobStatus.CANCELLED, completedAt: new Date() })
-      .where(eq(jobQueue.id, jobId));
-  }
-
-  /** Fail a job immediately, ignoring maxRetries/backoff (used for PermanentJobError). */
-  async failPermanent(db: DrizzleDB, jobId: string, error: string): Promise<void> {
+  /** Fail a job immediately, ignoring maxRetries/backoff (used for PermanentJobError). */ async failPermanent(
+    db: DrizzleDB,
+    jobId: string,
+    error: string,
+  ): Promise<void> {
     await db
       .update(jobQueue)
       .set({
@@ -238,13 +257,9 @@ class QueueService {
    * Without this the job_queue table grows forever — completed/failed/cancelled
    * rows are never re-processed. Called from drain() on a time-gated schedule.
    */
-  async pruneTerminal(
-    db: DrizzleDB,
-    type: string,
-    olderThanMs: number = 24 * 60 * 60 * 1000,
-  ): Promise<number> {
-    const cutoff = new Date(Date.now() - olderThanMs);
-    const [result] = await db
+  async pruneTerminal(db: DrizzleDB, type: string): Promise<number> {
+    const cutoff = new Date(Date.now() - QUEUE_SERVICE_CONFIG.pruneTerminalAfterMs);
+    const result = await db
       .delete(jobQueue)
       .where(
         and(
@@ -254,21 +269,25 @@ class QueueService {
         ),
       )
       .returning({ id: jobQueue.id });
-    return result ? 1 : 0;
+    return result.length;
   }
 
   /**
    * Drain loop: dequeue jobs → handler → complete/fail.
-   * Respects time budget, max jobs per run, and batch size.
+   * Bounded by the REQUIRED maxJobs and, when provided, timeBudgetMs.
    * Handles stalled jobs (PROCESSING but startedAt is stale) by retrying them.
+   *
+   * maxRetries semantics: total attempts, the first attempt counts. dequeue
+   * increments retry_count at claim time and fail() marks FAILED once
+   * retryCount >= maxRetries, so a job with maxRetries=3 runs at most 3 times.
    */
   async drain(
     db: DrizzleDB,
     type: string,
     handler: QueueHandler,
-    options?: DrainOptions,
+    options: DrainOptions,
   ): Promise<DrainResult> {
-    const opts = { ...DEFAULT_OPTIONS, ...options };
+    const { maxJobs, timeBudgetMs, batchSize = QUEUE_SERVICE_CONFIG.batchSize } = options;
     const startTime = Date.now();
     const stats: DrainResult = { processed: 0, succeeded: 0, failed: 0 };
 
@@ -285,18 +304,18 @@ class QueueService {
 
     // Retry stalled jobs before processing new ones
     try {
-      await this.retryStalled(db, type, 30_000);
+      await this.retryStalled(db, type);
     } catch (e) {
       console.error('[Queue] Failed to retry stalled jobs', e);
     }
 
     for (;;) {
-      if (Date.now() - startTime >= (opts.timeBudgetMs ?? DEFAULT_OPTIONS.timeBudgetMs!)) break;
-      if (stats.processed >= (opts.maxJobs ?? DEFAULT_OPTIONS.maxJobs!)) break;
+      if (timeBudgetMs !== undefined && Date.now() - startTime >= timeBudgetMs) break;
+      if (stats.processed >= maxJobs) break;
 
       let jobs: JobRow[];
       try {
-        jobs = await this.dequeue(db, type, opts.batchSize ?? DEFAULT_OPTIONS.batchSize!);
+        jobs = await this.dequeue(db, type, batchSize);
       } catch (e) {
         console.error('[Queue] Dequeue failed', e);
         break;
@@ -305,7 +324,7 @@ class QueueService {
       if (jobs.length === 0) break;
 
       for (const job of jobs) {
-        if (Date.now() - startTime >= (opts.timeBudgetMs ?? DEFAULT_OPTIONS.timeBudgetMs!)) break;
+        if (timeBudgetMs !== undefined && Date.now() - startTime >= timeBudgetMs) break;
 
         stats.processed++;
 
