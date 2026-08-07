@@ -17,16 +17,20 @@ export interface ConversationMetadata {
   aiPermanentlyDisabled?: boolean;
 }
 
+export interface ChannelCredentials {
+  accessToken: string;
+  /** WhatsApp Business Account id (used for token refresh + webhook subscribe). */
+  wabaId: string;
+  /** Meta phone-number id (used for number verify + webhook subscribe). */
+  phoneNumberId: string;
+  /** Epoch ms when the access token expires; null = never. */
+  tokenExpiresAt: number | null;
+}
+
 export interface CompanyChannelMetadata {
   phoneNumberId?: string;
   displayPhoneNumber?: string;
-  credentials?: {
-    accessToken?: string;
-    wabaId?: string;
-    phoneNumberId?: string;
-    tokenExpiresAt?: number | null;
-    [key: string]: unknown;
-  };
+  credentials?: ChannelCredentials;
   webhookUrl?: string;
   webhookVerified?: boolean;
   webhookVerifiedAt?: string;

@@ -205,6 +205,7 @@ export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enums/enum-cat
 // ─── Metadata Types ──────────────────────────────────────────────────────────
 export type {
   ConversationMetadata,
+  ChannelCredentials,
   CompanyChannelMetadata,
   DeliveryMetadata,
   RiderMetadata,
