@@ -9,6 +9,7 @@ import {
   EntityType,
   EventType,
   ErrorCode,
+  JobType,
   SystemStatus,
   ChannelPlatform,
   CompanyChannelStatus,
@@ -92,6 +93,39 @@ describe('Enums', () => {
       expect(ErrorCode.FORBIDDEN).toBe('FORBIDDEN');
       expect(ErrorCode.NOT_FOUND).toBe('NOT_FOUND');
       expect(ErrorCode.VALIDATION_ERROR).toBe('VALIDATION_ERROR');
+    });
+
+    it('has business-rule and delivery codes as SCREAMING_SNAKE wire values', () => {
+      expect(ErrorCode.BULK_DELIVERY_CREATION).toBe('BULK_DELIVERY_CREATION');
+      expect(ErrorCode.OPERATIONAL_AVAILABILITY).toBe('OPERATIONAL_AVAILABILITY');
+      expect(ErrorCode.CHAT_PROCESSOR_HYDRATION).toBe('CHAT_PROCESSOR_HYDRATION');
+      expect(ErrorCode.CHAT_PROCESSOR_INFERENCE).toBe('CHAT_PROCESSOR_INFERENCE');
+      expect(ErrorCode.CHAT_PROCESSOR_PIPELINE).toBe('CHAT_PROCESSOR_PIPELINE');
+      expect(ErrorCode.PROVIDER_CONFIG_LOAD).toBe('PROVIDER_CONFIG_LOAD');
+      expect(ErrorCode.PAYMENT_POST_PROCESSING).toBe('PAYMENT_POST_PROCESSING');
+      expect(ErrorCode.LLM_FAILOVER).toBe('LLM_FAILOVER');
+      expect(ErrorCode.INTER_STATE_DELIVERY).toBe('INTER_STATE_DELIVERY');
+      expect(ErrorCode.COMPANY_CLOSED).toBe('COMPANY_CLOSED');
+      expect(ErrorCode.COMPANY_NOT_OPEN_YET).toBe('COMPANY_NOT_OPEN_YET');
+      expect(ErrorCode.COMPANY_NOT_OPERATING_TODAY).toBe('COMPANY_NOT_OPERATING_TODAY');
+      expect(ErrorCode.TIER_LIMIT_EXCEEDED).toBe('TIER_LIMIT_EXCEEDED');
+      expect(ErrorCode.NO_DELIVERIES_PROVIDED).toBe('NO_DELIVERIES_PROVIDED');
+      expect(ErrorCode.INVALID_ACTOR).toBe('INVALID_ACTOR');
+      expect(ErrorCode.CHANNEL_PLATFORM_ID_CONFLICT).toBe('CHANNEL_PLATFORM_ID_CONFLICT');
+      expect(ErrorCode.CHANNEL_ACTIVATION_FAILED).toBe('CHANNEL_ACTIVATION_FAILED');
+    });
+
+    it('no longer ships the dead CLIENT_AUTH_REQUIRED member', () => {
+      expect(ErrorCode).not.toHaveProperty('CLIENT_AUTH_REQUIRED');
+    });
+  });
+
+  describe('JobType', () => {
+    it('exposes job queue type wire values', () => {
+      expect(JobType.DELIVERY_NOTIFICATION).toBe('delivery-notification');
+      expect(JobType.SQUAD_WEBHOOK).toBe('squad-webhook');
+      expect(JobType.EXPORT).toBe('export');
+      expect(JobType.AI_BATCH).toBe('ai:batch');
     });
   });
 

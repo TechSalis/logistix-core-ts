@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ExportDataType } from '../src/enums/enums.js';
+import { ExportDataType, JobType } from '../src/enums/enums.js';
 import {
   VALID_DATA_TYPES,
   MONTH_REQUIRED_TYPES,
@@ -22,6 +22,6 @@ describe('export.config', () => {
   });
 
   it('uses a single job type for export jobs', () => {
-    expect(EXPORT_JOB_TYPE).toBe('export');
+    expect(EXPORT_JOB_TYPE).toBe(JobType.EXPORT);
   });
 });

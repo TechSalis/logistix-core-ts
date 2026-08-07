@@ -1,4 +1,4 @@
-import { ExportDataType } from '../enums/enums.js';
+import { ExportDataType, JobType } from '../enums/enums.js';
 
 // Wire contract for the requestExport mutation. The backend validates and the
 // workers query against these; never define a second copy.
@@ -18,4 +18,4 @@ export const MONTH_REQUIRED_TYPES: ReadonlySet<DataType> = new Set<DataType>([
 ]);
 
 // job_queue.type value for export jobs (shared by backend + workers).
-export const EXPORT_JOB_TYPE = 'export';
+export const EXPORT_JOB_TYPE = JobType.EXPORT;

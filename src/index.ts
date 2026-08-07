@@ -46,6 +46,7 @@ export {
   ExportDataType,
   ExportReason,
   JobStatus,
+  JobType,
   SecurityEventType,
   SecuritySeverity,
   ErrorCode,
