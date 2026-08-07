@@ -104,6 +104,19 @@ export enum SubscriptionStatus {
   CANCELLED = 'CANCELLED',
 }
 
+/**
+ * Derived subscription health surfaced to clients (wire value = member string).
+ * Backend computes it via `deriveSubscriptionHealth`; clients use the served
+ * value and fall back to their own derivation only when it is absent.
+ */
+export enum SubscriptionHealth {
+  HEALTHY = 'HEALTHY',
+  IN_TRIAL = 'IN_TRIAL',
+  PAST_DUE = 'PAST_DUE',
+  EXPIRING_SOON = 'EXPIRING_SOON',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum TransactionStatus {
   PENDING = 'PENDING',
   SUCCESS = 'SUCCESS',

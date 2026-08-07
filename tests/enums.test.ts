@@ -16,6 +16,7 @@ import {
   LogLevel,
   MessageStatus,
   MESSAGE_STATUS_RANK,
+  SubscriptionHealth,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -171,6 +172,16 @@ describe('Enums', () => {
       expect(MessageStatus.DELIVERED).toBe('DELIVERED');
       expect(MessageStatus.READ).toBe('READ');
       expect(MessageStatus.FAILED).toBe('FAILED');
+    });
+  });
+
+  describe('SubscriptionHealth', () => {
+    it('exposes wire values as UPPER_SNAKE members', () => {
+      expect(SubscriptionHealth.HEALTHY).toBe('HEALTHY');
+      expect(SubscriptionHealth.IN_TRIAL).toBe('IN_TRIAL');
+      expect(SubscriptionHealth.PAST_DUE).toBe('PAST_DUE');
+      expect(SubscriptionHealth.EXPIRING_SOON).toBe('EXPIRING_SOON');
+      expect(SubscriptionHealth.CANCELLED).toBe('CANCELLED');
     });
   });
 

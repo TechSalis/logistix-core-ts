@@ -30,6 +30,12 @@ export interface LimitsConfig {
   readonly maxSearchQueryLength: number;
 }
 
+/**
+ * Default max length for a single chat message body (characters).
+ * SSOT for AI message limits AND client chat-composer maxlength mirrors.
+ */
+export const DEFAULT_MESSAGE_LIMIT = 4096;
+
 const limitsConfigSchema = z.object({
   maxBatchSize: z.number(),
   dbBatchSize: z.number(),

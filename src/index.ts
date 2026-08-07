@@ -26,6 +26,7 @@ export {
   VehicleType,
   SubscriptionTier,
   SubscriptionStatus,
+  SubscriptionHealth,
   TransactionStatus,
   TransactionType,
   LedgerAdjustmentType,
@@ -88,8 +89,20 @@ export {
 } from './utils/timezone.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────
-export { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from './config/limits.config.js';
+export {
+  LIMITS_CONFIG,
+  TIER_LIMITS,
+  getTierLimits,
+  DEFAULT_MESSAGE_LIMIT,
+} from './config/limits.config.js';
 export type { TierLimits, LimitsConfig } from './config/limits.config.js';
+
+// ─── Delivery rules ───────────────────────────────────────────────────────────
+export { ALLOWED_STATUS_TRANSITIONS } from './config/delivery.config.js';
+
+// ─── Client config ────────────────────────────────────────────────────────────
+export { CLIENT_CONFIG } from './config/client.config.js';
+export type { ClientConfig, PollIntervalsConfig } from './config/client.config.js';
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 export { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES, EXPORT_JOB_TYPE } from './config/export.config.js';

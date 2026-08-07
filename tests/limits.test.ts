@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { LIMITS_CONFIG, TIER_LIMITS, getTierLimits } from '../src/config/limits.config.js';
+import {
+  LIMITS_CONFIG,
+  TIER_LIMITS,
+  getTierLimits,
+  DEFAULT_MESSAGE_LIMIT,
+} from '../src/config/limits.config.js';
 import { SubscriptionTier } from '../src/enums/enums.js';
+
+describe('DEFAULT_MESSAGE_LIMIT', () => {
+  it('caps a single chat message at 4096 characters', () => {
+    expect(DEFAULT_MESSAGE_LIMIT).toBe(4096);
+  });
+});
 
 describe('LIMITS_CONFIG', () => {
   it('has max batch size', () => {
