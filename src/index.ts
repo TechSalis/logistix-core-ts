@@ -186,8 +186,11 @@ export type {
   ChannelCredentials,
   CompanyChannelMetadata,
   DeliveryMetadata,
+  RiderMetadata,
+  CompanyMetadata,
   TransactionMetadata,
   ChatMessageMetadata,
+  LedgerMetadata,
 } from './types/metadata.js';
 
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────

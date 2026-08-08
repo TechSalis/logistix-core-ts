@@ -27,6 +27,7 @@
     "build": "npx -y tsup src/index.ts --format esm,cjs --dts --clean",
     "dev": "npx -y tsup src/index.ts --format esm,cjs --dts --watch",
     "check": "tsc --noEmit",
+    "test:typecheck": "tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "DATABASE_URL=postgresql://dummy:dummy@localhost/dummy drizzle-kit generate",
