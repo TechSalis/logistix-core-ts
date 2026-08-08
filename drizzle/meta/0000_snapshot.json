@@ -1,5 +1,5 @@
 {
-  "id": "14d84480-3cde-4e72-b3b7-efab16245266",
+  "id": "8cf5a269-5872-4f51-9f3c-c4d540f83edd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -197,7 +197,7 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "cac": {
           "name": "cac",
@@ -330,12 +330,12 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_active": {
-          "name": "is_active",
-          "type": "boolean",
+        "status": {
+          "name": "status",
+          "type": "CompanyChannelStatus",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         },
         "metadata": {
           "name": "metadata",
@@ -350,21 +350,20 @@
           "notNull": true,
           "default": false
         },
-        "removal_requested": {
-          "name": "removal_requested",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "removal_reason": {
-          "name": "removal_reason",
+        "rejection_reason": {
+          "name": "rejection_reason",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "removal_requested_at": {
-          "name": "removal_requested_at",
+        "rejected_at": {
+          "name": "rejected_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "removed_at": {
+          "name": "removed_at",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": false
@@ -378,15 +377,15 @@
         }
       },
       "indexes": {
-        "company_channels_is_active_idx": {
-          "name": "company_channels_is_active_idx",
+        "company_channels_status_idx": {
+          "name": "company_channels_status_idx",
           "columns": [
             {
-              "expression": "is_active",
+              "expression": "status",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "bool_ops"
+              "opclass": "enum_ops"
             }
           ],
           "isUnique": false,
@@ -394,8 +393,8 @@
           "method": "btree",
           "with": {}
         },
-        "company_channels_company_id_is_active_idx": {
-          "name": "company_channels_company_id_is_active_idx",
+        "company_channels_company_id_status_idx": {
+          "name": "company_channels_company_id_status_idx",
           "columns": [
             {
               "expression": "company_id",
@@ -405,11 +404,11 @@
               "opclass": "text_ops"
             },
             {
-              "expression": "is_active",
+              "expression": "status",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
-              "opclass": "bool_ops"
+              "opclass": "enum_ops"
             }
           ],
           "isUnique": false,
@@ -714,40 +713,7 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "clm_company_idx": {
-          "name": "clm_company_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"company_lifetime_metrics\".\"company_id\" IS NOT NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "clm_system_idx": {
-          "name": "clm_system_idx",
-          "columns": [
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"company_lifetime_metrics\".\"company_id\" IS NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "clm_company_id_fkey": {
           "name": "clm_company_id_fkey",
@@ -764,7 +730,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "clm_company_idx": {
+          "name": "clm_company_idx",
+          "nullsNotDistinct": true,
+          "columns": [
+            "company_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -910,6 +884,22 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "company_settings_subscription_status_idx": {
+          "name": "company_settings_subscription_status_idx",
+          "columns": [
+            {
+              "expression": "subscription_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1166,6 +1156,22 @@
           "columns": [
             {
               "expression": "escalated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "conversations_last_message_at_idx": {
+          "name": "conversations_last_message_at_idx",
+          "columns": [
+            {
+              "expression": "last_message_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -1495,6 +1501,29 @@
           "method": "btree",
           "with": {}
         },
+        "deliveries_rider_id_updated_at_idx": {
+          "name": "deliveries_rider_id_updated_at_idx",
+          "columns": [
+            {
+              "expression": "rider_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "updated_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "deliveries_status_idx": {
           "name": "deliveries_status_idx",
           "columns": [
@@ -1647,6 +1676,22 @@
             },
             {
               "expression": "scheduled_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deliveries_created_at_idx": {
+          "name": "deliveries_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last",
@@ -1883,6 +1928,29 @@
               "asc": true,
               "nulls": "last",
               "opclass": "text_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "dispatchers_company_id_created_at_idx": {
+          "name": "dispatchers_company_id_created_at_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
             }
           ],
           "isUnique": false,
@@ -2166,6 +2234,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "event_logs_created_at_idx": {
+          "name": "event_logs_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -2280,18 +2364,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dedupe_key": {
-          "name": "dedupe_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "payload": {
           "name": "payload",
           "type": "jsonb",
@@ -2348,6 +2420,18 @@
         "completed_at": {
           "name": "completed_at",
           "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dedupe_key": {
+          "name": "dedupe_key",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -2433,15 +2517,14 @@
           "name": "job_queue_dedupe_key_unique",
           "columns": [
             {
-              "expression": "dedupe_key",
-              "isExpression": false,
+              "expression": "\"dedupe_key\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             }
           ],
           "isUnique": true,
-          "where": "\"dedupe_key\" IS NOT NULL AND \"status\" IN ('PENDING','PROCESSING')",
+          "where": "\"job_queue\".\"dedupe_key\" IS NOT NULL AND \"job_queue\".\"status\" IN ('PENDING', 'PROCESSING')",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -2450,25 +2533,22 @@
           "name": "job_queue_export_count_idx",
           "columns": [
             {
-              "expression": "type",
-              "isExpression": false,
+              "expression": "\"type\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             },
             {
-              "expression": "company_id",
-              "isExpression": false,
+              "expression": "\"company_id\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
+              "isExpression": true,
+              "nulls": "last"
             },
             {
-              "expression": "created_at",
-              "isExpression": false,
+              "expression": "\"created_at\"",
               "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
+              "isExpression": true,
+              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -2789,6 +2869,22 @@
               "asc": true,
               "nulls": "last",
               "opclass": "bool_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "messages_created_at_idx": {
+          "name": "messages_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
             }
           ],
           "isUnique": false,
@@ -3190,6 +3286,22 @@
           "method": "btree",
           "with": {}
         },
+        "riders_approval_status_idx": {
+          "name": "riders_approval_status_idx",
+          "columns": [
+            {
+              "expression": "approval_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "riders_email_key": {
           "name": "riders_email_key",
           "columns": [
@@ -3480,6 +3592,17 @@
         "MY_CHANNEL"
       ]
     },
+    "public.CompanyChannelStatus": {
+      "name": "CompanyChannelStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "DEACTIVATED",
+        "REJECTED",
+        "REMOVED"
+      ]
+    },
     "public.Currency": {
       "name": "Currency",
       "schema": "public",
@@ -3547,6 +3670,8 @@
         "CHANNEL_SETUP",
         "CHANNEL_ACTIVATED",
         "CHANNEL_DEACTIVATED",
+        "CHANNEL_REJECTED",
+        "CHANNEL_REMOVED",
         "SUBSCRIPTION_STATUS_CHANGED",
         "DISPATCHER_DELETED",
         "AI_EXECUTION",
@@ -3590,6 +3715,8 @@
       "schema": "public",
       "values": [
         "SENT",
+        "DELIVERED",
+        "READ",
         "FAILED"
       ]
     },
@@ -3671,10 +3798,7 @@
       "name": "VehicleType",
       "schema": "public",
       "values": [
-        "BIKE",
-        "CAR",
-        "VAN",
-        "TRUCK"
+        "BIKE"
       ]
     }
   },

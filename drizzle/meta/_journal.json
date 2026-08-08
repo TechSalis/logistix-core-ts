@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1785938124493,
+      "when": 1786189843883,
       "tag": "0000_initial",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1784900000000,
-      "tag": "0001_kobo_conversion",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1785940197605,
-      "tag": "0002_null_system_lifetime_metrics",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1785964220000,
-      "tag": "0003_vehicle_type_bike_only",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1785973842000,
-      "tag": "0004_message_status",
       "breakpoints": true
     }
   ]

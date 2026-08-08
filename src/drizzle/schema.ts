@@ -157,6 +157,10 @@ export const companySettings = pgTable(
       'btree',
       table.companyCode.asc().nullsLast().op('text_ops'),
     ),
+    index('company_settings_subscription_status_idx').using(
+      'btree',
+      table.subscriptionStatus.asc().nullsLast().op('enum_ops'),
+    ),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -278,6 +282,10 @@ export const conversations = pgTable(
       'btree',
       table.escalatedAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('conversations_last_message_at_idx').using(
+      'btree',
+      table.lastMessageAt.asc().nullsLast().op('timestamp_ops'),
+    ),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -332,6 +340,10 @@ export const messages = pgTable(
       'btree',
       table.conversationId.asc().nullsLast().op('text_ops'),
       table.isDeleted.asc().nullsLast().op('bool_ops'),
+    ),
+    index('messages_created_at_idx').using(
+      'btree',
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
     foreignKey({
       columns: [table.conversationId],
@@ -389,6 +401,11 @@ export const dispatchers = pgTable(
     index('dispatchers_company_id_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
+    ),
+    index('dispatchers_company_id_created_at_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
     uniqueIndex('dispatchers_email_key').using(
       'btree',
@@ -500,6 +517,11 @@ export const deliveries = pgTable(
       table.riderId.asc().nullsLast().op('text_ops'),
       table.status.asc().nullsLast().op('enum_ops'),
     ),
+    index('deliveries_rider_id_updated_at_idx').using(
+      'btree',
+      table.riderId.asc().nullsLast().op('text_ops'),
+      table.updatedAt.asc().nullsLast().op('timestamp_ops'),
+    ),
     index('deliveries_status_idx').using('btree', table.status.asc().nullsLast().op('enum_ops')),
     uniqueIndex('deliveries_tracking_id_key').using(
       'btree',
@@ -529,6 +551,10 @@ export const deliveries = pgTable(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
       table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('deliveries_created_at_idx').using(
+      'btree',
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
     foreignKey({
       columns: [table.companyId],
@@ -589,6 +615,10 @@ export const riders = pgTable(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
       table.updatedAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('riders_approval_status_idx').using(
+      'btree',
+      table.approvalStatus.asc().nullsLast().op('enum_ops'),
     ),
     uniqueIndex('riders_email_key').using('btree', table.email.asc().nullsLast().op('text_ops')),
     index('riders_status_last_seen_idx').using(
@@ -832,6 +862,10 @@ export const eventLogs = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.entityType.asc().nullsLast().op('enum_ops'),
       table.eventType.asc().nullsLast().op('enum_ops'),
+      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+    index('event_logs_created_at_idx').using(
+      'btree',
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
   ],
