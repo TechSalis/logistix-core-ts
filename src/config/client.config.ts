@@ -16,11 +16,6 @@ export interface ClientConfig {
   };
 }
 
-export interface PollIntervalsConfig {
-  readonly normalMs: number;
-  readonly degradedMs: number;
-}
-
 const clientConfigSchema = z.object({
   pollIntervals: z.object({
     normalMs: z.number(),

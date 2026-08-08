@@ -167,10 +167,7 @@ export class FcmService {
     try {
       const accessToken = await this.getAccessToken();
       const method = action === 'subscribe' ? 'POST' : 'DELETE';
-      const url =
-        action === 'subscribe'
-          ? `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`
-          : `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`;
+      const url = `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`;
 
       const res = await fetchWithTimeout(url, {
         timeoutMs: LIMITS_CONFIG.externalApiTimeoutMs,

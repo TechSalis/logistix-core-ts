@@ -1,17 +1,25 @@
 import { REGIONAL_CONFIG } from '../config/regional.config.js';
 
 /**
+ * UTC offset (ms) of the given timezone at noon UTC on the given calendar day.
+ * Noon UTC anchors away from DST boundary edge cases at midnight.
+ */
+function offsetAtNoonUtc(year: number, monthIndex: number, day: number, timezone: string): number {
+  const candidate = new Date(Date.UTC(year, monthIndex, day, 12, 0, 0, 0));
+  const tzParts = candidate.toLocaleString('sv-SE', { timeZone: timezone }).split(' ');
+  const [tzHour, tzMin] = tzParts[1].split(':').map(Number);
+  return ((tzHour - 12) * 3600 + tzMin * 60) * 1000;
+}
+
+/**
  * Midnight (00:00:00.000) of the given calendar month in the timezone.
  * The returned Date is a UTC instant whose wall-clock time is midnight on
  * the 1st in the target timezone — its UTC date may be the prior day.
  */
 function monthStartInTimezone(year: number, monthIndex: number, timezone: string): Date {
-  const candidate = new Date(Date.UTC(year, monthIndex, 1, 12, 0, 0, 0));
-  const tzParts = candidate.toLocaleString('sv-SE', { timeZone: timezone }).split(' ');
-  const [tzHour, tzMin] = tzParts[1].split(':').map(Number);
-
-  const offsetMs = ((tzHour - 12) * 3600 + tzMin * 60) * 1000;
-  return new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0, 0) - offsetMs);
+  return new Date(
+    Date.UTC(year, monthIndex, 1, 0, 0, 0, 0) - offsetAtNoonUtc(year, monthIndex, 1, timezone),
+  );
 }
 
 /** Current calendar year + 0-based month index in the timezone. */
@@ -52,11 +60,7 @@ export function getStartOfDayInTimezone(timezone: string = REGIONAL_CONFIG.timeZ
   });
   const [year, month, day] = formatter.format(now).split('-').map(Number);
 
-  const candidate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
-  const tzParts = candidate.toLocaleString('sv-SE', { timeZone: timezone }).split(' ');
-  const [tzHour, tzMin] = tzParts[1].split(':').map(Number);
-
-  const offsetMs = ((tzHour - 12) * 3600 + tzMin * 60) * 1000;
+  const offsetMs = offsetAtNoonUtc(year, month - 1, day, timezone);
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - offsetMs);
 }
 
