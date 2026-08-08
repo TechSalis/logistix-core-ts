@@ -393,11 +393,13 @@ function mockTx(
   opts: {
     deliveryRows?: Array<Record<string, unknown>>;
     paidRows?: Array<{ deliveryId: string; total: string | number | null }>;
+    existingAllocations?: Array<Record<string, unknown>>;
     updatedRows?: Array<{ id: string }>;
   } = {},
 ) {
   const deliveryRows = opts.deliveryRows ?? [];
   const paidRows = opts.paidRows ?? [];
+  const existingAllocations = opts.existingAllocations ?? [];
   const updatedRows = opts.updatedRows ?? [];
 
   const sets: Array<{ table: unknown; value: unknown }> = [];
@@ -405,11 +407,15 @@ function mockTx(
   const wheres: Array<{ table: unknown; args: unknown[] }> = [];
 
   const tx = {
-    select: vi.fn(() => {
+    select: vi.fn((columns?: Record<string, unknown>) => {
       const chain = makeBuilderChain();
-      chain.from = vi.fn((table: unknown) =>
-        table === deliveries ? makeBuilderChain(deliveryRows) : makeBuilderChain(paidRows),
-      );
+      chain.from = vi.fn((table: unknown) => {
+        if (table === deliveries) return makeBuilderChain(deliveryRows);
+        if (columns && Object.keys(columns).length === 1 && 'deliveryId' in columns) {
+          return makeBuilderChain(existingAllocations);
+        }
+        return makeBuilderChain(paidRows);
+      });
       return chain;
     }),
     update: vi.fn((table: unknown) => {
@@ -642,5 +648,56 @@ describe('processPaymentAllocation', () => {
     expect(tx.select).not.toHaveBeenCalled();
     expect(tx.update).not.toHaveBeenCalled();
     expect(tx.insert).not.toHaveBeenCalled();
+  });
+
+  it('is idempotent: re-processing an already-allocated transaction is a no-op', async () => {
+    const transaction: PaymentAllocationTransaction = {
+      id: 'T1',
+      amount: 1000,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+    };
+
+    const first = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 1000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+      ],
+      paidRows: [],
+      updatedRows: [{ id: 'D1' }],
+    });
+    const firstResult = await processPaymentAllocation(first.tx as never, transaction);
+    expect(firstResult.fullyPaidIds).toEqual(['D1']);
+    expect(first.insertValues.filter((v) => v.table === deliveryAllocations)).toHaveLength(1);
+    expect(first.sets.filter((s) => s.table === companySettings)).toHaveLength(1);
+
+    const second = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 1000,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+      ],
+      existingAllocations: [{ deliveryId: 'D1', amount: 1000 }],
+    });
+    const secondResult = await processPaymentAllocation(second.tx as never, transaction);
+
+    expect(secondResult).toEqual({
+      fullyPaidIds: [],
+      updatedDeliveryIds: [],
+      creditedCompanyIds: [],
+    });
+    expect(second.insertValues.filter((v) => v.table === deliveryAllocations)).toHaveLength(0);
+    expect(second.sets.filter((s) => s.table === companySettings)).toHaveLength(0);
+    expect(second.tx.insert).not.toHaveBeenCalled();
+    expect(second.tx.update).not.toHaveBeenCalled();
   });
 });

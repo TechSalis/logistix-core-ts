@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, sql, sum } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, sql, sum } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { randomUUID } from 'node:crypto';
 import { computeAllocationTargets } from '../config/billing.config.js';
@@ -143,6 +143,24 @@ export async function processPaymentAllocation(
   const deliveryIds = existingAllocations.map((a) => a.deliveryId);
 
   if (deliveryIds.length > 0) {
+    // Idempotency guard (CT-C-01): init-time allocation rows carry amount 0,
+    // so processed rows are detectable by amount > 0. Re-processing a
+    // completed transaction must be a safe no-op — no re-allocation, no
+    // double ledger credits.
+    const processed = await tx
+      .select({ deliveryId: deliveryAllocations.deliveryId })
+      .from(deliveryAllocations)
+      .where(
+        and(
+          eq(deliveryAllocations.transactionId, transaction.id),
+          gt(deliveryAllocations.amount, 0),
+        ),
+      )
+      .limit(1);
+    if (processed.length > 0) {
+      return { fullyPaidIds: [], updatedDeliveryIds: [], creditedCompanyIds: [] };
+    }
+
     let remainingAmount = transaction.amount;
 
     for (let i = 0; i < deliveryIds.length; i += LIMITS_CONFIG.dbBatchSize) {
