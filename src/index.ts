@@ -75,11 +75,10 @@ export {
   SYSTEM_ACTOR_ID,
   SHARED_SYSTEM_CONFIG,
 } from './config/system.config.js';
-export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
+export type { SystemConfig, BankDetails } from './config/system.config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
 export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional.config.js';
-export type { RegionalConfig } from './config/regional.config.js';
 
 // ─── Timezone ─────────────────────────────────────────────────────────────────
 export {
@@ -95,14 +94,13 @@ export {
   getTierLimits,
   DEFAULT_MESSAGE_LIMIT,
 } from './config/limits.config.js';
-export type { TierLimits, LimitsConfig } from './config/limits.config.js';
+export type { TierLimits } from './config/limits.config.js';
 
 // ─── Delivery rules ───────────────────────────────────────────────────────────
 export { ALLOWED_STATUS_TRANSITIONS } from './config/delivery.config.js';
 
 // ─── Client config ────────────────────────────────────────────────────────────
 export { CLIENT_CONFIG } from './config/client.config.js';
-export type { ClientConfig, PollIntervalsConfig } from './config/client.config.js';
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 export { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES, EXPORT_JOB_TYPE } from './config/export.config.js';
@@ -110,7 +108,6 @@ export type { DataType } from './config/export.config.js';
 
 // ─── Retention ────────────────────────────────────────────────────────────────
 export { RETENTION_CONFIG } from './config/retention.config.js';
-export type { RetentionConfig } from './config/retention.config.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
@@ -125,10 +122,8 @@ export {
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
-  computeAllocationTargets,
   computeAccessLevel,
 } from './config/billing.config.js';
-export type { AllocationDeliveryInput, AllocationTarget } from './config/billing.config.js';
 
 // ─── Shared payment allocation ───────────────────────────────────────────────
 export {
@@ -139,34 +134,15 @@ export {
 export type { PaymentAllocationTransaction, PaymentAllocationResult } from './services/payments.js';
 
 // ─── Squad client ────────────────────────────────────────────────────────────
-export {
-  SquadClient,
-  SquadRequestError,
-  type SquadClientOptions,
-  type ChargeCardParams,
-  type ChargeCardResult,
-} from './services/squad-client.js';
+export { SquadClient, SquadRequestError } from './services/squad-client.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
-export {
-  EmailService,
-  type EmailAttachment,
-  type SendEmailOptions,
-} from './services/email.service.js';
-export {
-  queueService,
-  PermanentJobError,
-  type QueueHandler,
-  type DrainOptions,
-  type DrainResult,
-  type EnqueueOptions,
-  type EnqueueWithDedupeOptions,
-} from './services/queue.service.js';
-export { QUEUE_SERVICE_CONFIG, FCM_SERVICE_CONFIG } from './config/service.config.js';
+export { EmailService } from './services/email.service.js';
+export { queueService, PermanentJobError, type QueueHandler } from './services/queue.service.js';
+export { QUEUE_SERVICE_CONFIG } from './config/service.config.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './config/security.config.js';
-export type { SecurityConfig } from './config/security.config.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './utils/fetch-with-timeout.js';
@@ -175,15 +151,16 @@ export { mergeChannelCounts } from './utils/metrics.js';
 export { extractErrorMessage, extractErrorContext } from './utils/error-utils.js';
 
 // ─── Retry ────────────────────────────────────────────────────────────────────
-export { withRetry, sleep, isTransientHttpError, type WithRetryOptions } from './utils/retry.js';
+export {
+  withRetry,
+  sleep,
+  RETRYABLE_NETWORK_ERROR_CODES,
+  RETRYABLE_SQLSTATE_CODES,
+  type WithRetryOptions,
+} from './utils/retry.js';
 
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
-export {
-  FcmService,
-  type FcmCredentials,
-  type FcmMessage,
-  type FcmResponse,
-} from './services/fcm-sender.js';
+export { FcmService, type FcmCredentials } from './services/fcm-sender.js';
 
 // ─── Tracking ─────────────────────────────────────────────────────────────────
 export {
@@ -191,6 +168,7 @@ export {
   TRACKING_ID_SUFFIX_LENGTH,
   TRACKING_ID_LENGTH,
   TRACKING_ID_CHARS,
+  TRACKING_ID_ALPHABET,
 } from './utils/tracking.js';
 
 // ─── Domain Entity Types ─────────────────────────────────────────────────────
@@ -208,11 +186,8 @@ export type {
   ChannelCredentials,
   CompanyChannelMetadata,
   DeliveryMetadata,
-  RiderMetadata,
-  CompanyMetadata,
   TransactionMetadata,
   ChatMessageMetadata,
-  LedgerMetadata,
 } from './types/metadata.js';
 
 // ─── Drizzle ORM Schema ───────────────────────────────────────────────────────

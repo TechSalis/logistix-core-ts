@@ -83,16 +83,16 @@ npm test         # run unit tests
 
 | Export                     | Values / Notes                                              |
 |----------------------------|-------------------------------------------------------------|
-| `UserRole`                 | ADMIN, COMPANY, DISPATCHER, RIDER, CUSTOMER                 |
-| `DeliveryStatus`           | PENDING, AWAITING_PAYMENT, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED |
+| `UserRole`                 | ADMIN, DISPATCHER, RIDER                              |
+| `DeliveryStatus`           | PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED |
 | `RiderStatus`              | ONLINE, OFFLINE, BUSY                                       |
-| `PaymentMethod`            | PREPAID, POD                                                |
+| `PaymentMethod`            | PREPAID, PAY_ON_DELIVERY                                   |
 | `ApprovalStatus`           | PENDING, APPROVED, REJECTED                                 |
 | `EntityType`               | Delivery, Rider, Company, etc.                              |
-| `ChannelPlatform`          | WHATSAPP, TELEGRAM, WEB, etc.                               |
+| `ChannelPlatform`          | WHATSAPP, INSTAGRAM, FACEBOOK, TIKTOK                      |
 | `NodeEnv`                  | DEVELOPMENT, STAGING, PRODUCTION                            |
-| `VehicleType`              | BIKE, VAN, TRUCK, etc.                                      |
-| `SubscriptionTier`         | FREE, STARTER, GROWTH, ENTERPRISE                           |
+| `VehicleType`              | BIKE                                                       |
+| `SubscriptionTier`         | STARTER, PROFESSIONAL                                      |
 | `SubscriptionStatus`       | ACTIVE, PAST_DUE, CANCELLED, etc.                           |
 | `TransactionStatus`        | PENDING, COMPLETED, FAILED, etc.                            |
 | `TransactionType`          | CREDIT, DEBIT, etc.                                         |
@@ -102,8 +102,6 @@ npm test         # run unit tests
 | `PaymentProvider`          | PAYSTACK, SQUAD, etc.                                       |
 | `EventType`                | All system event types                                      |
 | `SubscriptionEventType`    | Subscription lifecycle events                               |
-| `NotificationEventType`    | Notification trigger types                                  |
-| `NotificationPriority`     | LOW, NORMAL, HIGH, URGENT                                   |
 | `UserAuditAction`          | LOGIN, LOGOUT, PASSWORD_CHANGE, etc.                        |
 | `ChatUpdateType`           | MESSAGE, TYPING, READ, etc.                                 |
 | `MessageStatus`            | SENT, DELIVERED, READ, FAILED                               |
@@ -114,13 +112,11 @@ npm test         # run unit tests
 | `SecuritySeverity`         | LOW, MEDIUM, HIGH, CRITICAL                                 |
 | `ErrorCode`                | Standardized error codes                                    |
 | `SystemStatus`             | HEALTHY, DEGRADED, DOWN                                     |
-| `ComponentStatus`          | UP, DEGRADED, DOWN                                          |
 | `LlmRole`                  | SYSTEM, USER, ASSISTANT                                     |
 | `ProviderRole`             | PRIMARY, FALLBACK, etc.                                     |
 | `ProviderCapability`       | CHAT, VISION, EMBEDDING, etc.                               |
 | `LogLevel`                 | DEBUG, INFO, WARN, ERROR, SILENT                          |
 | `ApiTag`                   | API route tags                                              |
-| `UpdateReason`             | EDIT, SCHEDULE, CANCEL, etc.                                |
 | `SseEventType`             | MESSAGE, STATUS_CHANGE, TRACKING, etc.                      |
 | `JwtTokenType`             | ACCESS, REFRESH, SSE, OTP                                   |
 | `ContactCategory`          | GENERAL, SUPPORT, BILLING, etc.                             |
@@ -131,7 +127,6 @@ npm test         # run unit tests
 
 | Export               | Type       | Description                                        |
 |----------------------|------------|----------------------------------------------------|
-| `isDeliveryTerminal()` | `function` | Returns `true` for DELIVERED / CANCELLED statuses |
 | `safeEnumValue()`    | `function`  | Safely parses a string into an enum value          |
 
 ### Config
@@ -146,13 +141,13 @@ npm test         # run unit tests
 
 | Export             | Type                | Description                              |
 |--------------------|---------------------|------------------------------------------|
-| `REGIONAL_CONFIG`  | `RegionalConfig`    | Timezone, states, country code — SSOT    |
+| `REGIONAL_CONFIG`  | `object`             | Timezone, states, country code — SSOT    |
 
 ### Limits
 
 | Export           | Type                | Description                              |
 |------------------|---------------------|------------------------------------------|
-| `LIMITS_CONFIG`  | `LimitsConfig`      | Centralized limits (pagination, search, etc.) |
+| `LIMITS_CONFIG`  | `object`           | Centralized limits (pagination, search, etc.) |
 | `TIER_LIMITS`    | `Record<SubscriptionTier, TierLimits>` | Per-tier limits  |
 | `getTierLimits()`| `function`          | Returns limits for a given tier          |
 
@@ -171,26 +166,12 @@ npm test         # run unit tests
 | `isBillableTier()`           | `function` | Checks if a tier requires payment            |
 | `shouldBillNow()`            | `function` | Checks if billing should trigger now         |
 | `shouldRetryPayment()`       | `function` | Checks if a failed payment should be retried |
-| `getNextRetryDate()`         | `function` | Returns the next retry date                  |
-| `computeAllocationTargets()` | `function` | Computes payment allocation targets          |
 
 ### Security
 
 | Export              | Type                | Description                              |
 |---------------------|---------------------|------------------------------------------|
-| `SECURITY_CONFIG`   | `SecurityConfig`    | Rate limits, thresholds, ban policy      |
-
-### Pricing
-
-| Export                     | Type                | Description                          |
-|----------------------------|---------------------|--------------------------------------|
-| `DEFAULT_PRICING_SCHEMES`  | `PricingSchemeDefaults` | Default pricing per vehicle type  |
-
-### AI
-
-| Export        | Type        | Description                          |
-|---------------|-------------|--------------------------------------|
-| `AI_CONFIG`   | `AIConfig`  | AI provider config, limits, timeouts |
+| `SECURITY_CONFIG`   | `object`            | Rate limits, thresholds, ban policy      |
 
 ### Utilities
 
@@ -206,10 +187,8 @@ npm test         # run unit tests
 | `queueService`                | `object`    | `job_queue` drain/enqueue singleton          |
 | `queueService.enqueue()`      | `function`  | Insert a job (retries use `defaultMaxRetries` unless `maxRetries` passed) |
 | `queueService.enqueueWithDedupe()` | `function` | Insert a job unless one with the same `dedupeKey` is pending |
-| `queueService.dequeue()`      | `function` | Atomically claim a batch (`UPDATE ... SKIP LOCKED`) |
 | `queueService.drain()`        | `function` | Poll loop; `maxJobs` **required**, `timeBudgetMs` optional (cron wall-clock) |
 | `queueService.countRecent()`  | `function` | Count jobs for a type/company since a cutoff  |
-| `queueService.retryStalled()` | `function` | Move PROCESSING jobs older than `retryStalledAfterMs` back to QUEUED |
 | `queueService.pruneTerminal()`| `function` | Delete terminal jobs older than `pruneTerminalAfterMs` |
 | `QUEUE_SERVICE_CONFIG`        | `object`    | SSOT: `batchSize`, `defaultMaxRetries`, prune/retry windows, retry backoff |
 
@@ -235,6 +214,7 @@ npm test         # run unit tests
 | `TRACKING_ID_SUFFIX_LENGTH`  | `number` | Length of the random suffix              |
 | `TRACKING_ID_LENGTH`         | `number` | Total tracking ID length                 |
 | `TRACKING_ID_CHARS`          | `string` | Character set for random suffix          |
+| `TRACKING_ID_ALPHABET`       | `string` | Expanded charset for generation (lockstep with `TRACKING_ID_CHARS`) |
 
 ### Email Service
 
@@ -254,8 +234,8 @@ npm test         # run unit tests
 
 All Drizzle table definitions and relations are re-exported via `export * from './drizzle/index.js'`. This includes:
 
-- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `jobQueue`, `companyDailyMetrics`
-- **pgEnums:** `deliveryStatus`, `jobStatus`, `companyChannelStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`, `adminRole`, `dispatcherRole`
+- **Tables:** `companies`, `companySettings`, `companyChannels`, `conversations`, `messages`, `admins`, `dispatchers`, `blockedIps`, `deliveries`, `riders`, `paymentTransactions`, `subscriptionTransactions`, `deliveryAllocations`, `ledgerTransactions`, `eventLogs`, `jobQueue`, `eventOutbox`, `companyDailyMetrics`, `companyLifetimeMetrics`
+- **pgEnums:** `deliveryStatus`, `jobStatus`, `companyChannelStatus`, `ledgerAdjustmentType`, `channelPlatform`, `messageStatus`, `paymentMethod`, `approvalStatus`, `riderStatus`, `senderType`, `subscriptionTier`, `transactionStatus`, `transactionType`, `vehicleType`, `paymentProvider`, `subscriptionStatus`, `channelType`, `escalatedTo`, `eventType`, `entityType`, `currencyEnum`, `adminRoleEnum`, `dispatcherRoleEnum`
 - **Relations:** All table relations for query building
 
 > **Note:** Drizzle exports are primarily for backend/workers that use Drizzle ORM directly. Web apps should use the typed API clients instead.

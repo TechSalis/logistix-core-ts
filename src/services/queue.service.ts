@@ -237,11 +237,10 @@ class QueueService {
     }
   }
 
-  /** Fail a job immediately, ignoring maxRetries/backoff (used for PermanentJobError). */ async failPermanent(
-    db: DrizzleDB,
-    jobId: string,
-    error: string,
-  ): Promise<void> {
+  /**
+   * Fail a job immediately, ignoring maxRetries/backoff (used for PermanentJobError).
+   */
+  async failPermanent(db: DrizzleDB, jobId: string, error: string): Promise<void> {
     await db
       .update(jobQueue)
       .set({

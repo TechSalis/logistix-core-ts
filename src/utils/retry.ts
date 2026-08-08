@@ -2,6 +2,32 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Canonical node-level transient network error codes, shared across
+ * logistix-backend (postgres.js wrapper) and logistix-workers (pg/Hyperdrive
+ * wrapper). These are OS/Node codes surfaced on the error (or its `cause`)
+ * when a connection cannot be established or is dropped mid-query.
+ */
+export const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+  'ECONNRESET',
+  'ETIMEDOUT',
+  'EPIPE',
+  'ECONNREFUSED',
+  'ECONNABORTED',
+  'EAI_AGAIN',
+]);
+
+/**
+ * Canonical PostgreSQL SQLSTATE codes for connection-class failures.
+ * `08xxx` is the connection_exception class; 57P03 = cannot_connect_now;
+ * 53300 = too_many_connections. Consumed by the workers pg wrapper, whose
+ * driver reports protocol failures as SQLSTATE on `error.code`. The backend
+ * postgres.js wrapper classifies node-level network codes instead
+ * (`RETRYABLE_NETWORK_ERROR_CODES`) — the two driver layers legitimately
+ * differ in the shape of the errors they surface.
+ */
+export const RETRYABLE_SQLSTATE_CODES = new Set(['08000', '08003', '08006', '57P03', '53300']);
+
 export interface WithRetryOptions {
   maxRetries?: number;
   baseMs?: number;

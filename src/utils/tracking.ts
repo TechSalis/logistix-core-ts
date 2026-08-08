@@ -21,3 +21,10 @@ export const TRACKING_ID_LENGTH = TRACKING_ID_PREFIX.length + TRACKING_ID_SUFFIX
  * @example `/[2-9A-HJ-NP-Z]{6}/`
  */
 export const TRACKING_ID_CHARS = '2-9A-HJ-NP-Z';
+
+/**
+ * Expanded character set matching `TRACKING_ID_CHARS`, for random
+ * generation (crypto.randomInt index selection). Kept in lockstep with
+ * `TRACKING_ID_CHARS` by the drift-guard test.
+ */
+export const TRACKING_ID_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
