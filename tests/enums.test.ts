@@ -86,6 +86,40 @@ describe('Enums', () => {
       expect(EventType.DELIVERY_STATUS_CHANGED).toBe('DELIVERY_STATUS_CHANGED');
       expect(EventType.RIDER_ACCEPTED).toBe('RIDER_ACCEPTED');
     });
+
+    it('locks the exact member set (additions must be explicit here)', () => {
+      expect(Object.keys(EventType)).toEqual([
+        'DELIVERY_ASSIGNED',
+        'DELIVERY_UPDATED',
+        'DELIVERY_CREATED',
+        'DELIVERY_STATUS_CHANGED',
+        'DELIVERY_DELETED',
+        'RIDER_LOCATION_UPDATED',
+        'RIDER_ACCEPTED',
+        'RIDER_DELETED',
+        'RIDER_DOCUMENTS_VERIFIED',
+        'RIDER_DOCUMENTS_REJECTED',
+        'CHANNEL_SETUP',
+        'CHANNEL_ACTIVATED',
+        'CHANNEL_DEACTIVATED',
+        'CHANNEL_REJECTED',
+        'CHANNEL_REMOVED',
+        'SUBSCRIPTION_STATUS_CHANGED',
+        'DISPATCHER_DELETED',
+        'AI_EXECUTION',
+        'SECURITY_INCIDENT',
+        'COMPANY_ACTIVATED',
+        'COMPANY_DEACTIVATED',
+        'COMPANY_TIER_CHANGED',
+        'COMPANY_VERIFIED',
+        'COMPANY_VERIFICATION_REJECTED',
+        'USER_PURGED',
+        'CANCELLED_PAYMENT_TIMEOUT',
+        'DOWNGRADE',
+        'MESSAGE_DELETED',
+        'LEDGER_ADJUSTED',
+      ]);
+    });
   });
 
   describe('ErrorCode', () => {
