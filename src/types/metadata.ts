@@ -67,8 +67,6 @@ export interface DeliveryMetadata {
   cancelledAt?: string;
   /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
   proofPromotionFailed?: boolean;
-  /** Write-only: set by the expiry job when a delivery expires with an assigned rider (no reader today). */
-  previousRiderId?: string;
 }
 
 export interface RiderMetadata {

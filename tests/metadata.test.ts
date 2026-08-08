@@ -71,7 +71,6 @@ const METADATA_KEYS = {
     'cancelReason',
     'cancelledAt',
     'proofPromotionFailed',
-    'previousRiderId',
   ],
   RiderMetadata: [
     'idType',
@@ -211,7 +210,6 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
     cancelReason: 'Customer changed mind',
     cancelledAt: '2026-01-01T00:00:00.000Z',
     proofPromotionFailed: true,
-    previousRiderId: 'rider-1',
   },
   RiderMetadata: {
     idType: 'NIN',
