@@ -445,6 +445,18 @@ function mockTx(
   return { tx, sets, insertValues, wheres };
 }
 
+function sqlNumberValues(value: unknown): number[] {
+  if (typeof value !== 'object' || value === null) return [];
+  const chunks = ((value as { queryChunks?: unknown[] }).queryChunks ?? []) as unknown[];
+  const direct = chunks.filter((c): c is number => typeof c === 'number');
+  if (direct.length > 0) return direct;
+  for (const v of Object.values(value as Record<string, unknown>)) {
+    const nested = sqlNumberValues(v);
+    if (nested.length > 0) return nested;
+  }
+  return [];
+}
+
 describe('getTotalPaidForDeliveries', () => {
   it('sums only SUCCESS allocations per delivery', async () => {
     const { tx } = mockTx({
@@ -598,7 +610,7 @@ describe('processPaymentAllocation', () => {
     expect((chFee!.values as { amount: number }).amount).toBe(-200);
   });
 
-  it('spreads leftover across all deliveries via proportional fallback', async () => {
+  it('spreads leftover across unpriced deliveries via equal-share fallback', async () => {
     const { tx, insertValues } = mockTx({
       deliveryRows: [
         {
@@ -699,5 +711,37 @@ describe('processPaymentAllocation', () => {
     expect(second.sets.filter((s) => s.table === companySettings)).toHaveLength(0);
     expect(second.tx.insert).not.toHaveBeenCalled();
     expect(second.tx.update).not.toHaveBeenCalled();
+  });
+
+  it('keeps leftover intact when all deliveries are already fully priced and credits the payer ledger', async () => {
+    const { tx, insertValues, sets } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 500,
+          companyId: 'C1',
+          createdAt: new Date('2026-01-01'),
+          metadata: null,
+        },
+      ],
+      paidRows: [{ deliveryId: 'D1', totalAmount: '500' }],
+    });
+
+    const result = await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 700,
+      companyId: 'C1',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+    });
+
+    expect(result).toEqual({
+      fullyPaidIds: [],
+      updatedDeliveryIds: [],
+      creditedCompanyIds: ['C1'],
+    });
+    expect(insertValues.filter((v) => v.table === deliveryAllocations)).toHaveLength(0);
+    const payerUpdate = sets.filter((s) => s.table === companySettings);
+    expect(payerUpdate).toHaveLength(1);
+    expect(sqlNumberValues(payerUpdate[0].value)).toContain(700);
   });
 });

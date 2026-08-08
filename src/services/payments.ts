@@ -207,22 +207,23 @@ export async function processPaymentAllocation(
 
       let allocations = targets;
       if (allocations.length === 0 && remainingAmount > 0) {
-        const totalPrice = deliveryRows.reduce((s, d) => s + (d.price || 0), 0);
-        allocations = deliveryRows.map((d) => {
-          const share =
-            totalPrice > 0
-              ? Math.round(((d.price || 0) / totalPrice) * remainingAmount)
-              : Math.floor(remainingAmount / deliveryRows.length);
-          return { deliveryId: d.id, amountToApply: share };
-        });
-        const allocated = allocations.reduce((s, a) => s + a.amountToApply, 0);
-        const drift = allocated - remainingAmount;
-        if (drift > 0 && allocations.length > 0) {
-          allocations[allocations.length - 1].amountToApply -= drift;
-        } else if (drift < 0 && allocations.length > 0) {
-          allocations[allocations.length - 1].amountToApply += -drift;
+        // CT-C-02: the leftover fallback applies ONLY to unpriced rows
+        // (price 0/null). When every delivery is already priced — even fully
+        // paid — the leftover must stay intact so it flows to the payer's
+        // ledger balance below instead of being misallocated onto paid rows.
+        const unpriced = deliveryRows.filter((d) => !d.price);
+        if (unpriced.length > 0) {
+          const share = Math.floor(remainingAmount / unpriced.length);
+          allocations = unpriced.map((d) => ({ deliveryId: d.id, amountToApply: share }));
+          const allocated = allocations.reduce((s, a) => s + a.amountToApply, 0);
+          const drift = allocated - remainingAmount;
+          if (drift > 0 && allocations.length > 0) {
+            allocations[allocations.length - 1].amountToApply -= drift;
+          } else if (drift < 0 && allocations.length > 0) {
+            allocations[allocations.length - 1].amountToApply += -drift;
+          }
+          remainingAmount = 0;
         }
-        remainingAmount = 0;
       }
 
       if (allocations.length > 0) {
