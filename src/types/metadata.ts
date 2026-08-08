@@ -38,6 +38,8 @@ export interface CompanyChannelMetadata {
   aiDisabled?: boolean;
   rejectionReason?: string;
   rejectedAt?: string;
+  /** Set by the past-due cron when a company channel is deactivated for unpaid subscription. */
+  deactivatedReason?: string;
 }
 
 export interface DeliveryMetadata {
@@ -60,6 +62,13 @@ export interface DeliveryMetadata {
   paymentLinkGenerated?: boolean;
   paymentLinkGeneratedAt?: string;
   paymentSessionId?: string;
+  /** Set by the cancel/modify handler when a delivery is cancelled. */
+  cancelReason?: string;
+  cancelledAt?: string;
+  /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
+  proofPromotionFailed?: boolean;
+  /** Write-only: set by the expiry job when a delivery expires with an assigned rider (no reader today). */
+  previousRiderId?: string;
 }
 
 export interface RiderMetadata {
@@ -87,6 +96,17 @@ export interface CompanyMetadata {
   address?: string;
   placeId?: string;
   verificationNote?: string;
+  /** Written/read by the CAC verification cron. */
+  cacVerification?: {
+    status: 'FOUND' | 'INACTIVE' | 'NOT_FOUND' | 'ERROR';
+    registeredName?: string | null;
+    entityType?: string | null;
+    cacStatus?: string | null;
+    registrationDate?: string | null;
+    checkedAt: string;
+    nextCheckAt: string | null;
+    attempts: number;
+  };
 }
 
 export interface TransactionMetadata {
@@ -111,6 +131,22 @@ export interface TransactionMetadata {
   failedAt?: string;
   receiptSessionId?: string;
   isPendingReceiptClaim?: boolean;
+  /** Raw provider webhook payload captured when the payment was confirmed/created via webhook. */
+  webhookPayload?: Record<string, unknown>;
+  /** ISO timestamp of webhook/provider confirmation. */
+  confirmedAt?: string;
+  /** Set when a stale PENDING transaction is expired in favour of a replacement. */
+  expiredAt?: string;
+  expiredReason?: string;
+  /** Set on a replacement transaction created after an amount-mismatch replacement. */
+  isPartialPaymentContinuation?: boolean;
+  /** Reference of the transaction this one continues/replaces. */
+  originalReference?: string;
+  /** Written by the billing event handler when a PAY_ON_DELIVERY ledger credit is issued. */
+  deliveryId?: string;
+  eventSource?: string;
+  /** Write-only: set when a settlement is rolled back (no reader today). */
+  rolledBackAt?: string;
 }
 
 export interface ChatMessageMetadata {
@@ -127,6 +163,11 @@ export interface ChatMessageMetadata {
   mediaUrl?: string;
   phoneNumberId?: string;
   displayPhoneNumberId?: string;
+  /** AI tool actions executed for this message (read by turn-based-history). */
+  executedActions?: Array<string | { type: string; success?: boolean; message?: string }>;
+  /** Set when a message body is edited. */
+  editedAt?: string;
+  editCount?: number;
 }
 
 export interface LedgerMetadata {
