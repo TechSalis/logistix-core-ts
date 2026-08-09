@@ -473,6 +473,20 @@ export const LEAD_CATEGORIES: ReadonlySet<ContactCategory> = new Set([
 ]);
 
 /**
+ * CAC verification verdicts written to `companies.metadata.cacVerification` by
+ * the CAC verification cron. Wire values = the strings stored in the metadata
+ * JSON; single source for the workers' writer and the web admin's reader.
+ */
+export const CAC_EVIDENCE_STATUS = {
+  FOUND: 'FOUND',
+  INACTIVE: 'INACTIVE',
+  NOT_FOUND: 'NOT_FOUND',
+  ERROR: 'ERROR',
+} as const;
+
+export type CACEvidenceStatus = (typeof CAC_EVIDENCE_STATUS)[keyof typeof CAC_EVIDENCE_STATUS];
+
+/**
  * Safely look up an enum value by its string representation.
  * Returns `undefined` instead of crashing on unknown values.
  *

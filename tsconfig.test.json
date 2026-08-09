@@ -4,5 +4,5 @@
     "rootDir": ".",
     "noEmit": true
   },
-  "include": ["src/**/*", "tests/metadata.test.ts"]
+  "include": ["src/**/*", "tests/metadata.test.ts", "tests/cac-evidence.test.ts"]
 }

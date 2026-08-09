@@ -69,6 +69,8 @@ export {
   ContactCategory,
   safeEnumValue,
   LEAD_CATEGORIES,
+  CAC_EVIDENCE_STATUS,
+  type CACEvidenceStatus,
 } from './enums/enums.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -211,6 +213,7 @@ export type {
   DeliveryMetadata,
   RiderMetadata,
   CompanyMetadata,
+  CacVerificationEvidence,
   TransactionMetadata,
   ChatMessageMetadata,
   LedgerMetadata,

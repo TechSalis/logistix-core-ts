@@ -3,6 +3,7 @@ import type {
   PaymentStatus,
   EscalatedTo,
   EscalationStatus,
+  CACEvidenceStatus,
 } from '../enums/enums.js';
 
 export interface ConversationMetadata {
@@ -87,6 +88,21 @@ export interface RiderMetadata {
   verificationNote?: string;
 }
 
+/**
+ * CAC verification evidence block stored in `companies.metadata.cacVerification`.
+ * SSOT: the workers' writer and the web admin's reader both derive from this.
+ */
+export interface CacVerificationEvidence {
+  status: CACEvidenceStatus;
+  registeredName?: string | null;
+  entityType?: string | null;
+  cacStatus?: string | null;
+  registrationDate?: string | null;
+  checkedAt: string;
+  nextCheckAt: string | null;
+  attempts: number;
+}
+
 export interface CompanyMetadata {
   logoUrl?: string;
   cac?: string;
@@ -95,16 +111,7 @@ export interface CompanyMetadata {
   placeId?: string;
   verificationNote?: string;
   /** Written/read by the CAC verification cron. */
-  cacVerification?: {
-    status: 'FOUND' | 'INACTIVE' | 'NOT_FOUND' | 'ERROR';
-    registeredName?: string | null;
-    entityType?: string | null;
-    cacStatus?: string | null;
-    registrationDate?: string | null;
-    checkedAt: string;
-    nextCheckAt: string | null;
-    attempts: number;
-  };
+  cacVerification?: CacVerificationEvidence;
 }
 
 export interface TransactionMetadata {
