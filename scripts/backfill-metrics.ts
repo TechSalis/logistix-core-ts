@@ -7,10 +7,12 @@
  * the SUM over ALL legacy rows (company-owned + system-owned) — the legacy
  * "company_id NULL = system-owned pool" scope is intentionally NOT carried over.
  *
- * Run AFTER migration 0002 (which creates `metrics`) and BEFORE migration 0003
- * (which drops the legacy tables). Idempotent: uses ON CONFLICT DO NOTHING on
- * the (company_id, domain, granularity, bucket_start) unique constraint, so it
- * can be re-run safely after a partial/interrupted backfill.
+ * Run AFTER migration 0002 (which creates `metrics`). The legacy tables are NOT
+ * dropped by any migration — migration 0003 only adds EventType enum members —
+ * so this script can be re-run any time after 0002. Idempotent: uses
+ * ON CONFLICT DO NOTHING on the (company_id, domain, granularity, bucket_start)
+ * unique constraint, so it can be re-run safely after a partial/interrupted
+ * backfill.
  *
  *   npm run db:backfill-metrics
  */
