@@ -954,6 +954,11 @@ export const eventOutbox = pgTable(
   ],
 );
 
+/**
+ * Legacy daily metrics table. NOT dropped — retained for the backfill/migration
+ * path (see scripts/backfill-metrics.ts). New writes go to the unified `metrics`
+ * table below; this table exists so the historical data can be migrated 1:1.
+ */
 export const companyDailyMetrics = pgTable(
   'company_daily_metrics',
   {
@@ -998,6 +1003,11 @@ export const companyDailyMetrics = pgTable(
   ],
 );
 
+/**
+ * Legacy lifetime metrics table. NOT dropped — retained for the backfill/migration
+ * path (see scripts/backfill-metrics.ts). New writes go to the unified `metrics`
+ * table below; this table exists so the historical data can be migrated 1:1.
+ */
 export const companyLifetimeMetrics = pgTable(
   'company_lifetime_metrics',
   {
@@ -1032,8 +1042,11 @@ export const companyLifetimeMetrics = pgTable(
 );
 
 /**
- * Unified metrics table. Replaces company_daily_metrics +
- * company_lifetime_metrics with a single table keyed by domain + granularity.
+ * Unified metrics table. Supersedes company_daily_metrics +
+ * company_lifetime_metrics as the write target with a single table keyed by
+ * domain + granularity. The legacy tables are NOT dropped — they are retained
+ * for the backfill/migration path (see their definitions above and
+ * scripts/backfill-metrics.ts).
  *
  * - `company_id` NULL = system-wide pool bucket (all companies summed).
  * - `domain` = DELIVERIES | CONVERSATIONS | RIDERS | REVENUE; each domain only
