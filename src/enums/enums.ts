@@ -83,7 +83,6 @@ export enum CompanyChannelStatus {
 
 export enum NodeEnv {
   Development = 'development',
-  Staging = 'staging',
   Production = 'production',
   Test = 'test',
 }
@@ -169,6 +168,8 @@ export enum EventType {
   RIDER_DELETED = 'RIDER_DELETED',
   RIDER_DOCUMENTS_VERIFIED = 'RIDER_DOCUMENTS_VERIFIED',
   RIDER_DOCUMENTS_REJECTED = 'RIDER_DOCUMENTS_REJECTED',
+  // Retained: members of the `EventType` pgEnum (migration 0000_initial.sql); DB-backed —
+  // removing them would require `ALTER TYPE ... DROP VALUE`. No production code emits them.
   CHANNEL_SETUP = 'CHANNEL_SETUP',
   CHANNEL_ACTIVATED = 'CHANNEL_ACTIVATED',
   CHANNEL_DEACTIVATED = 'CHANNEL_DEACTIVATED',
@@ -238,6 +239,7 @@ export enum EscalationStatus {
 export enum EscalatedTo {
   COMPANY = 'COMPANY',
   ADMIN = 'ADMIN',
+  // Retained: member of the `EscalatedTo` pgEnum (migration 0000_initial.sql); DB-backed.
   DISPATCHER = 'DISPATCHER',
 }
 
@@ -259,7 +261,6 @@ export enum JobStatus {
 export enum SecurityEventType {
   RATE_LIMIT = 'RATE_LIMIT',
   MALICIOUS_REQUEST = 'MALICIOUS_REQUEST',
-  AUTH_FAILURE = 'AUTH_FAILURE',
   BRUTE_FORCE = 'BRUTE_FORCE',
 }
 
@@ -383,8 +384,6 @@ export enum ContactCategory {
 }
 
 export enum IdType {
-  NIN = 'NIN',
-  DRIVER_LICENSE = 'DRIVER_LICENSE',
   PASSPORT = 'PASSPORT',
 }
 
@@ -412,7 +411,6 @@ export enum FcmNotificationType {
   COMPANY_STATUS_CHANGED = 'COMPANY_STATUS_CHANGED',
   SETTLEMENT_FAILED = 'SETTLEMENT_FAILED',
   SETTLEMENT_REVERSAL = 'SETTLEMENT_REVERSAL',
-  CHANNEL_REJECTED = 'CHANNEL_REJECTED',
   HUMAN_REQUEST = 'HUMAN_REQUEST',
 }
 
@@ -438,7 +436,6 @@ export enum DayOfWeek {
   THURSDAY = 'Thursday',
   FRIDAY = 'Friday',
   SATURDAY = 'Saturday',
-  SUNDAY = 'Sunday',
 }
 
 /**
