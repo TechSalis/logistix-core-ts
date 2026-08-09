@@ -367,7 +367,6 @@ export enum SseEventType {
   COMPANY = 'company',
   RIDER_LOCATION = 'rider-location',
   TYPING = 'typing',
-  DISPATCHER = 'dispatcher',
 }
 
 export enum JwtTokenType {

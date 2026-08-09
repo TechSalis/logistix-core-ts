@@ -263,12 +263,11 @@ describe('Enums', () => {
   });
 
   describe('SseEventType', () => {
-    it('exposes lower-kebab SSE wire values including DISPATCHER', () => {
+    it('exposes lower-kebab SSE wire values', () => {
       expect(SseEventType.CONNECTED).toBe('connected');
       expect(SseEventType.RIDER).toBe('rider');
       expect(SseEventType.MESSAGE).toBe('message');
       expect(SseEventType.COMPANY).toBe('company');
-      expect(SseEventType.DISPATCHER).toBe('dispatcher');
     });
   });
 
