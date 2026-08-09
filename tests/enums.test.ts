@@ -17,6 +17,11 @@ import {
   MessageStatus,
   MESSAGE_STATUS_RANK,
   SubscriptionHealth,
+  SseEventType,
+  UserAuditAction,
+  FcmNotificationType,
+  NotificationPriority,
+  DeliveryExpiryReason,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -87,6 +92,15 @@ describe('Enums', () => {
       expect(EventType.RIDER_ACCEPTED).toBe('RIDER_ACCEPTED');
     });
 
+    it('covers rider and dispatcher lifecycle events', () => {
+      expect(EventType.RIDER_CREATED).toBe('RIDER_CREATED');
+      expect(EventType.RIDER_UPDATED).toBe('RIDER_UPDATED');
+      expect(EventType.RIDER_STATUS_CHANGED).toBe('RIDER_STATUS_CHANGED');
+      expect(EventType.DISPATCHER_CREATED).toBe('DISPATCHER_CREATED');
+      expect(EventType.DISPATCHER_UPDATED).toBe('DISPATCHER_UPDATED');
+      expect(EventType.DISPATCHER_STATUS_CHANGED).toBe('DISPATCHER_STATUS_CHANGED');
+    });
+
     it('locks the exact member set (additions must be explicit here)', () => {
       expect(Object.keys(EventType)).toEqual([
         'DELIVERY_ASSIGNED',
@@ -96,6 +110,9 @@ describe('Enums', () => {
         'DELIVERY_DELETED',
         'RIDER_LOCATION_UPDATED',
         'RIDER_ACCEPTED',
+        'RIDER_CREATED',
+        'RIDER_UPDATED',
+        'RIDER_STATUS_CHANGED',
         'RIDER_DELETED',
         'RIDER_DOCUMENTS_VERIFIED',
         'RIDER_DOCUMENTS_REJECTED',
@@ -105,6 +122,9 @@ describe('Enums', () => {
         'CHANNEL_REJECTED',
         'CHANNEL_REMOVED',
         'SUBSCRIPTION_STATUS_CHANGED',
+        'DISPATCHER_CREATED',
+        'DISPATCHER_UPDATED',
+        'DISPATCHER_STATUS_CHANGED',
         'DISPATCHER_DELETED',
         'AI_EXECUTION',
         'SECURITY_INCIDENT',
@@ -230,6 +250,43 @@ describe('Enums', () => {
       expect(MESSAGE_STATUS_RANK[MessageStatus.READ]).toBeLessThan(
         MESSAGE_STATUS_RANK[MessageStatus.FAILED],
       );
+    });
+  });
+
+  describe('SseEventType', () => {
+    it('exposes lower-kebab SSE wire values including DISPATCHER', () => {
+      expect(SseEventType.CONNECTED).toBe('connected');
+      expect(SseEventType.RIDER).toBe('rider');
+      expect(SseEventType.MESSAGE).toBe('message');
+      expect(SseEventType.COMPANY).toBe('company');
+      expect(SseEventType.DISPATCHER).toBe('dispatcher');
+    });
+  });
+
+  describe('UserAuditAction', () => {
+    it('exposes DEACTIVATED as a wire value', () => {
+      expect(UserAuditAction.DEACTIVATED).toBe('DEACTIVATED');
+    });
+  });
+
+  describe('FcmNotificationType', () => {
+    it('exposes HUMAN_REQUEST as a wire value', () => {
+      expect(FcmNotificationType.HUMAN_REQUEST).toBe('HUMAN_REQUEST');
+    });
+  });
+
+  describe('NotificationPriority', () => {
+    it('has URGENT', () => {
+      expect(NotificationPriority.URGENT).toBe('URGENT');
+    });
+  });
+
+  describe('DeliveryExpiryReason', () => {
+    it('matches the backend inline expiry reason constants', () => {
+      expect(DeliveryExpiryReason.STALE_PENDING_DELIVERY).toBe('STALE_PENDING_DELIVERY');
+      expect(DeliveryExpiryReason.SCHEDULED_WINDOW_MISSED).toBe('SCHEDULED_WINDOW_MISSED');
+      expect(DeliveryExpiryReason.RIDER_SILENT).toBe('RIDER_SILENT');
+      expect(DeliveryExpiryReason.IN_TRANSIT_STALL).toBe('IN_TRANSIT_STALL');
     });
   });
 });

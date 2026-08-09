@@ -63,6 +63,8 @@ export {
   ApiTag,
   SseEventType,
   FcmNotificationType,
+  NotificationPriority,
+  DeliveryExpiryReason,
   JwtTokenType,
   ContactCategory,
   safeEnumValue,
