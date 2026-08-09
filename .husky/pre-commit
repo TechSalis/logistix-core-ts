@@ -6,5 +6,5 @@ if [ -n "$staged" ]; then
   npx --no-install tsc --noEmit || exit $?
 fi
 
-# Rebuild dist so committed output is never stale
+# Rebuild dist as a build smoke test (dist is gitignored, not committed)
 npx --no-install tsup src/index.ts --format esm,cjs --dts --clean || exit $?
