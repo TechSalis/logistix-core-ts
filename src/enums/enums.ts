@@ -413,6 +413,28 @@ export enum DayOfWeek {
   SUNDAY = 'Sunday',
 }
 
+/**
+ * Metric domains stored in the unified `metrics` table. Wire value = member
+ * string (UPPERCASE_WITH_UNDERSCORES), matching the backend GraphQL enum.
+ */
+export enum MetricDomain {
+  DELIVERIES = 'DELIVERIES',
+  CONVERSATIONS = 'CONVERSATIONS',
+  RIDERS = 'RIDERS',
+  REVENUE = 'REVENUE',
+}
+
+/**
+ * Bucket granularity for the unified `metrics` table. Coarser tiers are
+ * derived from finer ones by the workers' compression ladder.
+ */
+export enum MetricGranularity {
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  LIFETIME = 'LIFETIME',
+}
+
 export const WEEKDAYS: readonly DayOfWeek[] = Object.values(DayOfWeek);
 
 // Categories that should generate leads in external CRM/Sheets

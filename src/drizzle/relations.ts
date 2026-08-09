@@ -14,6 +14,7 @@ import {
   eventLogs,
   ledgerTransactions,
   companyDailyMetrics,
+  metrics,
 } from './schema.js';
 
 export const companySettingsRelations = relations(companySettings, ({ one }) => ({
@@ -35,6 +36,7 @@ export const companiesRelations = relations(companies, ({ many, one }) => ({
   eventLogs: many(eventLogs),
   ledgerTransactions: many(ledgerTransactions),
   companyDailyMetrics: many(companyDailyMetrics),
+  metrics: many(metrics),
 }));
 
 export const companyChannelsRelations = relations(companyChannels, ({ one }) => ({
@@ -122,6 +124,13 @@ export const eventLogsRelations = relations(eventLogs, ({ one }) => ({
 export const companyDailyMetricsRelations = relations(companyDailyMetrics, ({ one }) => ({
   company: one(companies, {
     fields: [companyDailyMetrics.companyId],
+    references: [companies.id],
+  }),
+}));
+
+export const metricsRelations = relations(metrics, ({ one }) => ({
+  company: one(companies, {
+    fields: [metrics.companyId],
     references: [companies.id],
   }),
 }));

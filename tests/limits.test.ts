@@ -25,6 +25,10 @@ describe('LIMITS_CONFIG', () => {
   it('has max rider active deliveries', () => {
     expect(LIMITS_CONFIG.maxRiderActiveDeliveries).toBe(5);
   });
+
+  it('serves a 100-row client sync page size', () => {
+    expect(LIMITS_CONFIG.syncPageSize).toBe(100);
+  });
 });
 
 describe('TIER_LIMITS', () => {
@@ -44,10 +48,10 @@ describe('TIER_LIMITS', () => {
     expect(limits.maxAIDeliveriesPerAction).toBe(20);
   });
 
-  it('STARTER allows 2 exports/day and 5/month', () => {
+  it('STARTER allows 2 exports/day and 10/month', () => {
     const limits = TIER_LIMITS[SubscriptionTier.STARTER];
     expect(limits.maxExportsPerDay).toBe(2);
-    expect(limits.maxExportsPerMonth).toBe(5);
+    expect(limits.maxExportsPerMonth).toBe(10);
   });
 
   it('PROFESSIONAL has realistic limits', () => {
@@ -58,10 +62,10 @@ describe('TIER_LIMITS', () => {
     expect(limits.maxAIDeliveriesPerAction).toBe(50);
   });
 
-  it('PROFESSIONAL allows 5 exports/day and 15/month', () => {
+  it('PROFESSIONAL allows 5 exports/day and 30/month', () => {
     const limits = TIER_LIMITS[SubscriptionTier.PROFESSIONAL];
     expect(limits.maxExportsPerDay).toBe(5);
-    expect(limits.maxExportsPerMonth).toBe(15);
+    expect(limits.maxExportsPerMonth).toBe(30);
   });
 });
 

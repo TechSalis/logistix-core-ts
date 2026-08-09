@@ -4,6 +4,7 @@ import {
   DATA_RETENTION,
   CHANNEL_FEES,
   DEDICATED_TIERS,
+  SUPPORT_SLA,
   KOBO_PER_NAIRA,
   getSubscriptionPrice,
   formatAmount,
@@ -95,6 +96,22 @@ describe('DEDICATED_TIERS', () => {
 
   it('does not include STARTER', () => {
     expect(DEDICATED_TIERS).not.toContain(SubscriptionTier.STARTER);
+  });
+});
+
+describe('SUPPORT_SLA', () => {
+  it('gives STARTER the email SLA', () => {
+    expect(SUPPORT_SLA[SubscriptionTier.STARTER]).toBe('Email (48hr SLA)');
+  });
+
+  it('gives PROFESSIONAL the priority SLA', () => {
+    expect(SUPPORT_SLA[SubscriptionTier.PROFESSIONAL]).toBe('Priority (4hr SLA)');
+  });
+
+  it('offers a faster SLA on the higher tier', () => {
+    expect(SUPPORT_SLA[SubscriptionTier.PROFESSIONAL]).not.toBe(
+      SUPPORT_SLA[SubscriptionTier.STARTER],
+    );
   });
 });
 

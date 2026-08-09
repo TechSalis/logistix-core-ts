@@ -53,6 +53,8 @@ export {
   ErrorCode,
   DayOfWeek,
   WEEKDAYS,
+  MetricDomain,
+  MetricGranularity,
   SystemStatus,
   LlmRole,
   ProviderRole,
@@ -109,12 +111,31 @@ export type { DataType } from './config/export.config.js';
 // ─── Retention ────────────────────────────────────────────────────────────────
 export { RETENTION_CONFIG } from './config/retention.config.js';
 
+// ─── Metrics ──────────────────────────────────────────────────────────────────
+export {
+  METRICS_RETENTION,
+  METRICS_FOLD_CHAIN,
+  METRIC_DOMAINS,
+  METRIC_DOMAIN_MAPPINGS,
+  LIFETIME_BUCKET_START,
+  MAX_TREND_WINDOW_DAYS,
+  granularityForWindowDays,
+  windowExceedsDayRetention,
+  isLifetime,
+} from './config/metrics.config.js';
+export type {
+  GranularityRetention,
+  MetricColumn,
+  MetricDomainMapping,
+} from './config/metrics.config.js';
+
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {
   BILLING_CONFIG,
   DATA_RETENTION,
   CHANNEL_FEES,
   DEDICATED_TIERS,
+  SUPPORT_SLA,
   KOBO_PER_NAIRA,
   getSubscriptionPrice,
   formatAmount,

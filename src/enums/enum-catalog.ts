@@ -4,6 +4,8 @@ import {
   ChannelType,
   DeliveryStatus,
   ExportDataType,
+  MetricDomain,
+  MetricGranularity,
   PaymentMethod,
   RiderStatus,
   SubscriptionStatus,
@@ -30,6 +32,8 @@ export interface EnumCatalog {
   channelTypes: EnumValue[];
   paymentMethods: EnumValue[];
   transactionStatuses: EnumValue[];
+  metricDomains: EnumValue[];
+  metricGranularities: EnumValue[];
 }
 
 function buildValues(enumObj: object): EnumValue[] {
@@ -52,4 +56,6 @@ export const ENUM_CATALOG: EnumCatalog = {
   channelTypes: buildValues(ChannelType),
   paymentMethods: buildValues(PaymentMethod),
   transactionStatuses: buildValues(TransactionStatus),
+  metricDomains: buildValues(MetricDomain),
+  metricGranularities: buildValues(MetricGranularity),
 };

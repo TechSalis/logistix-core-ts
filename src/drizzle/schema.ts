@@ -42,6 +42,8 @@ import {
   EventType,
   EntityType,
   DayOfWeek,
+  MetricDomain,
+  MetricGranularity,
 } from '../enums/enums.js';
 import { WorkingHoursEntry } from '../config/system.config.js';
 
@@ -90,6 +92,8 @@ export const entityType = pgEnum('EntityType', enumValues(EntityType));
 export const currencyEnum = pgEnum('Currency', enumValues(Currency));
 export const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
 export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
+export const metricDomain = pgEnum('MetricDomain', enumValues(MetricDomain));
+export const metricGranularity = pgEnum('MetricGranularity', enumValues(MetricGranularity));
 
 export const companies = pgTable(
   'companies',
@@ -1021,6 +1025,78 @@ export const companyLifetimeMetrics = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: 'clm_company_id_fkey',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+  ],
+);
+
+/**
+ * Unified metrics table. Replaces company_daily_metrics +
+ * company_lifetime_metrics with a single table keyed by domain + granularity.
+ *
+ * - `company_id` NULL = system-wide pool bucket (all companies summed).
+ * - `domain` = DELIVERIES | CONVERSATIONS | RIDERS | REVENUE; each domain only
+ *   fills the columns that are meaningful for it (see metrics.config.ts for
+ *   the per-domain mapping). Unused columns stay at their defaults.
+ * - `granularity` = DAY | WEEK | MONTH | LIFETIME. Finer buckets are folded
+ *   into coarser ones by the workers' compression ladder per METRICS_RETENTION.
+ * - `bucket_start` = bucket boundary date in the Lagos timezone (Monday for
+ *   WEEK, the 1st for MONTH). LIFETIME rows use the LIFETIME_BUCKET_START
+ *   sentinel so the unique index yields exactly one row per scope+domain.
+ *
+ * A single UNIQUE NULLS NOT DISTINCT over (company_id, domain, granularity,
+ * bucket_start) guarantees one row per company scope AND exactly one system
+ * row (NULL company_id treated as equal, not DISTINCT — the same constraint
+ * design already used by company_lifetime_metrics).
+ */
+export const metrics = pgTable(
+  'metrics',
+  {
+    companyId: text('company_id'),
+    domain: metricDomain('domain').notNull(),
+    granularity: metricGranularity('granularity').notNull(),
+    bucketStart: date('bucket_start').notNull(),
+    totalCount: integer('total_count').notNull().default(0),
+    deliveredCount: integer('delivered_count').notNull().default(0),
+    cancelledCount: integer('cancelled_count').notNull().default(0),
+    failedCount: integer('failed_count').notNull().default(0),
+    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
+    avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
+    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
+    extraMetrics: jsonb('extra_metrics').default({}).notNull(),
+    peakHour: integer('peak_hour'),
+    uniqueRidersActive: integer('unique_riders_active').notNull().default(0),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    // One row per (company scope, domain, granularity, bucket) — covers both
+    // company rows and the NULL system row via NULLS NOT DISTINCT. A plain
+    // unique constraint (not partial unique index) so the NULL company_id
+    // conflicts like any value — exactly one system row per domain/granularity.
+    unique('metrics_scope_domain_granularity_bucket_idx')
+      .on(table.companyId, table.domain, table.granularity, table.bucketStart)
+      .nullsNotDistinct(),
+    // Range scans for a company's series (read path).
+    index('metrics_company_domain_granularity_idx').on(
+      table.companyId,
+      table.domain,
+      table.granularity,
+      table.bucketStart,
+    ),
+    // Range scans for the system-wide series (admin read path).
+    index('metrics_system_domain_granularity_idx')
+      .on(table.domain, table.granularity, table.bucketStart)
+      .where(sql`${table.companyId} IS NULL`),
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: 'metrics_company_id_fkey',
     })
       .onUpdate('cascade')
       .onDelete('cascade'),

@@ -25,8 +25,12 @@ const clientConfigSchema = z.object({
 
 const rawClientConfig = {
   pollIntervals: {
+    // Normal: lazy background sync cadence. SSE carries live updates, so a
+    // coarse 60-min poll is the safety net, not the live path.
     normalMs: 3_600_000, // 60 min — business web dispatcher sync cadence
-    degradedMs: 900_000, // 15 min — degraded (rate-limited / offline) cadence
+    // Degraded: FASTER retry when syncs fail (SSE down / repeated errors), so
+    // the client recovers sooner once the connection is back.
+    degradedMs: 900_000, // 15 min — failure-recovery retry cadence
   },
 } as const;
 

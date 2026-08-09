@@ -17,8 +17,4 @@ describe('RETENTION_CONFIG', () => {
   it('archives event logs at a fixed 12-month floor', () => {
     expect(RETENTION_CONFIG.eventLogRetentionMonths).toBe(12);
   });
-
-  it('prunes daily metrics rollups at a fixed 12-month floor', () => {
-    expect(RETENTION_CONFIG.dailyMetricsRetentionMonths).toBe(12);
-  });
 });

@@ -43,6 +43,15 @@ export const CHANNEL_FEES: Record<ChannelType, number> = {
 export const DEDICATED_TIERS: SubscriptionTier[] = [SubscriptionTier.PROFESSIONAL];
 
 /**
+ * Support SLA per tier, as shown on the subscription plans and used as the
+ * support feature value. SSOT — never duplicate these strings elsewhere.
+ */
+export const SUPPORT_SLA: Record<SubscriptionTier, string> = {
+  [SubscriptionTier.STARTER]: 'Email (48hr SLA)',
+  [SubscriptionTier.PROFESSIONAL]: 'Priority (4hr SLA)',
+};
+
+/**
  * Billing configuration constants
  */
 export const BILLING_CONFIG = {

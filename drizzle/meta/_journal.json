@@ -15,6 +15,13 @@
       "when": 1786196411642,
       "tag": "0001_mature_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786234435116,
+      "tag": "0002_fresh_lyja",
+      "breakpoints": true
     }
   ]
 }
