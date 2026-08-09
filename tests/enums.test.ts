@@ -170,6 +170,15 @@ describe('Enums', () => {
       expect(ErrorCode.CHANNEL_ACTIVATION_FAILED).toBe('CHANNEL_ACTIVATION_FAILED');
     });
 
+    it('covers customer-facing tracking error codes', () => {
+      expect(ErrorCode.NOT_FOUND).toBe('NOT_FOUND');
+      expect(ErrorCode.RATE_LIMIT_EXCEEDED).toBe('RATE_LIMIT_EXCEEDED');
+      expect(ErrorCode.NETWORK_ERROR).toBe('NETWORK_ERROR');
+      expect(ErrorCode.INVALID).toBe('INVALID');
+      expect(ErrorCode.PIN_REQUIRED).toBe('PIN_REQUIRED');
+      expect(ErrorCode.UNKNOWN).toBe('UNKNOWN');
+    });
+
     it('no longer ships the dead CLIENT_AUTH_REQUIRED member', () => {
       expect(ErrorCode).not.toHaveProperty('CLIENT_AUTH_REQUIRED');
     });
