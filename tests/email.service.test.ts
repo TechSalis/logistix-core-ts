@@ -69,6 +69,23 @@ describe('EmailService', () => {
       expect(mockSendMail).toHaveBeenCalledTimes(2);
     }, 10000);
 
+    it('retries on any canonical RETRYABLE_NETWORK_ERROR_CODE', async () => {
+      mockSendMail
+        .mockRejectedValueOnce(Object.assign(new Error('EPIPE'), { code: 'EPIPE' }))
+        .mockResolvedValueOnce({ messageId: 'msg-789' });
+      const service = new EmailService();
+
+      const result = await service.sendEmail({
+        from: 'test@example.com',
+        to: 'to@example.com',
+        subject: 'Test',
+        html: '<p>Hi</p>',
+      });
+
+      expect(result.id).toBe('msg-789');
+      expect(mockSendMail).toHaveBeenCalledTimes(2);
+    }, 10000);
+
     it('throws on non-retryable error', async () => {
       mockSendMail.mockRejectedValue(new Error('Invalid template'));
       const service = new EmailService();

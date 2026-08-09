@@ -89,16 +89,8 @@ function classifyTransientError(err: TransientHttpErrorShape): boolean {
   const code = (err.code ?? '').toUpperCase();
   if (status >= 500 && status <= 599) return true;
   if (status === 429) return true;
-  if (
-    code === 'ECONNRESET' ||
-    code === 'ECONNREFUSED' ||
-    code === 'ETIMEDOUT' ||
-    code === 'ECONNABORTED' ||
-    code === 'EAI_AGAIN' ||
-    code === 'UND_ERR_CONNECT_TIMEOUT' ||
-    code === 'UND_ERR_HEADERS_TIMEOUT'
-  )
-    return true;
+  if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
+  if (code === 'UND_ERR_CONNECT_TIMEOUT' || code === 'UND_ERR_HEADERS_TIMEOUT') return true;
   if (
     msg.includes('etimedout') ||
     msg.includes('econnrefused') ||

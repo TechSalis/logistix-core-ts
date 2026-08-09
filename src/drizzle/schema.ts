@@ -81,8 +81,8 @@ export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(Subscripti
 export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
 export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
 export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
-// NOTE: Only BIKE is used in production. CAR/VAN/TRUCK are intentional future-proofing —
-// pricing defined in DEFAULT_PRICING_SCHEMES, schema accepts all, but every code path defaults to BIKE.
+// VehicleType is BIKE-only (wire enum trimmed to BIKE; backend DEFAULT_PRICING_SCHEMES
+// keys off VehicleType.BIKE) — every code path defaults to BIKE.
 export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));

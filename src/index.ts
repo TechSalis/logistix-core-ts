@@ -127,11 +127,6 @@ export {
   windowExceedsDayRetention,
   isLifetime,
 } from './config/metrics.config.js';
-export type {
-  GranularityRetention,
-  MetricColumn,
-  MetricDomainMapping,
-} from './config/metrics.config.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
 export {

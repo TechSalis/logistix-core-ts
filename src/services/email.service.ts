@@ -1,4 +1,4 @@
-import { withRetry } from '../utils/retry.js';
+import { withRetry, RETRYABLE_NETWORK_ERROR_CODES } from '../utils/retry.js';
 
 export interface EmailAttachment {
   filename: string;
@@ -68,7 +68,7 @@ function isRetryableEmailError(error: unknown): boolean {
     const err = error as { code?: string; message?: string };
     const code = err.code ?? '';
     const msg = (err.message ?? '').toLowerCase();
-    if (code === 'ECONNREFUSED' || code === 'ECONNRESET' || code === 'ETIMEDOUT') return true;
+    if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
     if (msg.includes('timeout') || msg.includes('network')) return true;
   }
   return false;

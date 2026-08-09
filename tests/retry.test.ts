@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { withRetry, isTransientHttpError, sleep } from '../src/utils/retry.js';
+import {
+  withRetry,
+  isTransientHttpError,
+  RETRYABLE_NETWORK_ERROR_CODES,
+  sleep,
+} from '../src/utils/retry.js';
 
 describe('sleep', () => {
   it('resolves after the specified milliseconds', async () => {
@@ -114,6 +119,12 @@ describe('isTransientHttpError', () => {
     expect(isTransientHttpError(new Error('socket hang up: ETIMEDOUT'))).toBe(true);
     expect(isTransientHttpError(Object.assign(new Error('x'), { code: 'ECONNRESET' }))).toBe(true);
     expect(isTransientHttpError(new Error('getaddrinfo EAI_AGAIN host'))).toBe(true);
+  });
+
+  it('classifies every RETRYABLE_NETWORK_ERROR_CODE as transient', () => {
+    for (const code of RETRYABLE_NETWORK_ERROR_CODES) {
+      expect(isTransientHttpError(Object.assign(new Error(code), { code }))).toBe(true);
+    }
   });
 
   it('classifies axios and fetch timeouts as transient', () => {

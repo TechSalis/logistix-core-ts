@@ -87,41 +87,41 @@ npm test         # run unit tests
 | `DeliveryStatus`           | PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED |
 | `RiderStatus`              | ONLINE, OFFLINE, BUSY                                       |
 | `PaymentMethod`            | PREPAID, PAY_ON_DELIVERY                                   |
-| `ApprovalStatus`           | PENDING, APPROVED, REJECTED                                 |
-| `EntityType`               | Delivery, Rider, Company, etc.                              |
+| `ApprovalStatus`           | PENDING, APPROVED, REJECTED, SUSPENDED, DISABLED            |
+| `EntityType`               | USER, DELIVERY, RIDER, COMPANY, DISPATCHER, SYSTEM, COMPANY_CHANNEL, MESSAGE |
 | `ChannelPlatform`          | WHATSAPP, INSTAGRAM, FACEBOOK, TIKTOK                      |
-| `NodeEnv`                  | DEVELOPMENT, STAGING, PRODUCTION                            |
+| `NodeEnv`                  | development, staging, production, test                      |
 | `VehicleType`              | BIKE                                                       |
 | `SubscriptionTier`         | STARTER, PROFESSIONAL                                      |
-| `SubscriptionStatus`       | ACTIVE, PAST_DUE, CANCELLED, etc.                           |
-| `TransactionStatus`        | PENDING, COMPLETED, FAILED, etc.                            |
-| `TransactionType`          | CREDIT, DEBIT, etc.                                         |
-| `LedgerAdjustmentType`     | SUBSCRIPTION, PAYOUT, CHANNEL_FEE, etc.                     |
-| `ChannelType`              | COMPANY_OWNED, SYSTEM_OWNED                                 |
-| `Currency`                 | NGN, USD, etc.                                              |
-| `PaymentProvider`          | PAYSTACK, SQUAD, etc.                                       |
+| `SubscriptionStatus`       | TRIAL, ACTIVE, PAST_DUE, CANCELLED                          |
+| `TransactionStatus`        | PENDING, SUCCESS, FAILED, REVERSED                          |
+| `TransactionType`          | DELIVERY_PAYMENT, SUBSCRIPTION, ADJUSTMENT, SETTLEMENT, REFUND |
+| `LedgerAdjustmentType`     | CREDIT, DEBIT, CORRECTION, CHANNEL_FEE, OVERAGE, REFUND     |
+| `ChannelType`              | SYSTEM_POOL, MY_CHANNEL                                     |
+| `Currency`                 | NGN                                                         |
+| `PaymentProvider`          | SQUAD, SYSTEM                                              |
 | `EventType`                | All system event types                                      |
 | `SubscriptionEventType`    | Subscription lifecycle events                               |
-| `UserAuditAction`          | LOGIN, LOGOUT, PASSWORD_CHANGE, etc.                        |
-| `ChatUpdateType`           | MESSAGE, TYPING, READ, etc.                                 |
+| `UserAuditAction`          | LOGIN, LOGOUT, PROFILE_UPDATE, DEACTIVATED                  |
+| `ChatUpdateType`           | MESSAGE, OWNERSHIP, CONVERSATION, CHANNEL                   |
 | `MessageStatus`            | SENT, DELIVERED, READ, FAILED                               |
-| `EscalationStatus`         | OPEN, IN_PROGRESS, RESOLVED, etc.                           |
-| `EscalatedTo`              | DISPATCHER, ADMIN, etc.                                     |
-| `SenderType`               | CUSTOMER, RIDER, DISPATCHER, SYSTEM, AI                     |
-| `SecurityEventType`        | RATE_LIMIT, BRUTE_FORCE, INJECTION, etc.                    |
+| `EscalationStatus`         | OPEN, RESOLVED, TAKEN_OVER                                  |
+| `EscalatedTo`              | COMPANY, ADMIN, DISPATCHER                                  |
+| `SenderType`               | CUSTOMER, AGENT, DISPATCHER, SYSTEM                         |
+| `SecurityEventType`        | RATE_LIMIT, MALICIOUS_REQUEST, AUTH_FAILURE, BRUTE_FORCE    |
 | `SecuritySeverity`         | LOW, MEDIUM, HIGH, CRITICAL                                 |
 | `ErrorCode`                | Standardized error codes                                    |
-| `SystemStatus`             | HEALTHY, DEGRADED, DOWN                                     |
-| `LlmRole`                  | SYSTEM, USER, ASSISTANT                                     |
-| `ProviderRole`             | PRIMARY, FALLBACK, etc.                                     |
-| `ProviderCapability`       | CHAT, VISION, EMBEDDING, etc.                               |
-| `LogLevel`                 | DEBUG, INFO, WARN, ERROR, SILENT                          |
+| `SystemStatus`             | UP, DOWN, DEGRADED                                          |
+| `LlmRole`                  | user, assistant, system                                     |
+| `ProviderRole`             | interpret, synthesize                                       |
+| `ProviderCapability`       | json, tools, vision                                         |
+| `LogLevel`                 | debug, info, warn, error, silent                            |
 | `ApiTag`                   | API route tags                                              |
-| `SseEventType`             | MESSAGE, STATUS_CHANGE, TRACKING, etc.                      |
-| `JwtTokenType`             | ACCESS, REFRESH, SSE, OTP                                   |
-| `ContactCategory`          | GENERAL, SUPPORT, BILLING, etc.                             |
-| `JobType`                  | DELIVERY_NOTIFICATION, SQUAD_WEBHOOK, EXPORT, AI_BATCH       |
-| `JobStatus`                | QUEUED, PROCESSING, SUCCEEDED, FAILED, CANCELLED             |
+| `SseEventType`             | connected, delivery, rider, message, initial, company, rider-location, typing |
+| `JwtTokenType`             | access, refresh                                            |
+| `ContactCategory`          | 'Become a Partner', 'For Business', 'Support', 'Tracking Inquiry', 'Feedback' |
+| `JobType`                  | delivery-notification, squad-webhook, export, ai:batch      |
+| `JobStatus`                | PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED           |
 
 **Enum helpers:**
 
