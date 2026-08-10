@@ -65,6 +65,23 @@ export function getStartOfDayInTimezone(timezone: string = REGIONAL_CONFIG.timeZ
 }
 
 /**
+ * Returns the calendar date (YYYY-MM-DD) of the given instant in the
+ * timezone — the wall-clock day, which may differ from the instant's UTC day.
+ */
+export function getDateStringInTimezone(
+  date: Date,
+  timezone: string = REGIONAL_CONFIG.timeZone,
+): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(date);
+}
+
+/**
  * Returns the month-anchored retention cutoff: firstOfMonth(now) - N months,
  * as midnight on the 1st in the configured timezone.
  *

@@ -91,6 +91,7 @@ export {
   getMonthStartInTimezone,
   getStartOfDayInTimezone,
   getRetentionCutoff,
+  getDateStringInTimezone,
 } from './utils/timezone.js';
 
 // ─── Limits ───────────────────────────────────────────────────────────────────

@@ -243,6 +243,7 @@ export const conversations = pgTable(
       .notNull(),
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
+      .$onUpdate(() => new Date())
       .notNull(),
     escalatedAt: timestamp('escalated_at', { precision: 3, mode: 'date' }),
     metadata: jsonb(),
@@ -323,6 +324,7 @@ export const messages = pgTable(
       .notNull(),
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [
@@ -486,6 +488,7 @@ export const deliveries = pgTable(
       .notNull(),
     updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
+      .$onUpdate(() => new Date())
       .notNull(),
     trackingId: text('tracking_id').notNull(),
     pin: text(),
