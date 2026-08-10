@@ -110,7 +110,7 @@ export { ALLOWED_STATUS_TRANSITIONS } from './config/delivery.config.js';
 export { CLIENT_CONFIG } from './config/client.config.js';
 
 // ─── Export ───────────────────────────────────────────────────────────────────
-export { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES, EXPORT_JOB_TYPE } from './config/export.config.js';
+export { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES } from './config/export.config.js';
 export type { DataType } from './config/export.config.js';
 
 // ─── Retention ────────────────────────────────────────────────────────────────

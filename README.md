@@ -208,7 +208,6 @@ The documented surface below mirrors `src/index.ts` exactly.
 |---------------------------|--------------------------|----------------------------------------------|
 | `VALID_DATA_TYPES`        | `readonly ExportDataType[]` | Supported export types                    |
 | `MONTH_REQUIRED_TYPES`    | `ReadonlySet<DataType>`  | Export types that require a month            |
-| `EXPORT_JOB_TYPE`         | `JobType`                | `JobType.EXPORT`                             |
 | `DataType`                | `type`                   | `(typeof VALID_DATA_TYPES)[number]`          |
 
 ### Retention
