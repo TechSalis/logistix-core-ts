@@ -209,7 +209,7 @@ export enum UserAuditAction {
   DEACTIVATED = 'DEACTIVATED',
 }
 
-export enum ChatUpdateType {
+export enum ChannelsUpdateType {
   MESSAGE = 'MESSAGE',
   OWNERSHIP = 'OWNERSHIP',
   CONVERSATION = 'CONVERSATION',

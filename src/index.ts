@@ -36,7 +36,7 @@ export {
   EventType,
   SubscriptionEventType,
   UserAuditAction,
-  ChatUpdateType,
+  ChannelsUpdateType,
   MessageStatus,
   MESSAGE_STATUS_RANK,
   EscalationStatus,
