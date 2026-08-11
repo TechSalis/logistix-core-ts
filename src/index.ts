@@ -160,7 +160,12 @@ export { SquadClient, SquadRequestError } from './services/squad-client.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export { EmailService } from './services/email.service.js';
-export { queueService, PermanentJobError, type QueueHandler } from './services/queue.service.js';
+export {
+  queueService,
+  PermanentJobError,
+  type QueueHandler,
+  type DrizzleDB,
+} from './services/queue.service.js';
 export { QUEUE_SERVICE_CONFIG } from './config/service.config.js';
 
 // ─── Security ─────────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ import { QUEUE_SERVICE_CONFIG } from '../config/service.config.js';
 // each project uses a different concrete PgQueryResultHKT and schema shape,
 // and drizzle-orm does not export a unifying base type for PgDatabase.
 // PgDatabase type params are unused; kept as any for compatibility with drizzle-orm v0.45.
-type DrizzleDB = PgDatabase<any, any, any>;
+export type DrizzleDB = PgDatabase<any, any, any>;
 
 type JobRow = typeof jobQueue.$inferSelect;
 

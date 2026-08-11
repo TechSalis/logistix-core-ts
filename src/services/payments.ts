@@ -1,5 +1,5 @@
 import { and, asc, eq, gt, inArray, sql, sum } from 'drizzle-orm';
-import type { PgDatabase } from 'drizzle-orm/pg-core';
+import type { DrizzleDB } from './queue.service.js';
 import { randomUUID } from 'node:crypto';
 import { computeAllocationTargets } from '../config/billing.config.js';
 import {
@@ -21,13 +21,6 @@ import {
 //
 // Single implementation used by BOTH the backend webhook success path and the
 // workers cron reconciliation, so the two can never drift again.
-
-// Accepts both NodePgDatabase (workers) and PgDatabase<postgres-js> (backend).
-// The three `any` params are for TQueryResult, TFullSchema, and TSchema generics —
-// each project uses a different concrete PgQueryResultHKT and schema shape,
-// and drizzle-orm does not export a unifying base type for PgDatabase.
-// PgDatabase type params are unused; kept as any for compatibility with drizzle-orm v0.45.
-type DrizzleDB = PgDatabase<any, any, any>;
 
 export interface PaymentAllocationTransaction {
   id: string;
