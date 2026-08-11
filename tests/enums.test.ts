@@ -24,6 +24,7 @@ import {
   FcmNotificationType,
   NotificationPriority,
   DeliveryExpiryReason,
+  IdType,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -314,6 +315,12 @@ describe('Enums', () => {
       expect(ConversationHandlerType.AI).toBe('AI');
       expect(ConversationHandlerType.DISPATCHER).toBe('DISPATCHER');
       expect(ConversationHandlerType.ADMIN).toBe('ADMIN');
+    });
+  });
+
+  describe('IdType', () => {
+    it('locks the exact member set to the backend SDL enum', () => {
+      expect(Object.keys(IdType)).toEqual(['NIN', 'DRIVER_LICENSE', 'PASSPORT']);
     });
   });
 });
