@@ -3,7 +3,9 @@ import {
   buildSystemConfig,
   SHARED_SYSTEM_CONFIG,
   BRAND_NAME,
+  DEFAULT_WORKING_HOURS,
 } from '../src/config/system.config.js';
+import { DayOfWeek } from '../src/enums/enums.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {
@@ -55,5 +57,23 @@ describe('BRAND_NAME constant', () => {
 describe('SHARED_SYSTEM_CONFIG singleton', () => {
   it('has customerBaseUrl property', () => {
     expect(SHARED_SYSTEM_CONFIG).toHaveProperty('customerBaseUrl');
+  });
+});
+
+describe('DEFAULT_WORKING_HOURS', () => {
+  it('covers Monday through Saturday at 07:00-19:00', () => {
+    const entries = [
+      DayOfWeek.MONDAY,
+      DayOfWeek.TUESDAY,
+      DayOfWeek.WEDNESDAY,
+      DayOfWeek.THURSDAY,
+      DayOfWeek.FRIDAY,
+      DayOfWeek.SATURDAY,
+    ];
+    expect(Object.keys(DEFAULT_WORKING_HOURS)).toHaveLength(6);
+    for (const day of entries) {
+      expect(DEFAULT_WORKING_HOURS[day]).toEqual({ start: '07:00', close: '19:00' });
+    }
+    expect(DEFAULT_WORKING_HOURS[DayOfWeek.SUNDAY]).toBeUndefined();
   });
 });

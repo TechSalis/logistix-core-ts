@@ -1,3 +1,5 @@
+import { DayOfWeek } from '../enums/enums.js';
+
 export interface BankDetails {
   readonly bankName: string;
   readonly bankCode: string;
@@ -25,6 +27,15 @@ export interface SystemConfig {
 }
 
 export type WorkingHoursEntry = { start: string; close: string };
+
+export const DEFAULT_WORKING_HOURS: Partial<Record<DayOfWeek, WorkingHoursEntry>> = {
+  [DayOfWeek.MONDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.TUESDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.WEDNESDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.THURSDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.FRIDAY]: { start: '07:00', close: '19:00' },
+  [DayOfWeek.SATURDAY]: { start: '07:00', close: '19:00' },
+};
 
 export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): SystemConfig {
   const emailDomain = overrides.emailDomain ?? '';

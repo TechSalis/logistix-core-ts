@@ -80,8 +80,9 @@ export {
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
   SHARED_SYSTEM_CONFIG,
+  DEFAULT_WORKING_HOURS,
 } from './config/system.config.js';
-export type { SystemConfig, BankDetails } from './config/system.config.js';
+export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
 
 // ─── Regional ─────────────────────────────────────────────────────────────────
 export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional.config.js';
