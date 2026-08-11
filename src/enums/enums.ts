@@ -384,6 +384,8 @@ export enum ContactCategory {
 }
 
 export enum IdType {
+  NIN = 'NIN',
+  DRIVER_LICENSE = 'DRIVER_LICENSE',
   PASSPORT = 'PASSPORT',
 }
 

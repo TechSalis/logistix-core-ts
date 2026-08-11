@@ -22,6 +22,7 @@ import {
   FcmNotificationType,
   NotificationPriority,
   DeliveryExpiryReason,
+  IdType,
 } from '../src/enums/enums.js';
 
 describe('Enums', () => {
@@ -295,6 +296,12 @@ describe('Enums', () => {
       expect(DeliveryExpiryReason.SCHEDULED_WINDOW_MISSED).toBe('SCHEDULED_WINDOW_MISSED');
       expect(DeliveryExpiryReason.RIDER_SILENT).toBe('RIDER_SILENT');
       expect(DeliveryExpiryReason.IN_TRANSIT_STALL).toBe('IN_TRANSIT_STALL');
+    });
+  });
+
+  describe('IdType', () => {
+    it('locks the exact member set to the backend SDL enum', () => {
+      expect(Object.keys(IdType)).toEqual(['NIN', 'DRIVER_LICENSE', 'PASSPORT']);
     });
   });
 });
