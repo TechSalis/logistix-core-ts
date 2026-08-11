@@ -18,6 +18,8 @@ import {
   MESSAGE_STATUS_RANK,
   SubscriptionHealth,
   SseEventType,
+  ChannelsUpdateType,
+  ConversationHandlerType,
   UserAuditAction,
   FcmNotificationType,
   NotificationPriority,
@@ -295,6 +297,23 @@ describe('Enums', () => {
       expect(DeliveryExpiryReason.SCHEDULED_WINDOW_MISSED).toBe('SCHEDULED_WINDOW_MISSED');
       expect(DeliveryExpiryReason.RIDER_SILENT).toBe('RIDER_SILENT');
       expect(DeliveryExpiryReason.IN_TRANSIT_STALL).toBe('IN_TRANSIT_STALL');
+    });
+  });
+
+  describe('ChannelsUpdateType', () => {
+    it('exposes canonical wire values', () => {
+      expect(ChannelsUpdateType.MESSAGE).toBe('MESSAGE');
+      expect(ChannelsUpdateType.OWNERSHIP).toBe('OWNERSHIP');
+      expect(ChannelsUpdateType.CONVERSATION).toBe('CONVERSATION');
+      expect(ChannelsUpdateType.CHANNEL).toBe('CHANNEL');
+    });
+  });
+
+  describe('ConversationHandlerType', () => {
+    it('exposes canonical wire values', () => {
+      expect(ConversationHandlerType.AI).toBe('AI');
+      expect(ConversationHandlerType.DISPATCHER).toBe('DISPATCHER');
+      expect(ConversationHandlerType.ADMIN).toBe('ADMIN');
     });
   });
 });

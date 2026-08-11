@@ -111,7 +111,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `EventType`                | All system event types (DB pgEnum)                          |
 | `SubscriptionEventType`    | CREATED, UPDATED, DELETED, ASSIGNED, STATUS_CHANGED         |
 | `UserAuditAction`          | LOGIN, LOGOUT, PROFILE_UPDATE, DEACTIVATED                  |
-| `ChatUpdateType`           | MESSAGE, OWNERSHIP, CONVERSATION, CHANNEL                   |
+| `ChannelsUpdateType`       | MESSAGE, OWNERSHIP, CONVERSATION, CHANNEL                   |
 | `MessageStatus`            | SENT, DELIVERED, READ, FAILED                               |
 | `MESSAGE_STATUS_RANK`      | `Record<MessageStatus, number>` (SENT→1 … FAILED→4)         |
 | `EscalationStatus`         | OPEN, RESOLVED, TAKEN_OVER                                  |
