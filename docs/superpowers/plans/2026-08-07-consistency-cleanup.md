@@ -1,5 +1,7 @@
 # Core-ts Consistency Cleanup (Phase 3)
 
+> **Status: COMPLETE (verified Aug 12, 2026)** — Tasks 2–7 fully landed (18/18): zero-consumer barrel exports removed, `TRACKING_ID_*` SSOT restored + `TRACKING_ID_ALPHABET` added with drift-guard test, `RETRYABLE_*_CODES` classification tables shared, backoff base unified, `queue.service.ts` doc lint fixed, README corrected. **Task 1 SKIPPED with documented push-back** — `company_lifetime_metrics` is LIVE (workers + backend analytics consumers), not dead; table + README list retained.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Drop the dead `company_lifetime_metrics` table, remove zero-consumer barrel exports, fix duplicated SSOTs (tracking alphabet, transient-error classification, retry backoff base), and correct the stale README. Part of the cross-repo consistency program (sibling plans: backend, workers, web, app).
