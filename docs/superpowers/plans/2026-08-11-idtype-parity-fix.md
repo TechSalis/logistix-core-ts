@@ -1,5 +1,7 @@
 # 2026-08-11 — core-ts IdType parity fix
 
+> **Status: COMPLETE (verified 2026-08-12)** — `src/enums/enums.ts:386-390` defines `IdType` with all three members `NIN`/`DRIVER_LICENSE`/`PASSPORT` (commit `27ff503`).
+
 ## Objective
 
 Backend SDL (`logistix-backend/src/core/graphql/typeDefs.ts:74-78`) defines `enum IdType { NIN DRIVER_LICENSE PASSPORT }` but core-ts `IdType` (`src/enums/enums.ts:386-388`) has only `PASSPORT`. Restore parity so clients (web/mobile/backend fixtures) can type against the server-driven members instead of string literals.
