@@ -41,22 +41,12 @@ import {
   VehicleType,
   EventType,
   EntityType,
-  DayOfWeek,
   MetricDomain,
   MetricGranularity,
 } from '../enums/enums.js';
-import { WorkingHoursEntry } from '../config/system.config.js';
+import { DEFAULT_WORKING_HOURS as defaultWorkingHours } from '../config/system.config.js';
 
 const createId = () => randomUUID();
-
-const defaultWorkingHours: Partial<Record<DayOfWeek, WorkingHoursEntry>> = {
-  [DayOfWeek.MONDAY]: { start: '07:00', close: '19:00' },
-  [DayOfWeek.TUESDAY]: { start: '07:00', close: '19:00' },
-  [DayOfWeek.WEDNESDAY]: { start: '07:00', close: '19:00' },
-  [DayOfWeek.THURSDAY]: { start: '07:00', close: '19:00' },
-  [DayOfWeek.FRIDAY]: { start: '07:00', close: '19:00' },
-  [DayOfWeek.SATURDAY]: { start: '07:00', close: '19:00' },
-};
 
 const enumValues = <T extends Record<string, string>>(e: T): [string, ...string[]] =>
   Object.values(e) as [string, ...string[]];
@@ -958,98 +948,9 @@ export const eventOutbox = pgTable(
 );
 
 /**
- * Legacy daily metrics table. NOT dropped — retained for the backfill/migration
- * path (see scripts/backfill-metrics.ts). New writes go to the unified `metrics`
- * table below; this table exists so the historical data can be migrated 1:1.
- */
-export const companyDailyMetrics = pgTable(
-  'company_daily_metrics',
-  {
-    companyId: text('company_id'),
-    date: date('date').notNull(),
-    totalDeliveries: integer('total_deliveries').notNull().default(0),
-    deliveredCount: integer('delivered_count').notNull().default(0),
-    cancelledCount: integer('cancelled_count').notNull().default(0),
-    failedCount: integer('failed_count').notNull().default(0),
-    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
-    avgDeliveryTimeMinutes: doublePrecision('avg_delivery_time_minutes'),
-    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
-    extraMetrics: jsonb('extra_metrics').default({}).notNull(),
-    peakHour: integer('peak_hour'),
-    uniqueRidersActive: integer('unique_riders_active').notNull().default(0),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    // One bar per company per day via a partial unique index (a composite
-    // PRIMARY KEY forces NOT NULL on every PK column in Postgres, which would
-    // reject the system-wide company_id IS NULL bars).
-    uniqueIndex('cdm_company_date_idx')
-      .on(table.companyId, table.date)
-      .where(sql`${table.companyId} IS NOT NULL`),
-    index('cdm_date_idx').using('btree', table.date.asc().nullsLast().op('date_ops')),
-    // System-wide pool deliveries (company_id IS NULL) get one bar per day.
-    uniqueIndex('cdm_system_date_idx')
-      .on(table.date)
-      .where(sql`${table.companyId} IS NULL`),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'cdm_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
-/**
- * Legacy lifetime metrics table. NOT dropped — retained for the backfill/migration
- * path (see scripts/backfill-metrics.ts). New writes go to the unified `metrics`
- * table below; this table exists so the historical data can be migrated 1:1.
- */
-export const companyLifetimeMetrics = pgTable(
-  'company_lifetime_metrics',
-  {
-    companyId: text('company_id'),
-    totalDeliveries: integer('total_deliveries').notNull().default(0),
-    deliveredCount: integer('delivered_count').notNull().default(0),
-    totalRevenueKobo: integer('total_revenue_kobo').notNull().default(0),
-    channelBreakdown: jsonb('channel_breakdown').default({}).notNull(),
-    extraMetrics: jsonb('extra_metrics').default({}).notNull(),
-    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    // One row per company AND at most one system-wide row (company_id IS NULL)
-    // via a single unique constraint. A partial unique index cannot express the
-    // system row: Postgres treats NULLs as DISTINCT in unique indexes, so
-    // `UNIQUE (company_id) WHERE company_id IS NULL` would allow unbounded NULL
-    // rows (reproduced live). NULLS NOT DISTINCT makes the NULL company_id
-    // conflict like any value — one row per company_id plus exactly one system
-    // row. (A PRIMARY KEY would force NOT NULL on company_id, rejecting the
-    // system row.)
-    unique('clm_company_idx').on(table.companyId).nullsNotDistinct(),
-    foreignKey({
-      columns: [table.companyId],
-      foreignColumns: [companies.id],
-      name: 'clm_company_id_fkey',
-    })
-      .onUpdate('cascade')
-      .onDelete('cascade'),
-  ],
-);
-
-/**
- * Unified metrics table. Supersedes company_daily_metrics +
- * company_lifetime_metrics as the write target with a single table keyed by
- * domain + granularity. The legacy tables are NOT dropped — they are retained
- * for the backfill/migration path (see their definitions above and
- * scripts/backfill-metrics.ts).
+ * Unified metrics table. Single write target keyed by domain + granularity,
+ * superseding the legacy company_daily_metrics / company_lifetime_metrics
+ * tables (dropped after the one-time backfill into this table).
  *
  * - `company_id` NULL = system-wide pool bucket (all companies summed).
  * - `domain` = DELIVERIES | CONVERSATIONS | RIDERS | REVENUE; each domain only
@@ -1063,8 +964,7 @@ export const companyLifetimeMetrics = pgTable(
  *
  * A single UNIQUE NULLS NOT DISTINCT over (company_id, domain, granularity,
  * bucket_start) guarantees one row per company scope AND exactly one system
- * row (NULL company_id treated as equal, not DISTINCT — the same constraint
- * design already used by company_lifetime_metrics).
+ * row (NULL company_id treated as equal, not DISTINCT).
  */
 export const metrics = pgTable(
   'metrics',
