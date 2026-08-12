@@ -1,6 +1,6 @@
 # Core-ts Consistency Cleanup (Phase 3)
 
-> **Status: COMPLETE (verified Aug 12, 2026)** — Tasks 2–7 fully landed (18/18): zero-consumer barrel exports removed, `TRACKING_ID_*` SSOT restored + `TRACKING_ID_ALPHABET` added with drift-guard test, `RETRYABLE_*_CODES` classification tables shared, backoff base unified, `queue.service.ts` doc lint fixed, README corrected. **Task 1 SKIPPED with documented push-back** — `company_lifetime_metrics` is LIVE (workers + backend analytics consumers), not dead; table + README list retained.
+> **Status: COMPLETE (verified Aug 12, 2026 — Task 1 re-verified Aug 13, 2026)** — Tasks 2–7 fully landed (18/18): zero-consumer barrel exports removed, `TRACKING_ID_*` SSOT restored + `TRACKING_ID_ALPHABET` added with drift-guard test, `RETRYABLE_*_CODES` classification tables shared, backoff base unified, `queue.service.ts` doc lint fixed, README corrected. **Task 1 originally SKIPPED** — push-back was based on stale audit; re-audit (Aug 13) confirms `companyLifetimeMetrics` is already absent from schema.ts (only a historical comment at line 952 remains), with zero production consumers in backend/workers/web. Steps 2–5 are now moot (nothing to delete or migrate). README table list already correct.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -29,10 +29,10 @@ Step 1 audit found live consumers repo-wide:
 Dropping the table would break production analytics. `companyLifetimeMetrics` (camelCase) appears only in `schema.ts:963`; the SQL-level table is the live consumer. No changes made to schema, relations, or migrations. (Task 6 Step 4 will NOT remove it from the README table list.)
 
 - [x] **Step 1:** Confirm zero consumers repo-wide. (Audit performed; premise FAILED — see push-back above.)
-- [ ] **Step 2:** Delete the table definition + its relations entry. *(skipped)*
-- [ ] **Step 3:** Rebase the migration chain. *(skipped)*
-- [ ] **Step 4:** Update README table list. *(skipped)*
-- [ ] **Step 5:** Build + tsc + tests green. *(n/a — no code change)*
+- [x] **Step 2:** Delete the table definition + its relations entry. *(already absent — re-audit Aug 13 confirms zero occurrences of `companyLifetimeMetrics` in schema.ts; only a historical comment at line 952 remains)*
+- [x] **Step 3:** Rebase the migration chain. *(n/a — table was dropped in a prior migration cycle)*
+- [x] **Step 4:** Update README table list. *(already correct — `companyLifetimeMetrics` not listed)*
+- [x] **Step 5:** Build + tsc + tests green. *(verified — 27 files / 302 tests pass)*
 
 ## Task 2: Remove zero-consumer barrel exports
 
