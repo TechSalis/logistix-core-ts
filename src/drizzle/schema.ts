@@ -448,6 +448,17 @@ export const blockedIps = pgTable(
   ],
 );
 
+export const phoneVerifications = pgTable(
+  'phone_verifications',
+  {
+    userId: text('user_id').primaryKey().notNull(),
+    phone: text('phone').notNull(),
+    verifiedAt: timestamp('verified_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+);
+
 export const deliveries = pgTable(
   'deliveries',
   {

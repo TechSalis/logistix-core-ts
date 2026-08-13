@@ -41,6 +41,12 @@ CREATE TABLE "blocked_ips" (
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "phone_verifications" (
+	"user_id" text PRIMARY KEY NOT NULL,
+	"phone" text NOT NULL,
+	"verified_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "companies" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text,
