@@ -392,16 +392,19 @@ export const dispatchers = pgTable(
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (table) => [
     index('dispatchers_company_id_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
     ),
-    index('dispatchers_company_id_created_at_idx').using(
+    index('dispatchers_company_id_updated_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
-      table.createdAt.asc().nullsLast().op('timestamp_ops'),
+      table.updatedAt.asc().nullsLast().op('timestamp_ops'),
     ),
     uniqueIndex('dispatchers_email_key').using(
       'btree',
