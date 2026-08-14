@@ -451,15 +451,33 @@ export const blockedIps = pgTable(
   ],
 );
 
-export const phoneVerifications = pgTable(
-  'phone_verifications',
+export const phoneVerifications = pgTable('phone_verifications', {
+  userId: text('user_id').primaryKey().notNull(),
+  phone: text('phone').notNull(),
+  verifiedAt: timestamp('verified_at', { precision: 3, mode: 'date' })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+export const refreshSessions = pgTable(
+  'refresh_sessions',
   {
-    userId: text('user_id').primaryKey().notNull(),
-    phone: text('phone').notNull(),
-    verifiedAt: timestamp('verified_at', { precision: 3, mode: 'date' })
+    jti: text('jti').primaryKey().notNull(),
+    userId: text('user_id').notNull(),
+    tokenHash: text('token_hash').notNull(),
+    issuedAt: timestamp('issued_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }).notNull(),
+    revokedAt: timestamp('revoked_at', { precision: 3, mode: 'date' }),
+    replacedBy: text('replaced_by'),
   },
+  (table) => [
+    index('refresh_sessions_user_id_idx').using(
+      'btree',
+      table.userId.asc().nullsLast().op('text_ops'),
+    ),
+  ],
 );
 
 export const deliveries = pgTable(
