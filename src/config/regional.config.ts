@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export interface RegionalConfig {
   readonly defaultCountryCode: string;
   readonly defaultIsoCountryCode: string;
@@ -7,14 +5,6 @@ export interface RegionalConfig {
   readonly currencySymbol: string;
   readonly states: readonly string[];
 }
-
-const regionalConfigSchema = z.object({
-  defaultCountryCode: z.string(),
-  defaultIsoCountryCode: z.string(),
-  timeZone: z.string(),
-  currencySymbol: z.string(),
-  states: z.array(z.string()),
-});
 
 const rawRegionalConfig = {
   // Phone dialing code (ITU-T E.164), NOT ISO 3166-1 alpha-2 country code
@@ -64,8 +54,7 @@ const rawRegionalConfig = {
   ],
 } as const;
 
-// Runtime validation guard — keeps config in sync with schema
-export const REGIONAL_CONFIG: RegionalConfig = regionalConfigSchema.parse(rawRegionalConfig);
+export const REGIONAL_CONFIG: RegionalConfig = rawRegionalConfig;
 
 /** Locale string for toLocaleDateString / toLocaleTimeString / toLocaleString calls. */
 export const REGIONAL_LOCALE = 'en-NG';

@@ -134,10 +134,7 @@ export const BILLING_CONFIG = {
  */
 export function getSubscriptionPrice(tier: SubscriptionTier): number {
   const price = BILLING_CONFIG.PRICING[tier];
-  if (price === undefined) {
-    console.error(`[Billing] Unknown subscription tier: ${tier} — falling back to STARTER`);
-    return BILLING_CONFIG.PRICING[SubscriptionTier.STARTER] ?? 0;
-  }
+  if (price === undefined) throw new Error(`[Billing] Unknown subscription tier: ${tier}`);
   return price;
 }
 
@@ -192,59 +189,6 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
   const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / 86_400_000);
 
   return daysSinceLastAttempt >= daysToWait;
-}
-
-/**
- * Input for a single delivery's allocation calculation.
- */
-export interface AllocationDeliveryInput {
-  id: string;
-  price: number | null;
-}
-
-/**
- * Result of allocation: a target with delivery ID and amount to apply.
- */
-export interface AllocationTarget {
-  deliveryId: string;
-  amountToApply: number;
-}
-
-/**
- * Pure allocation algorithm: splits `remainingAmount` across deliveries
- * sorted by createdAt (oldest first), filling outstanding balances greedily.
- *
- * Returns the allocation targets and any fully-paid delivery IDs.
- * Does NOT perform DB writes — callers handle persistence.
- */
-export function computeAllocationTargets(
-  deliveryRows: AllocationDeliveryInput[],
-  paidAmounts: Map<string, number>,
-  remainingAmount: number,
-): { targets: AllocationTarget[]; fullyPaidIds: string[]; leftover: number } {
-  const targets: AllocationTarget[] = [];
-  const fullyPaidIds: string[] = [];
-  let leftover = remainingAmount;
-
-  for (const delivery of deliveryRows) {
-    if (leftover <= 0) break;
-
-    const price = delivery.price ?? 0;
-    const alreadyPaid = paidAmounts.get(delivery.id) || 0;
-    const outstanding = Math.max(0, price - alreadyPaid);
-
-    if (outstanding <= 0) continue;
-
-    const amountToApply = Math.min(leftover, outstanding);
-    leftover -= amountToApply;
-    targets.push({ deliveryId: delivery.id, amountToApply });
-
-    if (alreadyPaid + amountToApply >= price) {
-      fullyPaidIds.push(delivery.id);
-    }
-  }
-
-  return { targets, fullyPaidIds, leftover };
 }
 
 /**

@@ -12,13 +12,13 @@ import {
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
-  computeAllocationTargets,
   computeAccessLevel,
 } from '../src/config/billing.config.js';
 import {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
   processPaymentAllocation,
+  computeAllocationTargets,
 } from '../src/services/payments.js';
 import type { PaymentAllocationTransaction } from '../src/services/payments.js';
 import {
@@ -124,8 +124,8 @@ describe('getSubscriptionPrice', () => {
     expect(getSubscriptionPrice(SubscriptionTier.PROFESSIONAL)).toBe(3_000_000);
   });
 
-  it('falls back to STARTER for unknown tier', () => {
-    expect(getSubscriptionPrice('UNKNOWN' as SubscriptionTier)).toBe(1_500_000);
+  it('throws for an unknown tier', () => {
+    expect(() => getSubscriptionPrice('UNKNOWN' as SubscriptionTier)).toThrow();
   });
 });
 
@@ -663,8 +663,8 @@ describe('processPaymentAllocation', () => {
     ]);
   });
 
-  it('does nothing when there are no linked allocations', async () => {
-    const { tx } = mockTx({});
+  it('credits the full amount to the payer ledger for allocation-less wallet top-ups', async () => {
+    const { tx, sets } = mockTx({});
 
     const result = await processPaymentAllocation(tx as never, {
       id: 'T1',
@@ -673,10 +673,32 @@ describe('processPaymentAllocation', () => {
       deliveryAllocations: [],
     });
 
-    expect(result).toEqual({ fullyPaidIds: [], updatedDeliveryIds: [], creditedCompanyIds: [] });
+    expect(result).toEqual({
+      fullyPaidIds: [],
+      updatedDeliveryIds: [],
+      creditedCompanyIds: ['C1'],
+    });
     expect(tx.select).not.toHaveBeenCalled();
+    expect(tx.insert).not.toHaveBeenCalled();
+    const payerUpdate = sets.filter((s) => s.table === companySettings);
+    expect(payerUpdate).toHaveLength(1);
+    expect(sqlNumberValues(payerUpdate[0].value)).toContain(500);
+  });
+
+  it('skips the ledger credit when an allocation-less transaction has no company', async () => {
+    const { tx, sets } = mockTx({});
+
+    const result = await processPaymentAllocation(tx as never, {
+      id: 'T1',
+      amount: 500,
+      companyId: null,
+      deliveryAllocations: [],
+    });
+
+    expect(result).toEqual({ fullyPaidIds: [], updatedDeliveryIds: [], creditedCompanyIds: [] });
     expect(tx.update).not.toHaveBeenCalled();
     expect(tx.insert).not.toHaveBeenCalled();
+    expect(sets).toHaveLength(0);
   });
 
   it('is idempotent: re-processing an already-allocated transaction is a no-op', async () => {

@@ -1,7 +1,6 @@
 import { and, asc, eq, gt, inArray, sql, sum } from 'drizzle-orm';
 import type { DrizzleDB } from './queue.service.js';
 import { randomUUID } from 'node:crypto';
-import { computeAllocationTargets } from '../config/billing.config.js';
 import {
   PaymentStatus,
   DeliveryStatus,
@@ -101,6 +100,46 @@ export async function applyPaymentStatusUpdate(
   return result.map((r) => r.id);
 }
 
+// ─── Allocation algorithm (moved from billing.config) ───────────────────────
+
+export interface AllocationDeliveryInput {
+  id: string;
+  price: number | null;
+}
+
+export interface AllocationTarget {
+  deliveryId: string;
+  amountToApply: number;
+}
+
+/**
+ * Pure allocation algorithm: splits `remainingAmount` across deliveries
+ * sorted by createdAt (oldest first), filling outstanding balances greedily.
+ */
+export function computeAllocationTargets(
+  deliveryRows: AllocationDeliveryInput[],
+  paidAmounts: Map<string, number>,
+  remainingAmount: number,
+): { targets: AllocationTarget[]; fullyPaidIds: string[]; leftover: number } {
+  const targets: AllocationTarget[] = [];
+  const fullyPaidIds: string[] = [];
+  let leftover = remainingAmount;
+
+  for (const delivery of deliveryRows) {
+    if (leftover <= 0) break;
+    const price = delivery.price ?? 0;
+    const alreadyPaid = paidAmounts.get(delivery.id) || 0;
+    const outstanding = Math.max(0, price - alreadyPaid);
+    if (outstanding <= 0) continue;
+    const amountToApply = Math.min(leftover, outstanding);
+    leftover -= amountToApply;
+    targets.push({ deliveryId: delivery.id, amountToApply });
+    if (alreadyPaid + amountToApply >= price) fullyPaidIds.push(delivery.id);
+  }
+
+  return { targets, fullyPaidIds, leftover };
+}
+
 type AllocationDeliveryRow = {
   id: string;
   price: number | null;
@@ -134,6 +173,7 @@ export async function processPaymentAllocation(
 
   const existingAllocations = transaction.deliveryAllocations || [];
   const deliveryIds = existingAllocations.map((a) => a.deliveryId);
+  let remainingAmount = transaction.amount;
 
   if (deliveryIds.length > 0) {
     // Idempotency guard (CT-C-01): init-time allocation rows carry amount 0,
@@ -153,8 +193,6 @@ export async function processPaymentAllocation(
     if (processed.length > 0) {
       return { fullyPaidIds: [], updatedDeliveryIds: [], creditedCompanyIds: [] };
     }
-
-    let remainingAmount = transaction.amount;
 
     for (let i = 0; i < deliveryIds.length; i += LIMITS_CONFIG.dbBatchSize) {
       const batch = deliveryIds.slice(i, i + LIMITS_CONFIG.dbBatchSize);
@@ -247,13 +285,17 @@ export async function processPaymentAllocation(
       }
     }
 
-    if (remainingAmount > 0 && transaction.companyId) {
-      await tx
-        .update(companySettings)
-        .set({ ledgerBalance: sql`${companySettings.ledgerBalance} + ${remainingAmount}` })
-        .where(eq(companySettings.companyId, transaction.companyId));
-      creditedCompanyIds.add(transaction.companyId);
-    }
+  }
+
+  // Any amount not consumed by delivery allocations flows to the payer's ledger
+  // balance. Allocation-less transactions (e.g. `fundWallet` wallet top-ups)
+  // credit the full amount here.
+  if (remainingAmount > 0 && transaction.companyId) {
+    await tx
+      .update(companySettings)
+      .set({ ledgerBalance: sql`${companySettings.ledgerBalance} + ${remainingAmount}` })
+      .where(eq(companySettings.companyId, transaction.companyId));
+    creditedCompanyIds.add(transaction.companyId);
   }
 
   if (fullyPaidIds.length > 0) {

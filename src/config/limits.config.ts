@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { SubscriptionTier } from '../enums/enums.js';
 import { DATA_RETENTION } from './billing.config.js';
 
@@ -36,19 +35,6 @@ export interface LimitsConfig {
  */
 export const DEFAULT_MESSAGE_LIMIT = 4096;
 
-const limitsConfigSchema = z.object({
-  maxBatchSize: z.number(),
-  dbBatchSize: z.number(),
-  userActionConcurrency: z.number(),
-  externalApiConcurrency: z.number(),
-  maxQueryLimit: z.number(),
-  syncPageSize: z.number(),
-  locationDeduplicationRadiusMeters: z.number(),
-  externalApiTimeoutMs: z.number(),
-  maxRiderActiveDeliveries: z.number(),
-  maxSearchQueryLength: z.number(),
-});
-
 const rawLimitsConfig = {
   maxBatchSize: 50, // Max actions executed per agent turn (system protection)
   dbBatchSize: 100, // Max rows per DB bulk operation for background/flush jobs (executeInBatches)
@@ -62,8 +48,18 @@ const rawLimitsConfig = {
   maxSearchQueryLength: 100,
 } as const;
 
-// Runtime validation guard — keeps config in sync with schema
-export const LIMITS_CONFIG: LimitsConfig = limitsConfigSchema.parse(rawLimitsConfig);
+export const LIMITS_CONFIG: LimitsConfig = rawLimitsConfig;
+
+/**
+ * Pagination defaults. Centralised here alongside LIMITS_CONFIG — both are
+ * query-size constants consumed by every service that pages results.
+ */
+export const PAGINATION_CONFIG = {
+  /** Default page size for regular API / GraphQL queries. */
+  DEFAULT_LIMIT: 20,
+  /** Admin-specific page size (admins typically need larger result sets). */
+  ADMIN_DEFAULT_LIMIT: 50,
+} as const;
 
 /**
  * Tier-based limits - ALL operational limits are tier-aware
@@ -98,9 +94,6 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 
 export function getTierLimits(tier: SubscriptionTier): TierLimits {
   const limits = TIER_LIMITS[tier];
-  if (limits === undefined) {
-    console.error(`[Limits] Unknown subscription tier: ${tier} — falling back to STARTER`);
-    return TIER_LIMITS[SubscriptionTier.STARTER];
-  }
+  if (limits === undefined) throw new Error(`[Limits] Unknown subscription tier: ${tier}`);
   return limits;
 }

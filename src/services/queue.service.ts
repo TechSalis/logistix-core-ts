@@ -44,6 +44,8 @@ export interface DrainOptions {
   timeBudgetMs?: number;
   /** Dequeue claim batch size. Default QUEUE_SERVICE_CONFIG.batchSize (5). */
   batchSize?: number;
+  /** Optional error logger. Defaults to console.error when not provided. */
+  onError?: (message: string, error?: unknown) => void;
 }
 
 export interface DrainResult {
@@ -286,18 +288,20 @@ class QueueService {
     handler: QueueHandler,
     options: DrainOptions,
   ): Promise<DrainResult> {
-    const { maxJobs, timeBudgetMs, batchSize = QUEUE_SERVICE_CONFIG.batchSize } = options;
+    const { maxJobs, timeBudgetMs, batchSize = QUEUE_SERVICE_CONFIG.batchSize, onError } = options;
     const startTime = Date.now();
     const stats: DrainResult = { processed: 0, succeeded: 0, failed: 0 };
 
     // Prune terminal (COMPLETED/FAILED/CANCELLED) rows on a time gate so the
     // table never grows unbounded without paying for a DELETE on every poll.
+    const log = onError ?? ((msg: string, err?: unknown) => console.error(msg, err));
+
     if (Date.now() - this.lastPruneAtMs >= QUEUE_SERVICE_CONFIG.pruneIntervalMs) {
       this.lastPruneAtMs = Date.now();
       try {
         await this.pruneTerminal(db, type);
       } catch (e) {
-        console.error('[Queue] Failed to prune terminal jobs', e);
+        log('[Queue] Failed to prune terminal jobs', e);
       }
     }
 
@@ -305,7 +309,7 @@ class QueueService {
     try {
       await this.retryStalled(db, type);
     } catch (e) {
-      console.error('[Queue] Failed to retry stalled jobs', e);
+      log('[Queue] Failed to retry stalled jobs', e);
     }
 
     for (;;) {
@@ -316,7 +320,7 @@ class QueueService {
       try {
         jobs = await this.dequeue(db, type, batchSize);
       } catch (e) {
-        console.error('[Queue] Dequeue failed', e);
+        log('[Queue] Dequeue failed', e);
         break;
       }
 
@@ -333,7 +337,7 @@ class QueueService {
           try {
             await this.complete(db, job.id);
           } catch {
-            console.error('[Queue] Failed to mark job as completed');
+            log('[Queue] Failed to mark job as completed');
           }
           stats.succeeded++;
         } catch (error) {
@@ -345,7 +349,7 @@ class QueueService {
               await this.fail(db, job.id, extractErrorMessage(error));
             }
           } catch {
-            console.error('[Queue] Failed to mark job as failed');
+            log('[Queue] Failed to mark job as failed');
           }
         }
       }

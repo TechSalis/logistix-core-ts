@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 /**
  * Client-facing configuration served to business web + Flutter via the
  * `clientConfig` GraphQL query and the SSE `companyUpdated` payload.
@@ -16,13 +14,6 @@ export interface ClientConfig {
   };
 }
 
-const clientConfigSchema = z.object({
-  pollIntervals: z.object({
-    normalMs: z.number(),
-    degradedMs: z.number(),
-  }),
-});
-
 const rawClientConfig = {
   pollIntervals: {
     // Normal: lazy background sync cadence. SSE carries live updates, so a
@@ -34,5 +25,4 @@ const rawClientConfig = {
   },
 } as const;
 
-// Runtime validation guard — keeps config in sync with schema
-export const CLIENT_CONFIG: ClientConfig = clientConfigSchema.parse(rawClientConfig);
+export const CLIENT_CONFIG: ClientConfig = rawClientConfig;

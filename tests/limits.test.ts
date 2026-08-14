@@ -82,8 +82,7 @@ describe('getTierLimits', () => {
     expect(limits.maxRiders).toBe(100);
   });
 
-  it('falls back to STARTER for unknown tier', () => {
-    const limits = getTierLimits('UNKNOWN' as SubscriptionTier);
-    expect(limits.maxDispatchers).toBe(2);
+  it('throws for an unknown tier', () => {
+    expect(() => getTierLimits('UNKNOWN' as SubscriptionTier)).toThrow();
   });
 });

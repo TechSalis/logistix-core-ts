@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { SubscriptionTier } from '../enums/enums.js';
 import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from '../utils/time.js';
 
@@ -39,42 +38,6 @@ export interface SecurityConfig {
     readonly securityPinMaxRange: number;
   };
 }
-
-const securityConfigSchema = z.object({
-  rateLimits: z.object({
-    global: z.object({ max: z.number(), windowMs: z.number() }),
-    auth: z.object({ max: z.number(), windowMs: z.number() }),
-    login: z.object({ max: z.number(), windowMs: z.number() }),
-    register: z.object({ max: z.number(), windowMs: z.number() }),
-    tiers: z.record(
-      z.nativeEnum(SubscriptionTier),
-      z.object({ max: z.number(), windowMs: z.number() }),
-    ),
-  }),
-  jwt: z.object({
-    jwtExpiresIn: z.string(),
-    jwtRefreshExpiresIn: z.string(),
-  }),
-  blocks: z.object({
-    temporaryLadderMs: z.array(z.number()),
-    escalateAfterBlocks: z.number(),
-    escalationWindowMs: z.number(),
-    persistentEscalatedMs: z.number(),
-    maxPersistentMs: z.number(),
-  }),
-  headers: z.record(z.string(), z.string()),
-  maliciousPatterns: z.array(z.instanceof(RegExp)),
-  validation: z.object({
-    maxEmailLength: z.number(),
-    maxPasswordLength: z.number(),
-    maxNameLength: z.number(),
-    maxDescriptionLength: z.number(),
-    maxPhoneLength: z.number(),
-    maxAddressLength: z.number(),
-    securityPinMinRange: z.number(),
-    securityPinMaxRange: z.number(),
-  }),
-});
 
 const rawSecurityConfig = {
   rateLimits: {
@@ -124,5 +87,4 @@ const rawSecurityConfig = {
   },
 } as const;
 
-// Runtime validation guard — keeps config in sync with schema
-export const SECURITY_CONFIG: SecurityConfig = securityConfigSchema.parse(rawSecurityConfig);
+export const SECURITY_CONFIG: SecurityConfig = rawSecurityConfig;

@@ -98,6 +98,7 @@ export {
 // ─── Limits ───────────────────────────────────────────────────────────────────
 export {
   LIMITS_CONFIG,
+  PAGINATION_CONFIG,
   TIER_LIMITS,
   getTierLimits,
   DEFAULT_MESSAGE_LIMIT,
@@ -106,6 +107,10 @@ export type { TierLimits } from './config/limits.config.js';
 
 // ─── Delivery rules ───────────────────────────────────────────────────────────
 export { ALLOWED_STATUS_TRANSITIONS } from './config/delivery.config.js';
+
+// ─── Pricing ──────────────────────────────────────────────────────────────────
+export { DEFAULT_PRICING_SCHEMES } from './config/pricing.config.js';
+export type { PricingScheme } from './config/pricing.config.js';
 
 // ─── Client config ────────────────────────────────────────────────────────────
 export { CLIENT_CONFIG } from './config/client.config.js';
@@ -152,8 +157,14 @@ export {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
   processPaymentAllocation,
+  computeAllocationTargets,
 } from './services/payments.js';
-export type { PaymentAllocationTransaction, PaymentAllocationResult } from './services/payments.js';
+export type {
+  PaymentAllocationTransaction,
+  PaymentAllocationResult,
+  AllocationDeliveryInput,
+  AllocationTarget,
+} from './services/payments.js';
 
 // ─── Squad client ────────────────────────────────────────────────────────────
 export { SquadClient, SquadRequestError } from './services/squad-client.js';
@@ -188,6 +199,9 @@ export {
 
 // ─── FCM Push Notifications ───────────────────────────────────────────────────
 export { FcmService, type FcmCredentials } from './services/fcm-sender.js';
+
+// ─── Supabase ─────────────────────────────────────────────────────────────────
+export { createSupabaseAdminClient, deleteSupabaseUser } from './services/supabase.js';
 
 // ─── Tracking ─────────────────────────────────────────────────────────────────
 export {
