@@ -1,0 +1,14 @@
+# gitleaks config — core-ts
+# Allowlist: generated/third-party dirs (not in scope for a first-party secret
+# gate) and the fcm-sender test fixture (dummy RSA private key used to exercise
+# JWT signing; not a real credential).
+[extend]
+
+[allowlist]
+paths = [
+  '''node_modules/''',
+  '''dist/''',
+  '''coverage/''',
+  '''\.git/''',
+  '''tests/fcm-sender\.test\.ts''',
+]
