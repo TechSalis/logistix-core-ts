@@ -183,6 +183,10 @@ export { QUEUE_SERVICE_CONFIG } from './config/service.config.js';
 // ─── Security ─────────────────────────────────────────────────────────────────
 export { SECURITY_CONFIG } from './config/security.config.js';
 
+// ─── Sessions ─────────────────────────────────────────────────────────────────
+export { SESSION_CONFIG } from './config/session.config.js';
+export type { SessionConfig } from './config/session.config.js';
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './utils/fetch-with-timeout.js';
 export { MS_PER_DAY, addDays } from './utils/time.js';
