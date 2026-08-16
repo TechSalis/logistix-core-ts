@@ -376,6 +376,12 @@ export enum JwtTokenType {
   REFRESH = 'refresh',
 }
 
+export enum DevicePlatform {
+  ANDROID = 'ANDROID',
+  IOS = 'IOS',
+  WEB = 'WEB',
+}
+
 export enum ContactCategory {
   PARTNERSHIP = 'Become a Partner',
   BUSINESS = 'For Business',

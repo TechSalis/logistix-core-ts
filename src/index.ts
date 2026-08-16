@@ -67,6 +67,7 @@ export {
   DeliveryExpiryReason,
   JwtTokenType,
   ContactCategory,
+  DevicePlatform,
   safeEnumValue,
   LEAD_CATEGORIES,
   CAC_EVIDENCE_STATUS,

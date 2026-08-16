@@ -43,6 +43,7 @@ import {
   EntityType,
   MetricDomain,
   MetricGranularity,
+  DevicePlatform,
 } from '../enums/enums.js';
 import { DEFAULT_WORKING_HOURS as defaultWorkingHours } from '../config/system.config.js';
 
@@ -84,6 +85,7 @@ export const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
 export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
 export const metricDomain = pgEnum('MetricDomain', enumValues(MetricDomain));
 export const metricGranularity = pgEnum('MetricGranularity', enumValues(MetricGranularity));
+export const devicePlatform = pgEnum('DevicePlatform', enumValues(DevicePlatform));
 
 export const companies = pgTable(
   'companies',
@@ -362,7 +364,6 @@ export const admins = pgTable(
     email: text().notNull(),
     fullName: text('full_name').notNull(),
     role: adminRoleEnum('role').notNull(),
-    fcmToken: text('fcm_token'),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -385,7 +386,6 @@ export const dispatchers = pgTable(
     email: text().notNull(),
     fullName: text('full_name').notNull(),
     companyId: text('company_id'),
-    fcmToken: text('fcm_token'),
     role: dispatcherRoleEnum('role').notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     deactivatedAt: timestamp('deactivated_at', { precision: 3, mode: 'date' }),
@@ -464,16 +464,53 @@ export const refreshSessions = pgTable(
   {
     jti: text('jti').primaryKey().notNull(),
     userId: text('user_id').notNull(),
+    deviceId: text('device_id').notNull(),
     tokenHash: text('token_hash').notNull(),
     issuedAt: timestamp('issued_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }).notNull(),
+    lastActiveAt: timestamp('last_active_at', { precision: 3, mode: 'date' }),
     revokedAt: timestamp('revoked_at', { precision: 3, mode: 'date' }),
     replacedBy: text('replaced_by'),
   },
   (table) => [
     index('refresh_sessions_user_id_idx').using(
+      'btree',
+      table.userId.asc().nullsLast().op('text_ops'),
+    ),
+  ],
+);
+
+export const deviceTokens = pgTable(
+  'device_tokens',
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId())
+      .notNull(),
+    userId: text('user_id').notNull(),
+    deviceId: text('device_id').notNull(),
+    platform: devicePlatform('platform').notNull(),
+    fcmToken: text('fcm_token'),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('device_tokens_user_id_device_id_key').using(
+      'btree',
+      table.userId.asc().nullsLast().op('text_ops'),
+      table.deviceId.asc().nullsLast().op('text_ops'),
+    ),
+    uniqueIndex('device_tokens_fcm_token_key').using(
+      'btree',
+      table.fcmToken.asc().nullsLast().op('text_ops'),
+    ),
+    index('device_tokens_user_id_idx').using(
       'btree',
       table.userId.asc().nullsLast().op('text_ops'),
     ),
@@ -618,7 +655,6 @@ export const riders = pgTable(
     lastLat: doublePrecision('last_lat'),
     lastLng: doublePrecision('last_lng'),
     lastSeen: timestamp('last_seen', { precision: 3, mode: 'date' }),
-    fcmToken: text('fcm_token'),
     companyId: text('company_id'),
     phoneNumber: text('phone_number'),
     metadata: jsonb(),
