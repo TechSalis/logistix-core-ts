@@ -192,6 +192,10 @@ export { fetchWithTimeout } from './utils/fetch-with-timeout.js';
 export { MS_PER_DAY, addDays } from './utils/time.js';
 export { mergeChannelCounts } from './utils/metrics.js';
 export { extractErrorMessage, extractErrorContext } from './utils/error-utils.js';
+export { computeExpiresAt, parseGraphError } from './utils/meta-graph.js';
+
+// ─── Encryption ───────────────────────────────────────────────────────────────
+export { createEncryptor, type Encryptor } from './services/encryption.js';
 
 // ─── Retry ────────────────────────────────────────────────────────────────────
 export {
