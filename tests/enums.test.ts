@@ -132,6 +132,7 @@ describe('Enums', () => {
         'AI_EXECUTION',
         'SECURITY_INCIDENT',
         'ADMIN_PROOF_READ',
+        'ADMIN_DOCUMENT_READ',
         'COMPANY_ACTIVATED',
         'COMPANY_DEACTIVATED',
         'COMPANY_TIER_CHANGED',

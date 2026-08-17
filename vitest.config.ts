@@ -1,8 +1,19 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-	test: {
-		include: ['tests/**/*.test.ts'],
-		environment: 'node',
-	},
+  test: {
+    include: ['tests/**/*.test.ts'],
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      reporter: ['text', 'lcov'],
+      thresholds: {
+        statements: 74,
+        functions: 67,
+        branches: 71,
+        lines: 75,
+      },
+    },
+  },
 });
