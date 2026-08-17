@@ -57,14 +57,6 @@ export const METRICS_RETENTION: Record<MetricGranularity, GranularityRetention> 
 };
 
 /**
- * Maximum trend window (days) for system-wide reads. Derived from the MONTH
- * granularity's retention (~5 years) so the admin system-trend clamp can never
- * drift from the compression ladder — anything beyond this horizon lives only
- * in the LIFETIME row, served separately via lifetime totals.
- */
-export const MAX_TREND_WINDOW_DAYS = METRICS_RETENTION[MetricGranularity.MONTH].retainFor * 30;
-
-/**
  * Ordered compression chain (finest -> coarsest). The workers fold each tier
  * in this order, so a coarse tier is always current before its own fold.
  */
@@ -72,13 +64,6 @@ export const METRICS_FOLD_CHAIN: readonly MetricGranularity[] = [
   MetricGranularity.DAY,
   MetricGranularity.WEEK,
   MetricGranularity.MONTH,
-];
-
-export const METRIC_DOMAINS: readonly MetricDomain[] = [
-  MetricDomain.DELIVERIES,
-  MetricDomain.CONVERSATIONS,
-  MetricDomain.RIDERS,
-  MetricDomain.REVENUE,
 ];
 
 /**
@@ -168,17 +153,4 @@ export function granularityForWindowDays(days: number): MetricGranularity {
     return MetricGranularity.WEEK;
   }
   return MetricGranularity.MONTH;
-}
-
-/**
- * Whether a read window extends beyond the finest granularity's retention and
- * therefore must also read the LIFETIME row to cover the horizon.
- */
-export function windowExceedsDayRetention(days: number): boolean {
-  return days > METRICS_RETENTION[MetricGranularity.DAY].retainFor;
-}
-
-/** True when the given granularity is LIFETIME. */
-export function isLifetime(granularity: MetricGranularity): boolean {
-  return granularity === MetricGranularity.LIFETIME;
 }

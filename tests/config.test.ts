@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildSystemConfig,
-  SHARED_SYSTEM_CONFIG,
   BRAND_NAME,
   DEFAULT_WORKING_HOURS,
 } from '../src/config/system.config.js';
@@ -51,12 +50,6 @@ describe('buildSystemConfig', () => {
 describe('BRAND_NAME constant', () => {
   it('is Logistix AI', () => {
     expect(BRAND_NAME).toBe('Logistix AI');
-  });
-});
-
-describe('SHARED_SYSTEM_CONFIG singleton', () => {
-  it('has customerBaseUrl property', () => {
-    expect(SHARED_SYSTEM_CONFIG).toHaveProperty('customerBaseUrl');
   });
 });
 

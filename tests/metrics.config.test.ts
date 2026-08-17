@@ -2,13 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   METRICS_RETENTION,
   METRICS_FOLD_CHAIN,
-  METRIC_DOMAINS,
   METRIC_DOMAIN_MAPPINGS,
   LIFETIME_BUCKET_START,
-  MAX_TREND_WINDOW_DAYS,
   granularityForWindowDays,
-  windowExceedsDayRetention,
-  isLifetime,
 } from '../src/config/metrics.config.js';
 import { MetricDomain, MetricGranularity } from '../src/enums/enums.js';
 
@@ -57,22 +53,18 @@ describe('METRICS_FOLD_CHAIN', () => {
   });
 });
 
-describe('METRIC_DOMAINS', () => {
-  it('includes all four domains', () => {
-    expect(METRIC_DOMAINS).toEqual([
-      MetricDomain.DELIVERIES,
-      MetricDomain.CONVERSATIONS,
-      MetricDomain.RIDERS,
-      MetricDomain.REVENUE,
-    ]);
-  });
-});
-
 describe('METRIC_DOMAIN_MAPPINGS', () => {
   it('maps every domain exactly once', () => {
     const domains = METRIC_DOMAIN_MAPPINGS.map((m) => m.domain);
     expect(new Set(domains).size).toBe(domains.length);
-    expect(domains).toEqual(expect.arrayContaining(METRIC_DOMAINS));
+    expect(domains).toEqual(
+      expect.arrayContaining([
+        MetricDomain.DELIVERIES,
+        MetricDomain.CONVERSATIONS,
+        MetricDomain.RIDERS,
+        MetricDomain.REVENUE,
+      ]),
+    );
   });
 
   it('DELIVERIES uses the full delivery-specific column set', () => {
@@ -102,16 +94,6 @@ describe('LIFETIME_BUCKET_START', () => {
   });
 });
 
-describe('MAX_TREND_WINDOW_DAYS', () => {
-  it('derives from MONTH retention so it can never drift from the ladder', () => {
-    expect(MAX_TREND_WINDOW_DAYS).toBe(METRICS_RETENTION[MetricGranularity.MONTH].retainFor * 30);
-  });
-
-  it('covers roughly the 5-year MONTH horizon', () => {
-    expect(MAX_TREND_WINDOW_DAYS).toBe(60 * 30);
-  });
-});
-
 describe('granularityForWindowDays', () => {
   it('returns DAY within the 90-day window', () => {
     expect(granularityForWindowDays(1)).toBe(MetricGranularity.DAY);
@@ -126,22 +108,5 @@ describe('granularityForWindowDays', () => {
   it('returns MONTH beyond 12 months', () => {
     expect(granularityForWindowDays(361)).toBe(MetricGranularity.MONTH);
     expect(granularityForWindowDays(5000)).toBe(MetricGranularity.MONTH);
-  });
-});
-
-describe('windowExceedsDayRetention', () => {
-  it('is false within the day retention window', () => {
-    expect(windowExceedsDayRetention(90)).toBe(false);
-  });
-
-  it('is true beyond it', () => {
-    expect(windowExceedsDayRetention(91)).toBe(true);
-  });
-});
-
-describe('isLifetime', () => {
-  it('is true only for LIFETIME', () => {
-    expect(isLifetime(MetricGranularity.LIFETIME)).toBe(true);
-    expect(isLifetime(MetricGranularity.DAY)).toBe(false);
   });
 });

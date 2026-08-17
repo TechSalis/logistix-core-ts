@@ -80,7 +80,6 @@ export {
   BRAND_NAME,
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
-  SHARED_SYSTEM_CONFIG,
   DEFAULT_WORKING_HOURS,
 } from './config/system.config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
@@ -111,7 +110,6 @@ export { ALLOWED_STATUS_TRANSITIONS } from './config/delivery.config.js';
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 export { DEFAULT_PRICING_SCHEMES } from './config/pricing.config.js';
-export type { PricingScheme } from './config/pricing.config.js';
 
 // ─── Client config ────────────────────────────────────────────────────────────
 export { CLIENT_CONFIG } from './config/client.config.js';
@@ -127,13 +125,9 @@ export { RETENTION_CONFIG } from './config/retention.config.js';
 export {
   METRICS_RETENTION,
   METRICS_FOLD_CHAIN,
-  METRIC_DOMAINS,
   METRIC_DOMAIN_MAPPINGS,
   LIFETIME_BUCKET_START,
-  MAX_TREND_WINDOW_DAYS,
   granularityForWindowDays,
-  windowExceedsDayRetention,
-  isLifetime,
 } from './config/metrics.config.js';
 
 // ─── Billing ──────────────────────────────────────────────────────────────────
@@ -158,14 +152,8 @@ export {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
   processPaymentAllocation,
-  computeAllocationTargets,
 } from './services/payments.js';
-export type {
-  PaymentAllocationTransaction,
-  PaymentAllocationResult,
-  AllocationDeliveryInput,
-  AllocationTarget,
-} from './services/payments.js';
+export type { PaymentAllocationTransaction, PaymentAllocationResult } from './services/payments.js';
 
 // ─── Squad client ────────────────────────────────────────────────────────────
 export { SquadClient, SquadRequestError } from './services/squad-client.js';
@@ -185,7 +173,6 @@ export { SECURITY_CONFIG } from './config/security.config.js';
 
 // ─── Sessions ─────────────────────────────────────────────────────────────────
 export { SESSION_CONFIG } from './config/session.config.js';
-export type { SessionConfig } from './config/session.config.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './utils/fetch-with-timeout.js';

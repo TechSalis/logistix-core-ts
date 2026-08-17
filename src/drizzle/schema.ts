@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   pgTable,
+  pgSchema,
   timestamp,
   text,
   date,
@@ -86,6 +87,13 @@ export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(Dispatcher
 export const metricDomain = pgEnum('MetricDomain', enumValues(MetricDomain));
 export const metricGranularity = pgEnum('MetricGranularity', enumValues(MetricGranularity));
 export const devicePlatform = pgEnum('DevicePlatform', enumValues(DevicePlatform));
+
+const authSchema = pgSchema('auth');
+
+export const users = authSchema.table('users', {
+  id: text().primaryKey().notNull(),
+  phoneVerifiedAt: timestamp('phone_verified_at', { precision: 3, mode: 'date' }),
+});
 
 export const companies = pgTable(
   'companies',
