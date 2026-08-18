@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   unique,
   index,
+
   boolean,
   foreignKey,
   jsonb,
@@ -291,6 +292,7 @@ export const conversations = pgTable(
       'btree',
       table.lastMessageAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('conversations_metadata_gin').using('gin', table.metadata),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -520,10 +522,7 @@ export const deviceTokens = pgTable(
       'btree',
       table.fcmToken.asc().nullsLast().op('text_ops'),
     ),
-    index('device_tokens_user_id_idx').using(
-      'btree',
-      table.userId.asc().nullsLast().op('text_ops'),
-    ),
+
   ],
 );
 
@@ -573,11 +572,7 @@ export const deliveries = pgTable(
       table.companyId.asc().nullsLast().op('text_ops'),
       table.status.asc().nullsLast().op('enum_ops'),
     ),
-    index('deliveries_company_id_created_by_idx').using(
-      'btree',
-      table.companyId.asc().nullsLast().op('text_ops'),
-      table.createdBy.asc().nullsLast().op('text_ops'),
-    ),
+
     index('deliveries_company_id_updated_at_idx').using(
       'btree',
       table.companyId.asc().nullsLast().op('text_ops'),
@@ -603,21 +598,23 @@ export const deliveries = pgTable(
       'btree',
       table.trackingId.asc().nullsLast().op('text_ops'),
     ),
-    index('deliveries_tracking_id_pin_idx').using(
-      'btree',
-      table.trackingId.asc().nullsLast().op('text_ops'),
-      table.pin.asc().nullsLast().op('text_ops'),
-    ),
-    index('deliveries_pickup_phone_idx').using(
-      'btree',
-      table.pickupPhone.asc().nullsLast().op('text_ops'),
-    ),
-    index('deliveries_drop_off_phone_idx').using(
-      'btree',
-      table.dropOffPhone.asc().nullsLast().op('text_ops'),
-    ),
+
     index('deliveries_pickup_state_idx').on(table.pickupState),
-    index('deliveries_creator_platform_idx').on(table.creatorPlatform),
+    index('deliveries_keyset_pagination_idx').using(
+      'btree',
+      table.companyId.asc().nullsLast().op('text_ops'),
+      table.updatedAt.desc().nullsLast().op('timestamp_ops'),
+      table.id.desc().nullsLast().op('text_ops'),
+    ),
+    index('deliveries_pending_pool_pickup_state')
+      .using(
+        'btree',
+        table.companyId.asc().nullsLast().op('text_ops'),
+        table.pickupState.asc().nullsLast().op('text_ops'),
+        table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
+        table.id.asc().nullsLast().op('text_ops'),
+      )
+      .where(sql`${table.status} = 'PENDING' AND ${table.pool} = true AND ${table.riderId} IS NULL`),
     index('deliveries_status_created_at_idx').using(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),
@@ -632,6 +629,7 @@ export const deliveries = pgTable(
       'btree',
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('deliveries_metadata_gin').using('gin', table.metadata),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
@@ -943,6 +941,7 @@ export const eventLogs = pgTable(
       'btree',
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('event_logs_metadata_gin').using('gin', table.metadata),
   ],
 );
 
