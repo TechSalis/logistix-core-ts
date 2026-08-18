@@ -91,9 +91,11 @@ export const BILLING_CONFIG = {
   PURGE_AFTER_CANCELLED_DAYS: RETENTION_CONFIG.lockedCompanyPurgeRetentionDays,
 
   /**
-   * Payment timeout for unconfirmed payment deliveries (in hours)
+   * Payment timeout for unconfirmed payment deliveries (in hours).
+   * 10 minutes gives room for webhook delays without leaving users hanging.
+   * The daily payment-reconciliation cron is the backstop for edge cases.
    */
-  PAYMENT_TIMEOUT_HOURS: 0.5,
+  PAYMENT_TIMEOUT_HOURS: 1,
 
   /**
    * Fixed outsource cut (in Kobo) charged to the originating company when a

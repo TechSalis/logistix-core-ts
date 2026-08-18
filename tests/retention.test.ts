@@ -6,8 +6,8 @@ describe('RETENTION_CONFIG', () => {
     expect(RETENTION_CONFIG.accountPurgeRetentionDays).toBe(90);
   });
 
-  it('deactivates inactive companies after 180 days', () => {
-    expect(RETENTION_CONFIG.companyPurgeRetentionDays).toBe(180);
+  it('deactivates inactive companies after 90 days', () => {
+    expect(RETENTION_CONFIG.companyPurgeRetentionDays).toBe(90);
   });
 
   it('purges deactivated companies after 30 days', () => {

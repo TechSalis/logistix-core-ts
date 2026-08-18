@@ -15,8 +15,10 @@ export interface RetentionConfig {
   readonly accountPurgeRetentionDays: number;
 
   /**
-   * Days of inactivity before a company is flagged for deactivation.
-   * After this period, the company enters a locked state (deactivatedAt set).
+   * Days of inactivity (no rider/dispatcher activity) before a company is
+   * automatically deactivated. After deactivation, `lockedCompanyPurgeRetentionDays`
+   * controls how long until permanent purge. Aligned with accountPurgeRetentionDays
+   * so companies and individual accounts have comparable lifetimes.
    */
   readonly companyPurgeRetentionDays: number;
 
@@ -44,7 +46,8 @@ const retentionConfigSchema = z.object({
 
 const rawRetentionConfig = {
   accountPurgeRetentionDays: 90,
-  companyPurgeRetentionDays: 180,
+  // Matches account purge — no reason to keep deactivated companies 2× longer
+  companyPurgeRetentionDays: 90,
   lockedCompanyPurgeRetentionDays: 30,
   eventLogRetentionMonths: 12,
 } as const;
