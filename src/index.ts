@@ -188,6 +188,7 @@ export { createEncryptor, type Encryptor } from './services/encryption.js';
 export {
   withRetry,
   sleep,
+  isTransientHttpError,
   RETRYABLE_NETWORK_ERROR_CODES,
   RETRYABLE_SQLSTATE_CODES,
   type WithRetryOptions,
