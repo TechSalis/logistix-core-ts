@@ -27,6 +27,7 @@ export interface LimitsConfig {
   readonly externalApiTimeoutMs: number;
   readonly maxRiderActiveDeliveries: number;
   readonly maxSearchQueryLength: number;
+  readonly chunkSize: number;
 }
 
 /**
@@ -46,6 +47,7 @@ const rawLimitsConfig = {
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   maxRiderActiveDeliveries: 5,
   maxSearchQueryLength: 100,
+  chunkSize: 100,
 } as const;
 
 export const LIMITS_CONFIG: LimitsConfig = rawLimitsConfig;

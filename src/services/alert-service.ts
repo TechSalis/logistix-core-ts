@@ -1,11 +1,15 @@
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 const ALERT_COOLDOWN_MS = 5 * 60 * 1000;
 const recentAlerts = new Map<string, number>();
+
+function getDiscordWebhookUrl(): string | undefined {
+  return process.env.DISCORD_WEBHOOK_URL;
+}
 
 export type AlertLevel = 'info' | 'warning' | 'critical';
 
 export async function sendAlert(level: AlertLevel, title: string, details: string): Promise<void> {
-  if (!DISCORD_WEBHOOK_URL) return;
+  const webhookUrl = getDiscordWebhookUrl();
+  if (!webhookUrl) return;
   const key = `${title}:${level}`;
   const lastSent = recentAlerts.get(key) ?? 0;
   if (Date.now() - lastSent < ALERT_COOLDOWN_MS) return;
@@ -18,7 +22,7 @@ export async function sendAlert(level: AlertLevel, title: string, details: strin
         ? '\u{26A0}\u{FE0F}'
         : '\u{2139}\u{FE0F}';
   try {
-    await fetch(DISCORD_WEBHOOK_URL, {
+    await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
