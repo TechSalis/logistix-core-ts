@@ -160,6 +160,7 @@ export { SquadClient, SquadRequestError } from './services/squad-client.js';
 
 // ─── Services ────────────────────────────────────────────────────────────────
 export { EmailService } from './services/email.service.js';
+export { sendAlert, type AlertLevel } from './services/alert-service.js';
 export {
   queueService,
   PermanentJobError,
