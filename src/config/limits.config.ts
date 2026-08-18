@@ -39,7 +39,7 @@ const rawLimitsConfig = {
   maxBatchSize: 50, // Max actions executed per agent turn (system protection)
   dbBatchSize: 100, // Max rows per DB bulk operation for background/flush jobs (executeInBatches)
   userActionConcurrency: 10, // Chunk size for user-flow operations (chunkedPromiseAll) to avoid spiking DB connections
-  externalApiConcurrency: 5, // Capped concurrency for external APIs like Google Maps to avoid rate limits
+  externalApiConcurrency: 10, // Capped concurrency for external APIs like Google Maps to avoid rate limits
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
   syncPageSize: 100, // Client sync page size served via clientConfig
   locationDeduplicationRadiusMeters: 200, // Drop duplicate location results within this range

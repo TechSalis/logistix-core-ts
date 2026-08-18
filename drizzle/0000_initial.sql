@@ -406,11 +406,3 @@ CREATE UNIQUE INDEX "riders_user_id_key" ON "riders" USING btree ("user_id" text
 CREATE INDEX "subscription_transactions_company_id_created_at_idx" ON "subscription_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_status_idx" ON "subscription_transactions" USING btree ("status" enum_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
-CREATE TABLE "rider_bans" (
-	"id" text PRIMARY KEY NOT NULL,
-	"rider_id" text NOT NULL,
-	"expires_at" timestamp(3) NOT NULL,
-	"created_at" timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);--> statement-breakpoint
-CREATE INDEX "rider_bans_rider_id_idx" ON "rider_bans" USING btree ("rider_id" text_ops);--> statement-breakpoint
-CREATE INDEX "rider_bans_expires_at_idx" ON "rider_bans" USING btree ("expires_at" timestamp_ops);

@@ -178,7 +178,7 @@ export { SESSION_CONFIG } from './config/session.config.js';
 // ─── Utilities ────────────────────────────────────────────────────────────────
 export { fetchWithTimeout } from './utils/fetch-with-timeout.js';
 export { MS_PER_DAY, addDays } from './utils/time.js';
-export { haversineDistanceMeters } from './utils/geo.js';
+export { haversineDistanceMeters, haversineDistanceKm } from './utils/geo.js';
 export { mergeChannelCounts } from './utils/metrics.js';
 export { extractErrorMessage, extractErrorContext } from './utils/error-utils.js';
 export { computeExpiresAt, parseGraphError } from './utils/meta-graph.js';

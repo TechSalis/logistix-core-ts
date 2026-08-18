@@ -1,4 +1,5 @@
 const EARTH_RADIUS_M = 6_371_000;
+const EARTH_RADIUS_KM = 6_371;
 
 export function haversineDistanceMeters(
   lat1: number,
@@ -13,4 +14,15 @@ export function haversineDistanceMeters(
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function haversineDistanceKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+  routingFactor = 1.3,
+): number {
+  const meters = haversineDistanceMeters(lat1, lng1, lat2, lng2);
+  return (meters / 1000) * routingFactor;
 }

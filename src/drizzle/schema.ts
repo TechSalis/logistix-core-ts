@@ -712,25 +712,6 @@ export const riders = pgTable(
   ],
 );
 
-export const riderBans = pgTable(
-  'rider_bans',
-  {
-    id: text()
-      .primaryKey()
-      .$defaultFn(() => createId())
-      .notNull(),
-    riderId: text('rider_id').notNull(),
-    expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }).notNull(),
-    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  },
-  (table) => [
-    index('rider_bans_rider_id_idx').on(table.riderId),
-    index('rider_bans_expires_at_idx').on(table.expiresAt),
-  ],
-);
-
 export const paymentTransactions = pgTable(
   'payment_transactions',
   {
