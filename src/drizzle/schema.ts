@@ -440,6 +440,7 @@ export const blockedIps = pgTable(
       .$defaultFn(() => createId())
       .notNull(),
     ipAddress: text('ip_address').notNull(),
+    userId: text('user_id'),
     reason: text(),
     blockedBy: text('blocked_by'),
     expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }),
@@ -456,6 +457,7 @@ export const blockedIps = pgTable(
       'btree',
       table.ipAddress.asc().nullsLast().op('text_ops'),
     ),
+    index('blocked_ips_user_id_idx').using('btree', table.userId.asc().nullsLast().op('text_ops')),
   ],
 );
 

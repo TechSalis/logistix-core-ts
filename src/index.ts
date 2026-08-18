@@ -52,7 +52,7 @@ export {
   SecuritySeverity,
   ErrorCode,
   DayOfWeek,
-  WEEKDAYS,
+  ALL_DAYS,
   MetricDomain,
   MetricGranularity,
   SystemStatus,

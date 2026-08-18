@@ -446,6 +446,7 @@ export enum DayOfWeek {
   THURSDAY = 'Thursday',
   FRIDAY = 'Friday',
   SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday',
 }
 
 /**
@@ -470,7 +471,7 @@ export enum MetricGranularity {
   LIFETIME = 'LIFETIME',
 }
 
-export const WEEKDAYS: readonly DayOfWeek[] = Object.values(DayOfWeek);
+export const ALL_DAYS: readonly DayOfWeek[] = Object.values(DayOfWeek);
 
 // Categories that should generate leads in external CRM/Sheets
 // Uses enum members so display strings can change without breaking logic
