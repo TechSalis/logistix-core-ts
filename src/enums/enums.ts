@@ -216,6 +216,7 @@ export enum ChannelsUpdateType {
   OWNERSHIP = 'OWNERSHIP',
   CONVERSATION = 'CONVERSATION',
   CHANNEL = 'CHANNEL',
+  AI_THINKING = 'AI_THINKING',
 }
 
 export enum MessageStatus {
@@ -381,6 +382,12 @@ export enum DevicePlatform {
   ANDROID = 'ANDROID',
   IOS = 'IOS',
   WEB = 'WEB',
+}
+
+export enum AuditActorType {
+  USER = 'USER',
+  SYSTEM = 'SYSTEM',
+  ANONYMOUS = 'ANONYMOUS',
 }
 
 export enum ContactCategory {

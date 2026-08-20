@@ -9,7 +9,6 @@ import {
   uniqueIndex,
   unique,
   index,
-
   boolean,
   foreignKey,
   jsonb,
@@ -152,6 +151,7 @@ export const companySettings = pgTable(
     autoAcceptTeam: boolean('auto_accept_team').default(false).notNull(),
     states: text().array().default([]),
     interstateDeliveries: boolean('interstate_deliveries').default(false).notNull(),
+    metadata: jsonb().default({}).notNull(),
   },
   (table) => [
     uniqueIndex('company_settings_company_id_key').using(
@@ -522,7 +522,6 @@ export const deviceTokens = pgTable(
       'btree',
       table.fcmToken.asc().nullsLast().op('text_ops'),
     ),
-
   ],
 );
 
@@ -614,7 +613,9 @@ export const deliveries = pgTable(
         table.scheduledAt.asc().nullsLast().op('timestamp_ops'),
         table.id.asc().nullsLast().op('text_ops'),
       )
-      .where(sql`${table.status} = 'PENDING' AND ${table.pool} = true AND ${table.riderId} IS NULL`),
+      .where(
+        sql`${table.status} = 'PENDING' AND ${table.pool} = true AND ${table.riderId} IS NULL`,
+      ),
     index('deliveries_status_created_at_idx').using(
       'btree',
       table.status.asc().nullsLast().op('enum_ops'),

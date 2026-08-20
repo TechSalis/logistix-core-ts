@@ -198,12 +198,6 @@ export async function processPaymentAllocation(
       const batch = deliveryIds.slice(i, i + LIMITS_CONFIG.dbBatchSize);
       if (remainingAmount <= 0) break;
 
-      await tx
-        .select({ id: deliveries.id })
-        .from(deliveries)
-        .where(inArray(deliveries.id, batch))
-        .for('update');
-
       const deliveryRows = (await tx
         .select({
           id: deliveries.id,
@@ -214,7 +208,8 @@ export async function processPaymentAllocation(
         })
         .from(deliveries)
         .where(inArray(deliveries.id, batch))
-        .orderBy(asc(deliveries.createdAt))) as AllocationDeliveryRow[];
+        .orderBy(asc(deliveries.createdAt))
+        .for('update')) as AllocationDeliveryRow[];
 
       if (deliveryRows.length === 0) continue;
 
@@ -284,7 +279,6 @@ export async function processPaymentAllocation(
         );
       }
     }
-
   }
 
   // Any amount not consumed by delivery allocations flows to the payer's ledger
@@ -314,6 +308,7 @@ async function applyLedgerCredits(
 ) {
   const deliveryById = new Map(deliveryRows.map((d) => [d.id, d]));
   const ledgerCredits = new Map<string, number>();
+  const companyDeliveryCounts = new Map<string, number>();
   for (const target of allocations) {
     const delivery = deliveryById.get(target.deliveryId);
     if (!delivery?.companyId) continue;
@@ -322,24 +317,27 @@ async function applyLedgerCredits(
     const fulfillerId = meta?.fulfilledByCompanyId as string | undefined;
     const outsourcedCut = meta?.outsourcedCut as number | undefined;
 
+    let creditedCompanyId: string;
     if (fulfillerId && outsourcedCut != null) {
       // outsourcedCut is a FIXED fee in kobo (e.g. ₦200 = 20000), not a percentage.
       const logistixFee = Math.min(outsourcedCut, target.amountToApply);
       const fulfillerShare = target.amountToApply - logistixFee;
       ledgerCredits.set(fulfillerId, (ledgerCredits.get(fulfillerId) || 0) + fulfillerShare);
+      creditedCompanyId = fulfillerId;
     } else {
       ledgerCredits.set(
         delivery.companyId,
         (ledgerCredits.get(delivery.companyId) || 0) + target.amountToApply,
       );
+      creditedCompanyId = delivery.companyId;
     }
-  }
-  const companyCounts = new Map<string, number>();
-  for (const d of deliveryRows) {
-    if (d.companyId) companyCounts.set(d.companyId, (companyCounts.get(d.companyId) || 0) + 1);
+    companyDeliveryCounts.set(
+      creditedCompanyId,
+      (companyDeliveryCounts.get(creditedCompanyId) || 0) + 1,
+    );
   }
   for (const [cId, amount] of ledgerCredits.entries()) {
-    const companyDeliveryCount = companyCounts.get(cId) || 0;
+    const companyDeliveryCount = companyDeliveryCounts.get(cId) || 0;
     await tx
       .update(companySettings)
       .set({ ledgerBalance: sql`${companySettings.ledgerBalance} + ${amount}` })
