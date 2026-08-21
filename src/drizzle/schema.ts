@@ -549,6 +549,7 @@ export const deliveries = pgTable(
     dropOffPhone: text('drop_off_phone'),
     paymentMethod: paymentMethod('payment_method').notNull(),
     scheduledAt: timestamp('scheduled_at', { precision: 3, mode: 'date' }),
+    assignedAt: timestamp('assigned_at', { precision: 3, mode: 'date' }),
     deliveredAt: timestamp('delivered_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
