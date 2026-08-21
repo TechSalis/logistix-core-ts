@@ -202,6 +202,7 @@ export enum SubscriptionEventType {
   DELETED = 'DELETED',
   ASSIGNED = 'ASSIGNED',
   STATUS_CHANGED = 'STATUS_CHANGED',
+  UNASSIGNED = 'UNASSIGNED',
 }
 
 export enum UserAuditAction {
