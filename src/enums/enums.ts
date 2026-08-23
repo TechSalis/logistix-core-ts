@@ -48,12 +48,13 @@ export enum ApprovalStatus {
   DISABLED = 'DISABLED',
 }
 
-export enum CompanyAccessLevel {
-  FULL = 'FULL',
-  TRIAL = 'TRIAL',
-  PAST_DUE = 'PAST_DUE',
-  RESTRICTED = 'RESTRICTED',
-}
+export type CompanyAccessLevel = 'FULL' | 'TRIAL' | 'PAST_DUE' | 'RESTRICTED';
+export const CompanyAccessLevel = {
+  FULL: 'FULL',
+  TRIAL: 'TRIAL',
+  PAST_DUE: 'PAST_DUE',
+  RESTRICTED: 'RESTRICTED',
+} as const;
 
 export enum EntityType {
   USER = 'USER',
@@ -205,12 +206,13 @@ export enum SubscriptionEventType {
   UNASSIGNED = 'UNASSIGNED',
 }
 
-export enum UserAuditAction {
-  LOGIN = 'LOGIN',
-  LOGOUT = 'LOGOUT',
-  PROFILE_UPDATE = 'PROFILE_UPDATE',
-  DEACTIVATED = 'DEACTIVATED',
-}
+export type UserAuditAction = 'LOGIN' | 'LOGOUT' | 'PROFILE_UPDATE' | 'DEACTIVATED';
+export const UserAuditAction = {
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  PROFILE_UPDATE: 'PROFILE_UPDATE',
+  DEACTIVATED: 'DEACTIVATED',
+} as const;
 
 export enum ChannelsUpdateType {
   MESSAGE = 'MESSAGE',
@@ -262,11 +264,12 @@ export enum JobStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export enum SecurityEventType {
-  RATE_LIMIT = 'RATE_LIMIT',
-  MALICIOUS_REQUEST = 'MALICIOUS_REQUEST',
-  BRUTE_FORCE = 'BRUTE_FORCE',
-}
+export type SecurityEventType = 'RATE_LIMIT' | 'MALICIOUS_REQUEST' | 'BRUTE_FORCE';
+export const SecurityEventType = {
+  RATE_LIMIT: 'RATE_LIMIT',
+  MALICIOUS_REQUEST: 'MALICIOUS_REQUEST',
+  BRUTE_FORCE: 'BRUTE_FORCE',
+} as const;
 
 export enum SecuritySeverity {
   LOW = 'LOW',
@@ -430,6 +433,26 @@ export enum FcmNotificationType {
   SETTLEMENT_FAILED = 'SETTLEMENT_FAILED',
   SETTLEMENT_REVERSAL = 'SETTLEMENT_REVERSAL',
   HUMAN_REQUEST = 'HUMAN_REQUEST',
+  DELIVERY_ANOMALY = 'DELIVERY_ANOMALY',
+  RAPID_STATUS_CHANGES = 'RAPID_STATUS_CHANGES',
+}
+
+/**
+ * Scope of a deliverySync query. Wire value = member string, matching the
+ * backend GraphQL enum `DeliverySyncScope`.
+ */
+export enum DeliverySyncScope {
+  RIDER = 'RIDER',
+  COMPANY = 'COMPANY',
+}
+
+/**
+ * Admin escalation mutation action. Wire value = member string, matching the
+ * backend GraphQL enum `AdminEscalationAction`.
+ */
+export enum AdminEscalationAction {
+  TAKE_OVER = 'TAKE_OVER',
+  RESOLVE = 'RESOLVE',
 }
 
 export enum NotificationPriority {
@@ -440,12 +463,17 @@ export enum NotificationPriority {
  * Why an undelivered delivery was auto-expired by the expiry job.
  * Wire values match the delivery-expiry service's inline constants exactly.
  */
-export enum DeliveryExpiryReason {
-  STALE_PENDING_DELIVERY = 'STALE_PENDING_DELIVERY',
-  SCHEDULED_WINDOW_MISSED = 'SCHEDULED_WINDOW_MISSED',
-  RIDER_SILENT = 'RIDER_SILENT',
-  IN_TRANSIT_STALL = 'IN_TRANSIT_STALL',
-}
+export type DeliveryExpiryReason =
+  | 'STALE_PENDING_DELIVERY'
+  | 'SCHEDULED_WINDOW_MISSED'
+  | 'RIDER_SILENT'
+  | 'IN_TRANSIT_STALL';
+export const DeliveryExpiryReason = {
+  STALE_PENDING_DELIVERY: 'STALE_PENDING_DELIVERY',
+  SCHEDULED_WINDOW_MISSED: 'SCHEDULED_WINDOW_MISSED',
+  RIDER_SILENT: 'RIDER_SILENT',
+  IN_TRANSIT_STALL: 'IN_TRANSIT_STALL',
+} as const;
 
 export enum DayOfWeek {
   MONDAY = 'Monday',

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getRetentionCutoff, getStartOfDayInTimezone } from '../src/utils/timezone.js';
+import {
+  getRetentionCutoff,
+  getStartOfDayInTimezone,
+  getDayBoundsInTimezone,
+} from '../src/utils/timezone.js';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -37,5 +41,26 @@ describe('getStartOfDayInTimezone', () => {
     const start = getStartOfDayInTimezone('Africa/Lagos');
     // 00:30Z = 01:30 Lagos on the 15th → midnight of the 15th Lagos = 14th 23:00Z
     expect(start.toISOString()).toBe('2024-06-14T23:00:00.000Z');
+  });
+});
+
+describe('getDayBoundsInTimezone', () => {
+  it('returns start/end of the calendar day in the timezone (Lagos, UTC+1)', () => {
+    const { start, end } = getDayBoundsInTimezone('2024-08-15', 'Africa/Lagos');
+    expect(start.toISOString()).toBe('2024-08-14T23:00:00.000Z');
+    expect(end.toISOString()).toBe('2024-08-15T22:59:59.999Z');
+  });
+
+  it('assigns an instant to its wall-clock day, not its UTC day', () => {
+    // 2024-08-14T23:30Z is 2024-08-15T00:30 in Lagos → bounds of Aug 15
+    const { start } = getDayBoundsInTimezone(new Date('2024-08-14T23:30:00Z'), 'Africa/Lagos');
+    expect(start.toISOString()).toBe('2024-08-14T23:00:00.000Z');
+  });
+
+  it('defaults to REGIONAL_CONFIG.timeZone', () => {
+    const explicit = getDayBoundsInTimezone('2024-08-15', 'Africa/Lagos');
+    const defaulted = getDayBoundsInTimezone('2024-08-15');
+    expect(defaulted.start.toISOString()).toBe(explicit.start.toISOString());
+    expect(defaulted.end.toISOString()).toBe(explicit.end.toISOString());
   });
 });

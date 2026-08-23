@@ -65,6 +65,33 @@ export function getStartOfDayInTimezone(timezone: string = REGIONAL_CONFIG.timeZ
 }
 
 /**
+ * Returns the first and last millisecond of the wall-clock calendar day that
+ * the given instant falls on in the timezone (defaults to REGIONAL_CONFIG).
+ * Accepts any parsable date input ('2024-12-31', ISO strings, Date, ms).
+ * Used for inclusive fromDate/toDate range filters — never use local
+ * setHours(23,59,59,999), which silently follows the server clock.
+ */
+export function getDayBoundsInTimezone(
+  date: Date | number | string,
+  timezone: string = REGIONAL_CONFIG.timeZone,
+): { start: Date; end: Date } {
+  const instant = date instanceof Date ? date : new Date(date);
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const [year, month, day] = formatter.format(instant).split('-').map(Number);
+
+  const offsetMs = offsetAtNoonUtc(year, month - 1, day, timezone);
+  return {
+    start: new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - offsetMs),
+    end: new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999) - offsetMs),
+  };
+}
+
+/**
  * Returns the calendar date (YYYY-MM-DD) of the given instant in the
  * timezone — the wall-clock day, which may differ from the instant's UTC day.
  */

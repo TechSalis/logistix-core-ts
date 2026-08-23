@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1786189843883,
+      "when": 1787406740573,
       "tag": "0000_initial",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1786196411642,
-      "tag": "0001_mature_luminals",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1786234435116,
-      "tag": "0002_fresh_lyja",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1786277892318,
-      "tag": "0003_organic_dracula",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1786533782801,
-      "tag": "0004_superb_mole_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1786618173847,
-      "tag": "0005_wakeful_omega_red",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1786737070295,
-      "tag": "0006_chemical_shadow_king",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1786871051840,
-      "tag": "0007_conscious_ultimates",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1786945119840,
-      "tag": "0008_multi_device",
       "breakpoints": true
     }
   ]

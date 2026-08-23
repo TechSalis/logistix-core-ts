@@ -69,6 +69,8 @@ export {
   ContactCategory,
   DevicePlatform,
   AuditActorType,
+  DeliverySyncScope,
+  AdminEscalationAction,
   safeEnumValue,
   LEAD_CATEGORIES,
   CAC_EVIDENCE_STATUS,
@@ -92,6 +94,7 @@ export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional
 export {
   getMonthStartInTimezone,
   getStartOfDayInTimezone,
+  getDayBoundsInTimezone,
   getRetentionCutoff,
   getDateStringInTimezone,
 } from './utils/timezone.js';

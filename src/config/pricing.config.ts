@@ -10,7 +10,7 @@ export interface PricingScheme {
   readonly minFare: number;
 }
 
-// All money values are kobo ("kobo everywhere"). ₦1,000 = 100_000 kobo, ₦150 = 15_000 kobo.
+// All money values are kobo ("kobo everywhere"). ₦200 = 20_000 kobo.
 export const DEFAULT_PRICING_SCHEMES: readonly PricingScheme[] = [
-  { vehicleType: VehicleType.BIKE, baseFare: 100_000, perKmRate: 15_000, minFare: 100_000 },
+  { vehicleType: VehicleType.BIKE, baseFare: 20_000, perKmRate: 20_000, minFare: 20_000 },
 ] as const;

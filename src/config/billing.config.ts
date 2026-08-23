@@ -98,11 +98,17 @@ export const BILLING_CONFIG = {
   PAYMENT_TIMEOUT_HOURS: 1,
 
   /**
-   * Fixed outsource cut (in Kobo) charged to the originating company when a
-   * pool delivery is fulfilled by a different company's rider.
-   * ₦200 = 20000 kobo.
+   * Cross-company pool fulfillment split (in Kobo). Applied at settlement when
+   * a pool delivery was fulfilled by a different company's rider:
+   * - platformFeeKobo is retained by the platform first,
+   * - ownerShareKobo then goes to the delivery's owning company (skipped for
+   *   system-owned deliveries, where the platform retains it implicitly),
+   * - the fulfilling company receives the remainder.
    */
-  OUTSOURCE_CUT_KOBO: 200_00,
+  POOL_SPLIT_KOBO: {
+    platformFeeKobo: 100_00, // ₦100
+    ownerShareKobo: 500_00, // ₦500
+  },
 
   /**
    * Per-delivery overage charge when monthly limit exceeded (in Kobo)

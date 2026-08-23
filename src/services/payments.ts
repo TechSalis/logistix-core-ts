@@ -8,6 +8,7 @@ import {
   LedgerAdjustmentType,
 } from '../enums/enums.js';
 import { LIMITS_CONFIG } from '../config/limits.config.js';
+import { BILLING_CONFIG } from '../config/billing.config.js';
 import {
   deliveries,
   deliveryAllocations,
@@ -156,8 +157,10 @@ type AllocationDeliveryRow = {
  * Behavior:
  * - Lock linked deliveries (`FOR UPDATE`), compute targets via
  *   `computeAllocationTargets`, rewrite `delivery_allocations` for the tx.
- * - Credit ledgers: the delivery owner, or the pool fulfiller minus the fixed
- *   kobo `outsourcedCut` fee; leftover overpayment credits the payer's ledger.
+ * - Credit ledgers: the delivery owner, or the configured pool split
+ *   (platform fee → owner share → fulfiller remainder) when a pool fulfiller
+ *   is stamped; system-owned pool deliveries credit only the fulfiller.
+ *   Leftover overpayment credits the payer's ledger.
  * - Write explicit CHANNEL_FEE ledger entries when `metadata.channelFeePerDelivery`.
  * - Restore fully-paid deliveries via `applyPaymentStatusUpdate`.
  *
@@ -299,6 +302,23 @@ export async function processPaymentAllocation(
   return { fullyPaidIds, updatedDeliveryIds, creditedCompanyIds: [...creditedCompanyIds] };
 }
 
+/**
+ * Cross-company pool fulfillment split for a single allocation target.
+ * Order: platform fee first, then the owner share (only when an owner company
+ * exists — system-owned deliveries retain it implicitly), fulfiller takes the
+ * rest. Every step clamps to what remains, so tiny fares degrade gracefully.
+ */
+export function computePoolSplit(
+  amountToApply: number,
+  hasOwnerCompany: boolean,
+): { platformFee: number; ownerShare: number; fulfillerShare: number } {
+  const { platformFeeKobo, ownerShareKobo } = BILLING_CONFIG.POOL_SPLIT_KOBO;
+  const platformFee = Math.min(platformFeeKobo, amountToApply);
+  const remainingAfterFee = amountToApply - platformFee;
+  const ownerShare = hasOwnerCompany ? Math.min(ownerShareKobo, remainingAfterFee) : 0;
+  return { platformFee, ownerShare, fulfillerShare: remainingAfterFee - ownerShare };
+}
+
 async function applyLedgerCredits(
   tx: DrizzleDB,
   deliveryRows: AllocationDeliveryRow[],
@@ -311,25 +331,34 @@ async function applyLedgerCredits(
   const companyDeliveryCounts = new Map<string, number>();
   for (const target of allocations) {
     const delivery = deliveryById.get(target.deliveryId);
-    if (!delivery?.companyId) continue;
+    if (!delivery) continue;
 
     const meta = delivery.metadata as Record<string, unknown> | null;
     const fulfillerId = meta?.fulfilledByCompanyId as string | undefined;
-    const outsourcedCut = meta?.outsourcedCut as number | undefined;
+    if (!delivery.companyId && !fulfillerId) continue;
 
     let creditedCompanyId: string;
-    if (fulfillerId && outsourcedCut != null) {
-      // outsourcedCut is a FIXED fee in kobo (e.g. ₦200 = 20000), not a percentage.
-      const logistixFee = Math.min(outsourcedCut, target.amountToApply);
-      const fulfillerShare = target.amountToApply - logistixFee;
+    if (fulfillerId) {
+      const { ownerShare, fulfillerShare } = computePoolSplit(
+        target.amountToApply,
+        delivery.companyId != null,
+      );
+      if (delivery.companyId != null) {
+        ledgerCredits.set(
+          delivery.companyId,
+          (ledgerCredits.get(delivery.companyId) || 0) + ownerShare,
+        );
+      }
       ledgerCredits.set(fulfillerId, (ledgerCredits.get(fulfillerId) || 0) + fulfillerShare);
       creditedCompanyId = fulfillerId;
-    } else {
+    } else if (delivery.companyId != null) {
       ledgerCredits.set(
         delivery.companyId,
         (ledgerCredits.get(delivery.companyId) || 0) + target.amountToApply,
       );
       creditedCompanyId = delivery.companyId;
+    } else {
+      continue;
     }
     companyDeliveryCounts.set(
       creditedCompanyId,

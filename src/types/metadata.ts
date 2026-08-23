@@ -49,7 +49,6 @@ export interface DeliveryMetadata {
   dropOffState?: string;
   proofOfDeliveryImagePath?: string;
   fulfilledByCompanyId?: string;
-  outsourcedCut?: number;
   failReason?: string;
   failedAt?: string;
   instructions?: string;

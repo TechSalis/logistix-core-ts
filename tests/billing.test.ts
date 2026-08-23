@@ -19,6 +19,7 @@ import {
   applyPaymentStatusUpdate,
   processPaymentAllocation,
   computeAllocationTargets,
+  computePoolSplit,
 } from '../src/services/payments.js';
 import type { PaymentAllocationTransaction } from '../src/services/payments.js';
 import {
@@ -498,6 +499,45 @@ describe('getTotalPaidForDeliveries', () => {
   });
 });
 
+describe('computePoolSplit', () => {
+  it('splits a company-owned pool fare: platform fee, owner share, fulfiller remainder', () => {
+    expect(computePoolSplit(100_000, true)).toEqual({
+      platformFee: 100_00,
+      ownerShare: 500_00,
+      fulfillerShare: 40_000,
+    });
+  });
+
+  it('retains the owner share implicitly for system-owned pool deliveries', () => {
+    expect(computePoolSplit(100_000, false)).toEqual({
+      platformFee: 100_00,
+      ownerShare: 0,
+      fulfillerShare: 90_000,
+    });
+  });
+
+  it('clamps gracefully when the fare cannot cover the full split', () => {
+    expect(computePoolSplit(5_000, true)).toEqual({
+      platformFee: 5_000,
+      ownerShare: 0,
+      fulfillerShare: 0,
+    });
+    expect(computePoolSplit(60_000, true)).toEqual({
+      platformFee: 100_00,
+      ownerShare: 50_000,
+      fulfillerShare: 0,
+    });
+  });
+
+  it('returns all zeros for a zero amount', () => {
+    expect(computePoolSplit(0, true)).toEqual({
+      platformFee: 0,
+      ownerShare: 0,
+      fulfillerShare: 0,
+    });
+  });
+});
+
 describe('applyPaymentStatusUpdate', () => {
   it('updates fully-paid deliveries and returns updated ids', async () => {
     const { tx } = mockTx({ updatedRows: [{ id: 'D1' }] });
@@ -548,15 +588,15 @@ describe('processPaymentAllocation', () => {
     expect(tx.insert).not.toHaveBeenCalledWith(ledgerTransactions);
   });
 
-  it('routes pool payment to the fulfiller minus the fixed kobo outsource cut', async () => {
+  it('splits company-owned pool payment: platform fee implicit, owner share, fulfiller remainder', async () => {
     const { tx } = mockTx({
       deliveryRows: [
         {
           id: 'D1',
-          price: 1000,
+          price: 100_000,
           companyId: 'C1',
           createdAt: new Date('2026-01-01'),
-          metadata: { fulfilledByCompanyId: 'C2', outsourcedCut: 200_00 },
+          metadata: { fulfilledByCompanyId: 'C2' },
         },
       ],
       paidRows: [],
@@ -564,15 +604,41 @@ describe('processPaymentAllocation', () => {
     });
     const transaction: PaymentAllocationTransaction = {
       id: 'T1',
-      amount: 1000,
+      amount: 100_000,
       companyId: 'C1',
       deliveryAllocations: [{ deliveryId: 'D1' }],
     };
 
     const result = await processPaymentAllocation(tx as never, transaction);
 
-    expect(result.creditedCompanyIds).toEqual(['C2']);
+    expect(result.creditedCompanyIds).toEqual(['C1', 'C2']);
     expect(tx.update).toHaveBeenCalledWith(companySettings);
+  });
+
+  it('credits only the fulfiller for system-owned pool deliveries', async () => {
+    const { tx } = mockTx({
+      deliveryRows: [
+        {
+          id: 'D1',
+          price: 100_000,
+          companyId: null,
+          createdAt: new Date('2026-01-01'),
+          metadata: { fulfilledByCompanyId: 'C2' },
+        },
+      ],
+      paidRows: [],
+      updatedRows: [{ id: 'D1' }],
+    });
+    const transaction: PaymentAllocationTransaction = {
+      id: 'T1',
+      amount: 100_000,
+      companyId: 'C2',
+      deliveryAllocations: [{ deliveryId: 'D1' }],
+    };
+
+    const result = await processPaymentAllocation(tx as never, transaction);
+
+    expect(result.creditedCompanyIds).toEqual(['C2']);
   });
 
   it('credits leftover overpayment to the payer ledger', async () => {
