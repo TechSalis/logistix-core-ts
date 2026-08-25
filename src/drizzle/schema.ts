@@ -270,12 +270,12 @@ export const conversations = pgTable(
       table.platformId.asc().nullsLast().op('text_ops'),
       table.platform.asc().nullsLast().op('enum_ops'),
     ),
-    uniqueIndex('conversations_platform_platform_id_company_id_key').using(
-      'btree',
-      table.platform.asc().nullsLast().op('enum_ops'),
-      table.platformId.asc().nullsLast().op('text_ops'),
-      table.companyId.asc().nullsLast().op('text_ops'),
-    ),
+    // NULLS NOT DISTINCT (PG15): lets ON CONFLICT infer the arbiter for
+    // null-company (unowned/pool) conversation rows, making first-touch
+    // upserts atomic.
+    unique('conversations_platform_platform_id_company_id_key')
+      .on(table.platform, table.platformId, table.companyId)
+      .nullsNotDistinct(),
     index('conversations_handled_by_type_idx').using(
       'btree',
       table.handledByType.asc().nullsLast().op('text_ops'),
@@ -947,6 +947,10 @@ export const eventLogs = pgTable(
   ],
 );
 
+/**
+ * @deprecated Will be replaced by pgmq in Phase 2. Do not add new columns.
+ * Kept during migration for backward compatibility with queueService callers.
+ */
 export const jobQueue = pgTable(
   'job_queue',
   {
