@@ -16,6 +16,9 @@ export const DELETED_USER_SENTINEL = 'DELETED_USER';
  */
 export const SYSTEM_ACTOR_ID = 'system';
 
+/** Actor ID used when an admin performs an action without a specific performer. */
+export const ADMIN_ACTOR_ID = 'admin';
+
 export interface SystemConfig {
   readonly jwtIssuer: string;
   readonly customerBaseUrl: string;

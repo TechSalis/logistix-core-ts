@@ -83,6 +83,7 @@ export {
   BRAND_NAME,
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
+  ADMIN_ACTOR_ID,
   DEFAULT_WORKING_HOURS,
 } from './config/system.config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
