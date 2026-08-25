@@ -1,5 +1,4 @@
 const EARTH_RADIUS_M = 6_371_000;
-const EARTH_RADIUS_KM = 6_371;
 
 export function haversineDistanceMeters(
   lat1: number,
