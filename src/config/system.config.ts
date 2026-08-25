@@ -49,7 +49,7 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
     emailDomain,
     supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ''),
     paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ''),
-    brandName: overrides.brandName ?? process.env.BRAND_NAME ?? 'Logistix AI',
+    brandName: overrides.brandName ?? process.env.BRAND_NAME ?? 'Logistix',
   };
 }
 

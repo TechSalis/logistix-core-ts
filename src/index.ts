@@ -88,6 +88,10 @@ export {
 } from './config/system.config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
 
+// ─── Brand ────────────────────────────────────────────────────────────────────
+export { BRAND, buildBrandConfig } from './config/brand.config.js';
+export type { BrandConfig } from './config/brand.config.js';
+
 // ─── Regional ─────────────────────────────────────────────────────────────────
 export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional.config.js';
 
