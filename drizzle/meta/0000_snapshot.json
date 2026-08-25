@@ -1,6 +1,6 @@
 {
-  "id": "9ec7c5e5-709f-4dbb-8879-544464b1374d",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "b39c17e0-3a27-4493-82fa-f3fc25b47ed9",
+  "prevId": "9ec7c5e5-709f-4dbb-8879-544464b1374d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -853,36 +853,6 @@
           "method": "btree",
           "with": {}
         },
-        "conversations_platform_platform_id_company_id_key": {
-          "name": "conversations_platform_platform_id_company_id_key",
-          "columns": [
-            {
-              "expression": "platform",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            },
-            {
-              "expression": "platform_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "company_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "conversations_handled_by_type_idx": {
           "name": "conversations_handled_by_type_idx",
           "columns": [
@@ -979,7 +949,17 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "conversations_platform_platform_id_company_id_key": {
+          "name": "conversations_platform_platform_id_company_id_key",
+          "nullsNotDistinct": true,
+          "columns": [
+            "platform",
+            "platform_id",
+            "company_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
