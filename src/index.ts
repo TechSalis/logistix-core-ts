@@ -223,14 +223,6 @@ export {
 // ─── Domain Entity Types ─────────────────────────────────────────────────────
 export type { DeliveryBase, RiderBase, DispatcherBase } from './types/domain.js';
 
-// ─── Delivery Policy ──────────────────────────────────────────────────────
-export type { DeliveryPolicy } from './types/delivery-policy.js';
-export { DEFAULT_DELIVERY_POLICY, resolveDeliveryPolicy } from './types/delivery-policy.js';
-
-// ─── Cache Domains ────────────────────────────────────────────────────────
-export { CACHE_DOMAINS } from './config/cache-domains.js';
-export type { CacheDomain } from './config/cache-domains.js';
-
 // ─── Formatters ───────────────────────────────────────────────────────────────
 export { formatDeliveryStatus, formatEnumToTitleCase } from './utils/formatters.js';
 
