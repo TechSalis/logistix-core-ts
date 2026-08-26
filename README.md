@@ -269,7 +269,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 
 | Export                        | Type        | Description                                  |
 |-------------------------------|-------------|----------------------------------------------|
-| `queueService`                | `object`    | `job_queue` drain/enqueue singleton          |
+| `queueService`                | `object`    | pgmq drain/enqueue singleton          |
 | `queueService.enqueue()`      | `function`  | Insert a job (retries use `defaultMaxRetries` unless `maxRetries` passed) |
 | `queueService.enqueueWithDedupe()` | `function` | Insert a job unless one with the same `dedupeKey` is pending |
 | `queueService.drain()`        | `function` | Poll loop; `maxJobs` **required**, `timeBudgetMs` optional (cron wall-clock) |
@@ -284,7 +284,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 - `drain()`'s `maxRetries` option is the **total attempts** (the first attempt counts).
 - `batchSize` is the per-claim lock scope (`SELECT ... LIMIT n FOR UPDATE SKIP LOCKED`), not a time concept.
 - Workers pass `timeBudgetMs` for Cloudflare-cron wall-clock compliance; the backend poll loop relies on `maxJobs` + its poll tick instead.
-- Dedupe uniqueness is enforced by the `job_queue_dedupe_key_unique` partial unique index (dedupe key is NULL for non-dedupe jobs, so only pending dedupe-keyed jobs block re-enqueue).
+- Dedupe uniqueness is enforced by pgmq's built-in dedup on the queue name (dedupe key is NULL for non-dedupe jobs, so only pending dedupe-keyed jobs block re-enqueue).
 
 ### Email Service
 

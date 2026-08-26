@@ -23,7 +23,7 @@ import {
   EntityType,
   EscalatedTo,
   EventType,
-  JobStatus,
+
   LedgerAdjustmentType,
   MetricDomain,
   MetricGranularity,
@@ -172,10 +172,8 @@ async function run() {
         ('seed-ev-4', '${EventType.CHANNEL_ACTIVATED}'::"EventType", '${EntityType.COMPANY_CHANNEL}'::"EntityType", 'seed-chan-pro', 'seed-user-admin-super', 'seed-co-pro', '{}'::jsonb, true)
         ON CONFLICT ("id") DO NOTHING`);
 
-      await insert(sql`INSERT INTO "job_queue" ("id", "type", "payload", "status", "priority", "max_retries", "retry_count") VALUES
-        ('seed-job-1', 'delivery-payment-capture', '{"deliveryId":"seed-del-5"}'::jsonb, '${JobStatus.COMPLETED}'::"JobStatus", 0, 3, 0),
-        ('seed-job-2', 'export', '{"userEmail":"owner@logistix.test","requestedBy":"seed-user-owner1","targetMonth":null,"dataTypes":["BILLING"]}'::jsonb, '${JobStatus.PENDING}'::"JobStatus", 0, 3, 0)
-        ON CONFLICT ("id") DO NOTHING`);
+      await insert(sql`SELECT pgmq.send('exports', '{"userEmail":"owner@logistix.test","requestedBy":"seed-user-owner1","targetMonth":null,"dataTypes":["BILLING"]}'::jsonb)`);
+      await insert(sql`SELECT pgmq.send('exports', '{"deliveryId":"seed-del-5","type":"delivery-payment-capture"}'::jsonb)`);
 
       await insert(sql`INSERT INTO "blocked_ips" ("id", "ip_address", "reason", "blocked_by", "expires_at") VALUES
         ('seed-blocked-1', '203.0.113.99', 'Seed demo block', 'seed-user-admin-super', NOW() + INTERVAL '1 day')
