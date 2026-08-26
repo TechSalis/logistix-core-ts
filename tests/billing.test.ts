@@ -690,7 +690,8 @@ describe('processPaymentAllocation', () => {
 
     const chFee = insertValues.find((v) => v.table === ledgerTransactions);
     expect(chFee).toBeDefined();
-    expect((chFee!.values as { amount: number }).amount).toBe(-200);
+    const feeEntry = Array.isArray(chFee!.values) ? chFee!.values[0] : chFee!.values;
+    expect((feeEntry as { amount: number }).amount).toBe(-200);
   });
 
   it('spreads leftover across unpriced deliveries via equal-share fallback', async () => {

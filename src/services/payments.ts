@@ -201,22 +201,23 @@ export async function processPaymentAllocation(
       const batch = deliveryIds.slice(i, i + LIMITS_CONFIG.dbBatchSize);
       if (remainingAmount <= 0) break;
 
-      const deliveryRows = (await tx
-        .select({
-          id: deliveries.id,
-          price: deliveries.price,
-          companyId: deliveries.companyId,
-          createdAt: deliveries.createdAt,
-          metadata: deliveries.metadata,
-        })
-        .from(deliveries)
-        .where(inArray(deliveries.id, batch))
-        .orderBy(asc(deliveries.createdAt))
-        .for('update')) as AllocationDeliveryRow[];
+      const [deliveryRows, paymentTotals] = await Promise.all([
+        tx
+          .select({
+            id: deliveries.id,
+            price: deliveries.price,
+            companyId: deliveries.companyId,
+            createdAt: deliveries.createdAt,
+            metadata: deliveries.metadata,
+          })
+          .from(deliveries)
+          .where(inArray(deliveries.id, batch))
+          .orderBy(asc(deliveries.createdAt))
+          .for('update') as Promise<AllocationDeliveryRow[]>,
+        getTotalPaidForDeliveries(batch, tx),
+      ]);
 
       if (deliveryRows.length === 0) continue;
-
-      const paymentTotals = await getTotalPaidForDeliveries(batch, tx);
 
       const {
         targets,
@@ -365,28 +366,53 @@ async function applyLedgerCredits(
       (companyDeliveryCounts.get(creditedCompanyId) || 0) + 1,
     );
   }
-  for (const [cId, amount] of ledgerCredits.entries()) {
-    const companyDeliveryCount = companyDeliveryCounts.get(cId) || 0;
+  const entries = [...ledgerCredits.entries()];
+  if (entries.length > 0) {
     await tx
       .update(companySettings)
-      .set({ ledgerBalance: sql`${companySettings.ledgerBalance} + ${amount}` })
-      .where(eq(companySettings.companyId, cId));
-    creditedCompanyIds.add(cId);
-    const totalFee = channelFeePerDelivery * companyDeliveryCount;
-    if (totalFee > 0) {
-      await tx.insert(ledgerTransactions).values({
-        companyId: cId,
-        amount: -totalFee,
-        adjustmentType: LedgerAdjustmentType.CHANNEL_FEE,
-        reference: `CHFEE-${randomUUID().slice(0, 8)}`,
-        reason: `Channel fee for ${companyDeliveryCount} delivery(ies)`,
-        metadata: {
-          feePerDelivery: channelFeePerDelivery,
-          deliveryCount: companyDeliveryCount,
-          totalFee,
-        },
-        createdAt: new Date(),
-      });
+      .set({
+        ledgerBalance: sql`${companySettings.ledgerBalance} + CASE ${sql.join(
+          entries.map(
+            ([cId, amount]) => sql`WHEN ${companySettings.companyId} = ${cId} THEN ${amount}`,
+          ),
+          sql` `,
+        )} END`,
+      })
+      .where(
+        inArray(
+          companySettings.companyId,
+          entries.map(([cId]) => cId),
+        ),
+      );
+
+    const feeRows = entries
+      .map(([cId]) => {
+        const companyDeliveryCount = companyDeliveryCounts.get(cId) || 0;
+        const totalFee = channelFeePerDelivery * companyDeliveryCount;
+        if (totalFee <= 0) return null;
+        creditedCompanyIds.add(cId);
+        return {
+          companyId: cId,
+          amount: -totalFee,
+          adjustmentType: LedgerAdjustmentType.CHANNEL_FEE,
+          reference: `CHFEE-${randomUUID().slice(0, 8)}`,
+          reason: `Channel fee for ${companyDeliveryCount} delivery(ies)`,
+          metadata: {
+            feePerDelivery: channelFeePerDelivery,
+            deliveryCount: companyDeliveryCount,
+            totalFee,
+          },
+          createdAt: new Date(),
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    if (feeRows.length > 0) {
+      await tx.insert(ledgerTransactions).values(feeRows);
+    }
+
+    for (const [cId] of entries) {
+      creditedCompanyIds.add(cId);
     }
   }
 }
