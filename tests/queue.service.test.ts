@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { jobQueue } from '../src/drizzle/schema.js';
+import { jobQueue } from '../src/services/drizzle/schema.js';
 import { PermanentJobError, queueService, QUEUE_SERVICE_CONFIG } from '../src/index.js';
 
 type AnyDb = Parameters<typeof queueService.enqueue>[0];

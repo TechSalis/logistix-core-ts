@@ -4,7 +4,7 @@ import {
   SquadRequestError,
   type SquadClientOptions,
   type ChargeCardParams,
-} from '../src/services/squad-client.js';
+} from '../src/services/squad.js';
 import { BILLING_CONFIG, getSubscriptionPrice } from '../src/shared/config/billing.config.js';
 import { SubscriptionTier } from '../src/shared/enums/enums.js';
 

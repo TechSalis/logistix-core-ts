@@ -1,9 +1,9 @@
 import { and, eq, sql, lt, inArray, count, gte } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
-import { jobQueue } from '../drizzle/schema.js';
-import { JobStatus } from '../enums/enums.js';
-import { extractErrorMessage } from '../utils/error-utils.js';
-import { QUEUE_SERVICE_CONFIG } from '../config/service.config.js';
+import { jobQueue } from './drizzle/schema.js';
+import { JobStatus } from '../shared/enums/enums.js';
+import { extractErrorMessage } from '../shared/utils/error-utils.js';
+import { QUEUE_SERVICE_CONFIG } from '../shared/config/service.config.js';
 
 // Accepts both NodePgDatabase (workers) and PgDatabase<postgres-js> (backend).
 // The three `any` params are for TQueryResult, TFullSchema, and TSchema generics —

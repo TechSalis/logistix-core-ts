@@ -8,7 +8,7 @@ const mockCredentials = {
 };
 
 describe('FcmService', () => {
-  let FcmService: typeof import('../src/services/fcm-sender.js').FcmService;
+  let FcmService: typeof import('../src/services/fcm.js').FcmService;
   let service: InstanceType<typeof FcmService>;
   let mockFetch: ReturnType<typeof vi.fn>;
 
@@ -24,7 +24,7 @@ describe('FcmService', () => {
 
     vi.stubGlobal('btoa', (s: string) => Buffer.from(s).toString('base64'));
 
-    const mod = await import('../src/services/fcm-sender.js');
+    const mod = await import('../src/services/fcm.js');
     FcmService = mod.FcmService;
     service = new FcmService(mockCredentials);
   });

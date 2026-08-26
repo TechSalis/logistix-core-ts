@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jobQueue, jobQueueDedupeKeyUnique } from '../src/drizzle/schema.js';
+import { jobQueue, jobQueueDedupeKeyUnique } from '../src/services/drizzle/schema.js';
 
 function flattenSql(node: unknown): string {
   if (typeof node === 'string') return node;

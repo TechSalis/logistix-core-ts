@@ -34,7 +34,7 @@ import {
   deliveryAllocations,
   companySettings,
   ledgerTransactions,
-} from '../src/drizzle/schema.js';
+} from '../src/services/drizzle/schema.js';
 
 describe('BILLING_CONFIG', () => {
   it('has valid currency', () => {

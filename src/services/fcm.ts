@@ -1,7 +1,7 @@
-import { extractErrorMessage } from '../utils/error-utils.js';
-import { fetchWithTimeout } from '../utils/fetch-with-timeout.js';
-import { FCM_SERVICE_CONFIG } from '../config/service.config.js';
-import { LIMITS_CONFIG } from '../config/limits.config.js';
+import { extractErrorMessage } from '../shared/utils/error-utils.js';
+import { fetchWithTimeout } from '../shared/utils/fetch-with-timeout.js';
+import { FCM_SERVICE_CONFIG } from '../shared/config/service.config.js';
+import { LIMITS_CONFIG } from '../shared/config/limits.config.js';
 
 /**
  * Lightweight FCM sender using the Firebase HTTP v1 REST API.

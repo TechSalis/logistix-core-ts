@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { withRetry } from '../utils/retry.js';
-import { extractErrorContext } from '../utils/error-utils.js';
+import { withRetry } from '../shared/utils/retry.js';
+import { extractErrorContext } from '../shared/utils/error-utils.js';
 
 const SUPABASE_AUTH_RETRIES = 3;
 const SUPABASE_AUTH_TIMEOUT_MS = 10_000;

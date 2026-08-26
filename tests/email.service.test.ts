@@ -11,7 +11,7 @@ vi.mock('nodemailer', () => {
 });
 
 describe('EmailService', () => {
-  let EmailService: typeof import('../src/services/email.service.js').EmailService;
+  let EmailService: typeof import('../src/services/email.js').EmailService;
 
   beforeEach(() => {
     mockSendMail.mockReset();
@@ -33,7 +33,7 @@ describe('EmailService', () => {
         },
       });
 
-      const mod = await import('../src/services/email.service.js');
+      const mod = await import('../src/services/email.js');
       EmailService = mod.EmailService;
     });
 
@@ -109,7 +109,7 @@ describe('EmailService', () => {
         ...process,
         env: {},
       });
-      const mod = await import('../src/services/email.service.js');
+      const mod = await import('../src/services/email.js');
       EmailService = mod.EmailService;
     });
 

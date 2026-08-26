@@ -45,8 +45,8 @@ import {
   MetricDomain,
   MetricGranularity,
   DevicePlatform,
-} from '../enums/enums.js';
-import { DEFAULT_WORKING_HOURS as defaultWorkingHours } from '../config/system.config.js';
+} from '../../shared/enums/enums.js';
+import { DEFAULT_WORKING_HOURS as defaultWorkingHours } from '../../shared/config/system.config.js';
 
 const createId = () => randomUUID();
 

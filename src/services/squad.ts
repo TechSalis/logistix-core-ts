@@ -1,6 +1,6 @@
-import { BILLING_CONFIG } from '../config/billing.config.js';
-import { fetchWithTimeout } from '../utils/fetch-with-timeout.js';
-import { isTransientHttpError, withRetry, type WithRetryOptions } from '../utils/retry.js';
+import { BILLING_CONFIG } from '../shared/config/billing.config.js';
+import { fetchWithTimeout } from '../shared/utils/fetch-with-timeout.js';
+import { isTransientHttpError, withRetry, type WithRetryOptions } from '../shared/utils/retry.js';
 
 export interface SquadClientOptions {
   baseUrl: string;

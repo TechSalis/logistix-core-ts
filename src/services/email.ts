@@ -1,4 +1,4 @@
-import { withRetry, RETRYABLE_NETWORK_ERROR_CODES } from '../utils/retry.js';
+import { withRetry, RETRYABLE_NETWORK_ERROR_CODES } from '../shared/utils/retry.js';
 
 export interface EmailAttachment {
   filename: string;
