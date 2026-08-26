@@ -1,9 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { withRetry } from '../shared/utils/retry.js';
 import { extractErrorContext } from '../shared/utils/error-utils.js';
+import { LIMITS_CONFIG } from '../shared/config/limits.config.js';
 
 const SUPABASE_AUTH_RETRIES = 3;
-const SUPABASE_AUTH_TIMEOUT_MS = 10_000;
 
 export function createSupabaseAdminClient(url: string, serviceKey: string): SupabaseClient {
   return createClient(url, serviceKey, {
@@ -29,7 +29,7 @@ export async function deleteSupabaseUser(
           new Promise<never>((_, reject) =>
             setTimeout(
               () => reject(new Error('Supabase auth deleteUser timeout')),
-              SUPABASE_AUTH_TIMEOUT_MS,
+              LIMITS_CONFIG.externalApiTimeoutMs,
             ),
           ),
         ]);

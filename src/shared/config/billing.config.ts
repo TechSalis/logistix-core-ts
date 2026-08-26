@@ -8,6 +8,7 @@ import {
 } from '../enums/enums.js';
 import { REGIONAL_CONFIG, REGIONAL_LOCALE } from './regional.config.js';
 import { RETENTION_CONFIG } from './retention.config.js';
+import { MS_PER_DAY } from '../utils/time.js';
 
 /**
  * 1 Naira = 100 Kobo.
@@ -111,11 +112,6 @@ export const BILLING_CONFIG = {
   },
 
   /**
-   * Per-delivery overage charge when monthly limit exceeded (in Kobo)
-   */
-  OVERAGE_PRICE_PER_DELIVERY_KOBO: 5_000, // ₦50
-
-  /**
    * Number of days after purchase within which a refund may be requested.
    */
   REFUND_WINDOW_DAYS: 14,
@@ -178,7 +174,7 @@ export function isBillableTier(tier: SubscriptionTier): boolean {
  */
 export function shouldBillNow(lastBillingDate: Date | null, activationDate: Date): boolean {
   const referenceDate = lastBillingDate || activationDate;
-  const daysSinceReference = Math.floor((Date.now() - referenceDate.getTime()) / 86_400_000);
+  const daysSinceReference = Math.floor((Date.now() - referenceDate.getTime()) / MS_PER_DAY);
   return daysSinceReference >= BILLING_CONFIG.BILLING_CYCLE_DAYS;
 }
 
@@ -194,7 +190,7 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
   }
 
   const daysToWait = intervals[retryAttempt] ?? intervals[intervals.length - 1];
-  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / 86_400_000);
+  const daysSinceLastAttempt = Math.floor((Date.now() - lastBillingDate.getTime()) / MS_PER_DAY);
 
   return daysSinceLastAttempt >= daysToWait;
 }

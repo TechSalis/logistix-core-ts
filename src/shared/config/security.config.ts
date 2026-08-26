@@ -1,5 +1,5 @@
 import { SubscriptionTier } from '../enums/enums.js';
-import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS } from '../utils/time.js';
+import { FIVE_MINUTES_MS, FIFTEEN_MINUTES_MS, MS_PER_DAY } from '../utils/time.js';
 
 export interface SecurityConfig {
   readonly rateLimits: {
@@ -57,9 +57,9 @@ const rawSecurityConfig = {
   blocks: {
     temporaryLadderMs: [3_600_000, 6 * 3_600_000, 24 * 3_600_000],
     escalateAfterBlocks: 3,
-    escalationWindowMs: 7 * 86_400_000,
-    persistentEscalatedMs: 7 * 86_400_000,
-    maxPersistentMs: 90 * 86_400_000,
+    escalationWindowMs: 7 * MS_PER_DAY,
+    persistentEscalatedMs: 7 * MS_PER_DAY,
+    maxPersistentMs: 90 * MS_PER_DAY,
   },
   headers: {
     'X-Content-Type-Options': 'nosniff',

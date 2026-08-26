@@ -69,13 +69,6 @@ export function getSystemConfig(): SystemConfig {
   return _systemConfig;
 }
 
-/** @deprecated Use getSystemConfig() instead. */
-export const SHARED_SYSTEM_CONFIG: SystemConfig = new Proxy({} as SystemConfig, {
-  get(_, prop) {
-    return getSystemConfig()[prop as keyof SystemConfig];
-  },
-});
-
 /** Lazy singleton — defers process.env reads until first access. */
 let _brandName: string | null = null;
 export function getBrandName(): string {

@@ -41,9 +41,10 @@ describe('fetchWithTimeout', () => {
     await expect(promise).rejects.toThrow('The operation was aborted');
   }, 10000);
 
-  it('has DEFAULT_TIMEOUT_MS of 20000', async () => {
+  it('has DEFAULT_TIMEOUT_MS matching LIMITS_CONFIG.externalApiTimeoutMs', async () => {
     const { DEFAULT_TIMEOUT_MS } = await import('../src/shared/utils/fetch-with-timeout.js');
-    expect(DEFAULT_TIMEOUT_MS).toBe(20_000);
+    const { LIMITS_CONFIG } = await import('../src/shared/config/limits.config.js');
+    expect(DEFAULT_TIMEOUT_MS).toBe(LIMITS_CONFIG.externalApiTimeoutMs);
   });
 
   it('re-throws fetch errors', async () => {

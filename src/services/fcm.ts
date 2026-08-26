@@ -166,13 +166,14 @@ export class FcmService {
   ): Promise<FcmResponse> {
     try {
       const accessToken = await this.getAccessToken();
-      const method = action === 'subscribe' ? 'POST' : 'DELETE';
-      const url = `https://iid.googleapis.com/iid/v1/${token}/rel/topics/${topic}`;
+      const verb = action === 'subscribe' ? 'subscribe' : 'unsubscribe';
+      const url = `https://fcm.googleapis.com/v1/projects/${this.credentials.projectId}/topics/${topic}:${verb}`;
 
       const res = await fetchWithTimeout(url, {
         timeoutMs: LIMITS_CONFIG.externalApiTimeoutMs,
-        method,
+        method: action === 'subscribe' ? 'POST' : 'DELETE',
         headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
       });
 
       if (!res.ok) {

@@ -3,7 +3,10 @@
  * Compatible with both Node.js (≥18) and browser environments.
  */
 
-export const DEFAULT_TIMEOUT_MS = 20_000;
+import { LIMITS_CONFIG } from '../config/limits.config.js';
+
+/** @deprecated Pass explicit `timeoutMs` per call. This is only the fallback. */
+export const DEFAULT_TIMEOUT_MS = LIMITS_CONFIG.externalApiTimeoutMs;
 
 interface FetchWithTimeoutOptions extends Omit<RequestInit, 'signal'> {
   /** Timeout in milliseconds. Defaults to 20 000 ms. */
