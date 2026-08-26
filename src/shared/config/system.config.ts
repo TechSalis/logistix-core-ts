@@ -54,11 +54,33 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
 }
 
 /** Shared instance built from env (used by contact/email modules). */
-const SHARED_SYSTEM_CONFIG: SystemConfig = /* #__PURE__ */ buildSystemConfig({
-  ...(process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {}),
-  ...(process.env.BUSINESS_BASE_URL ? { businessBaseUrl: process.env.BUSINESS_BASE_URL } : {}),
-  ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
-  ...(process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}),
+let _systemConfig: SystemConfig | null = null;
+
+/** Lazy singleton — defers process.env reads until first access. */
+export function getSystemConfig(): SystemConfig {
+  if (!_systemConfig) {
+    _systemConfig = buildSystemConfig({
+      ...(process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {}),
+      ...(process.env.BUSINESS_BASE_URL ? { businessBaseUrl: process.env.BUSINESS_BASE_URL } : {}),
+      ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
+      ...(process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}),
+    });
+  }
+  return _systemConfig;
+}
+
+/** @deprecated Use getSystemConfig() instead. */
+export const SHARED_SYSTEM_CONFIG: SystemConfig = new Proxy({} as SystemConfig, {
+  get(_, prop) {
+    return getSystemConfig()[prop as keyof SystemConfig];
+  },
 });
 
-export const BRAND_NAME = SHARED_SYSTEM_CONFIG.brandName;
+/** Lazy singleton — defers process.env reads until first access. */
+let _brandName: string | null = null;
+export function getBrandName(): string {
+  if (_brandName === null) _brandName = getSystemConfig().brandName;
+  return _brandName;
+}
+
+export const BRAND_NAME = getBrandName();

@@ -89,5 +89,17 @@ export function buildBrandConfig(
   };
 }
 
-const SHARED_BRAND: BrandConfig = buildBrandConfig();
-export const BRAND: BrandConfig = SHARED_BRAND;
+let _brand: BrandConfig | null = null;
+
+/** Lazy singleton — defers process.env reads until first access. */
+export function getBrandConfig(): BrandConfig {
+  if (!_brand) _brand = buildBrandConfig();
+  return _brand;
+}
+
+/** @deprecated Use getBrandConfig() instead. */
+export const BRAND: BrandConfig = new Proxy({} as BrandConfig, {
+  get(_, prop) {
+    return getBrandConfig()[prop as keyof BrandConfig];
+  },
+});
