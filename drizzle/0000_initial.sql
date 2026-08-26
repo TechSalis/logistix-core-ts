@@ -10,7 +10,6 @@ CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'DISPATCHER');--> stateme
 CREATE TYPE "public"."EntityType" AS ENUM('USER', 'DELIVERY', 'RIDER', 'COMPANY', 'DISPATCHER', 'SYSTEM', 'COMPANY_CHANNEL', 'MESSAGE');--> statement-breakpoint
 CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN', 'DISPATCHER');--> statement-breakpoint
 CREATE TYPE "public"."EventType" AS ENUM('DELIVERY_ASSIGNED', 'DELIVERY_UPDATED', 'DELIVERY_CREATED', 'DELIVERY_STATUS_CHANGED', 'DELIVERY_DELETED', 'RIDER_LOCATION_UPDATED', 'RIDER_ACCEPTED', 'RIDER_CREATED', 'RIDER_UPDATED', 'RIDER_STATUS_CHANGED', 'RIDER_DELETED', 'RIDER_DOCUMENTS_VERIFIED', 'RIDER_DOCUMENTS_REJECTED', 'CHANNEL_SETUP', 'CHANNEL_ACTIVATED', 'CHANNEL_DEACTIVATED', 'CHANNEL_REJECTED', 'CHANNEL_REMOVED', 'SUBSCRIPTION_STATUS_CHANGED', 'DISPATCHER_CREATED', 'DISPATCHER_UPDATED', 'DISPATCHER_STATUS_CHANGED', 'DISPATCHER_DELETED', 'AI_EXECUTION', 'SECURITY_INCIDENT', 'ADMIN_PROOF_READ', 'ADMIN_DOCUMENT_READ', 'COMPANY_ACTIVATED', 'COMPANY_DEACTIVATED', 'COMPANY_TIER_CHANGED', 'COMPANY_VERIFIED', 'COMPANY_VERIFICATION_REJECTED', 'USER_PURGED', 'CANCELLED_PAYMENT_TIMEOUT', 'DOWNGRADE', 'MESSAGE_DELETED', 'LEDGER_ADJUSTED');--> statement-breakpoint
-CREATE TYPE "public"."JobStatus" AS ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'CHANNEL_FEE', 'OVERAGE', 'REFUND');--> statement-breakpoint
 CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."MetricDomain" AS ENUM('DELIVERIES', 'CONVERSATIONS', 'RIDERS', 'REVENUE');--> statement-breakpoint
@@ -187,23 +186,6 @@ CREATE TABLE "event_outbox" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "event_outbox_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"channel" text NOT NULL,
 	"payload" jsonb NOT NULL,
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "job_queue" (
-	"id" text PRIMARY KEY NOT NULL,
-	"type" text NOT NULL,
-	"payload" jsonb,
-	"status" "JobStatus" DEFAULT 'PENDING' NOT NULL,
-	"priority" integer DEFAULT 0 NOT NULL,
-	"max_retries" integer DEFAULT 3 NOT NULL,
-	"retry_count" integer DEFAULT 0 NOT NULL,
-	"last_error" text,
-	"scheduled_at" timestamp (3),
-	"started_at" timestamp (3),
-	"completed_at" timestamp (3),
-	"company_id" text,
-	"dedupe_key" text,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
@@ -406,11 +388,6 @@ CREATE INDEX "event_logs_created_at_idx" ON "event_logs" USING btree ("created_a
 CREATE INDEX "event_logs_metadata_gin" ON "event_logs" USING gin ("metadata");--> statement-breakpoint
 CREATE INDEX "event_outbox_channel_id_idx" ON "event_outbox" USING btree ("channel" text_ops,"id" int8_ops);--> statement-breakpoint
 CREATE INDEX "event_outbox_created_at_idx" ON "event_outbox" USING btree ("created_at" timestamp_ops);--> statement-breakpoint
-CREATE INDEX "job_queue_type_status_idx" ON "job_queue" USING btree ("type" text_ops,"status" enum_ops);--> statement-breakpoint
-CREATE INDEX "job_queue_status_priority_created_at_idx" ON "job_queue" USING btree ("status" enum_ops,"priority" int4_ops,"created_at" timestamp_ops);--> statement-breakpoint
-CREATE INDEX "job_queue_scheduled_at_idx" ON "job_queue" USING btree ("scheduled_at" timestamp_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "job_queue_dedupe_key_unique" ON "job_queue" USING btree ("dedupe_key") WHERE "job_queue"."dedupe_key" IS NOT NULL AND "job_queue"."status" IN ('PENDING', 'PROCESSING');--> statement-breakpoint
-CREATE INDEX "job_queue_export_count_idx" ON "job_queue" USING btree ("type","company_id","created_at");--> statement-breakpoint
 CREATE INDEX "ledger_transactions_company_id_created_at_idx" ON "ledger_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE UNIQUE INDEX "ledger_transactions_reference_key" ON "ledger_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
 CREATE INDEX "messages_conversation_id_created_at_idx" ON "messages" USING btree ("conversation_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
@@ -470,7 +447,6 @@ ALTER TABLE "device_tokens" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "dispatchers" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "event_logs" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "event_outbox" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "job_queue" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "ledger_transactions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "messages" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "metrics" ENABLE ROW LEVEL SECURITY;
@@ -542,7 +518,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION pg_cron_payment_timeout_cancellation() RETURNS void AS $$
 DECLARE
   cancelled_count integer;
-  timeout_hours numeric := 0.5;
+  timeout_hours numeric := 1;
 BEGIN
   WITH expired AS (
     UPDATE deliveries
