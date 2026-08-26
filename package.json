@@ -73,6 +73,9 @@
   ],
   "author": "TechSalis",
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",

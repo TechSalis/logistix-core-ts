@@ -145,7 +145,6 @@ export {
   KOBO_PER_NAIRA,
   getSubscriptionPrice,
   formatAmount,
-  formatNaira,
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
