@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CLIENT_CONFIG } from '../src/config/client.config.js';
+import { CLIENT_CONFIG } from '../src/shared/config/client.config.js';
 
 describe('CLIENT_CONFIG', () => {
   it('defines a 60-minute normal poll interval', () => {

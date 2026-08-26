@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ExportDataType } from '../src/enums/enums.js';
-import { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES } from '../src/config/export.config.js';
+import { ExportDataType } from '../src/shared/enums/enums.js';
+import { VALID_DATA_TYPES, MONTH_REQUIRED_TYPES } from '../src/shared/config/export.config.js';
 
 describe('export.config', () => {
   it('defines the canonical export data types', () => {

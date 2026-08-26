@@ -1,0 +1,35 @@
+import type { ApprovalStatus, DeliveryStatus, RiderStatus } from '../enums/enums.js';
+
+export interface DeliveryBase {
+  id: string;
+  trackingId: string;
+  status: DeliveryStatus;
+  pickupAddress: string | null;
+  dropOffAddress: string;
+  pickupPhone: string | null;
+  dropOffPhone: string | null;
+  price: number | null;
+  description: string | null;
+  scheduledAt: string | null;
+  createdAt: string;
+  rider: { id: string; fullName: string } | null;
+  pool: boolean;
+  dropOffState: string | null;
+  vehicleType: string;
+}
+
+export interface RiderBase {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  status: RiderStatus;
+  approvalStatus: ApprovalStatus | null;
+}
+
+export interface DispatcherBase {
+  id: string;
+  fullName: string;
+  email: string;
+  approvalStatus: ApprovalStatus | null;
+}

@@ -3,7 +3,7 @@ import {
   getRetentionCutoff,
   getStartOfDayInTimezone,
   getDayBoundsInTimezone,
-} from '../src/utils/timezone.js';
+} from '../src/shared/utils/timezone.js';
 
 afterEach(() => {
   vi.useRealTimers();

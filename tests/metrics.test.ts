@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeChannelCounts } from '../src/utils/metrics';
+import { mergeChannelCounts } from '../src/shared/utils/metrics';
 
 describe('mergeChannelCounts', () => {
   it('returns next when prev is undefined', () => {

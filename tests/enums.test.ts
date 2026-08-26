@@ -25,7 +25,7 @@ import {
   NotificationPriority,
   DeliveryExpiryReason,
   IdType,
-} from '../src/enums/enums.js';
+} from '../src/shared/enums/enums.js';
 
 describe('Enums', () => {
   describe('UserRole', () => {

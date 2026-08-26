@@ -5,8 +5,8 @@ import {
   type SquadClientOptions,
   type ChargeCardParams,
 } from '../src/services/squad-client.js';
-import { BILLING_CONFIG, getSubscriptionPrice } from '../src/config/billing.config.js';
-import { SubscriptionTier } from '../src/enums/enums.js';
+import { BILLING_CONFIG, getSubscriptionPrice } from '../src/shared/config/billing.config.js';
+import { SubscriptionTier } from '../src/shared/enums/enums.js';
 
 function jsonResponse(status: number, body: unknown): Response {
   return { status, text: async () => JSON.stringify(body) } as unknown as Response;

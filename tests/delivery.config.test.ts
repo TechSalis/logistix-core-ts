@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ALLOWED_STATUS_TRANSITIONS } from '../src/config/delivery.config.js';
-import { DeliveryStatus } from '../src/enums/enums.js';
+import { ALLOWED_STATUS_TRANSITIONS } from '../src/shared/config/delivery.config.js';
+import { DeliveryStatus } from '../src/shared/enums/enums.js';
 
 describe('ALLOWED_STATUS_TRANSITIONS', () => {
   it('covers every DeliveryStatus member as a key', () => {

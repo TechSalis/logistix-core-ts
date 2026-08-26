@@ -4,7 +4,7 @@ import {
   isTransientHttpError,
   RETRYABLE_NETWORK_ERROR_CODES,
   sleep,
-} from '../src/utils/retry.js';
+} from '../src/shared/utils/retry.js';
 
 describe('sleep', () => {
   it('resolves after the specified milliseconds', async () => {

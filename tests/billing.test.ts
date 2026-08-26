@@ -13,7 +13,7 @@ import {
   shouldBillNow,
   shouldRetryPayment,
   computeAccessLevel,
-} from '../src/config/billing.config.js';
+} from '../src/shared/config/billing.config.js';
 import {
   getTotalPaidForDeliveries,
   applyPaymentStatusUpdate,
@@ -28,7 +28,7 @@ import {
   ApprovalStatus,
   CompanyAccessLevel,
   ChannelType,
-} from '../src/enums/enums.js';
+} from '../src/shared/enums/enums.js';
 import {
   deliveries,
   deliveryAllocations,

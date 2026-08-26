@@ -5,7 +5,7 @@ import {
   PaymentStatus,
   EscalatedTo,
   EscalationStatus,
-} from '../src/enums/enums.js';
+} from '../src/shared/enums/enums.js';
 import type {
   ConversationMetadata,
   ChannelCredentials,

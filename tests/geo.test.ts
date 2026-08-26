@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { haversineDistanceMeters } from '../src/utils/geo.js';
+import { haversineDistanceMeters } from '../src/shared/utils/geo.js';
 
 describe('haversineDistanceMeters', () => {
   it('same coordinates returns 0', () => {

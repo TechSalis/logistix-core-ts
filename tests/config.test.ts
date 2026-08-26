@@ -3,8 +3,8 @@ import {
   buildSystemConfig,
   BRAND_NAME,
   DEFAULT_WORKING_HOURS,
-} from '../src/config/system.config.js';
-import { DayOfWeek } from '../src/enums/enums.js';
+} from '../src/shared/config/system.config.js';
+import { DayOfWeek } from '../src/shared/enums/enums.js';
 
 describe('buildSystemConfig', () => {
   it('returns defaults with no overrides', () => {

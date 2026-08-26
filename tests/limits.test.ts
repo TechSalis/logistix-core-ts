@@ -4,8 +4,8 @@ import {
   TIER_LIMITS,
   getTierLimits,
   DEFAULT_MESSAGE_LIMIT,
-} from '../src/config/limits.config.js';
-import { SubscriptionTier } from '../src/enums/enums.js';
+} from '../src/shared/config/limits.config.js';
+import { SubscriptionTier } from '../src/shared/enums/enums.js';
 
 describe('DEFAULT_MESSAGE_LIMIT', () => {
   it('caps a single chat message at 4096 characters', () => {

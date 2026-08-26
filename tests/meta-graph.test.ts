@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeExpiresAt, parseGraphError } from '../src/utils/meta-graph.js';
+import { computeExpiresAt, parseGraphError } from '../src/shared/utils/meta-graph.js';
 
 describe('computeExpiresAt', () => {
   it('adds the expiry delta to the current time', () => {

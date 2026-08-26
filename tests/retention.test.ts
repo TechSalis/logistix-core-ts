@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RETENTION_CONFIG } from '../src/config/retention.config.js';
+import { RETENTION_CONFIG } from '../src/shared/config/retention.config.js';
 
 describe('RETENTION_CONFIG', () => {
   it('keeps individual account purge at 90 days', () => {

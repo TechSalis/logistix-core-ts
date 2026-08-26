@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { buildBrandConfig } from '../src/config/brand.config';
+import { buildBrandConfig } from '../src/shared/config/brand.config';
 
 describe('buildBrandConfig', () => {
   const originalEnv = process.env;

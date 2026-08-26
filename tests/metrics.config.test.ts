@@ -5,8 +5,8 @@ import {
   METRIC_DOMAIN_MAPPINGS,
   LIFETIME_BUCKET_START,
   granularityForWindowDays,
-} from '../src/config/metrics.config.js';
-import { MetricDomain, MetricGranularity } from '../src/enums/enums.js';
+} from '../src/shared/config/metrics.config.js';
+import { MetricDomain, MetricGranularity } from '../src/shared/enums/enums.js';
 
 describe('METRICS_RETENTION', () => {
   it('defines the four-tier compression ladder', () => {
