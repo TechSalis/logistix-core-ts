@@ -1,5 +1,5 @@
 import { and, asc, eq, gt, inArray, sql, sum } from 'drizzle-orm';
-import type { DrizzleDB } from './queue.service.js';
+import type { DrizzleDB } from './queue.js';
 import { randomUUID } from 'node:crypto';
 import {
   PaymentStatus,
@@ -98,7 +98,7 @@ export async function applyPaymentStatusUpdate(
     })
     .where(and(...whereConditions))
     .returning({ id: deliveries.id });
-  return result.map((r) => r.id);
+  return result.map((r: { id: string }) => r.id);
 }
 
 // ─── Allocation algorithm (moved from billing.config) ───────────────────────
