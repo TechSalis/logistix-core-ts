@@ -60,8 +60,6 @@ let _systemConfig: SystemConfig | null = null;
 export function getSystemConfig(): SystemConfig {
   if (!_systemConfig) {
     _systemConfig = buildSystemConfig({
-      ...(process.env.CUSTOMER_BASE_URL ? { customerBaseUrl: process.env.CUSTOMER_BASE_URL } : {}),
-      ...(process.env.BUSINESS_BASE_URL ? { businessBaseUrl: process.env.BUSINESS_BASE_URL } : {}),
       ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
       ...(process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}),
     });

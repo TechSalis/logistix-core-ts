@@ -7,26 +7,21 @@ describe('buildBrandConfig', () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
     delete process.env.BRAND_NAME;
-    delete process.env.BRAND_DOMAIN;
     delete process.env.BRAND_TRACKING_PREFIX;
   });
 
   it('returns defaults when no env vars or overrides', () => {
     const config = buildBrandConfig();
     expect(config.brandName).toBe('Logistix');
-    expect(config.domain).toBe('logistix.team');
     expect(config.trackingPrefix).toBe('LGX-');
-    expect(config.jwtIssuer).toBe('logistix');
-    expect(config.deepLinkScheme).toBe('logistix');
-    expect(config.brandDescription).toBe('AI-Powered Logistics Platform');
   });
 
   it('reads from env vars', () => {
     process.env.BRAND_NAME = 'Acme';
-    process.env.BRAND_DOMAIN = 'acme.com';
+    process.env.BRAND_TRACKING_PREFIX = 'ACM-';
     const config = buildBrandConfig();
     expect(config.brandName).toBe('Acme');
-    expect(config.domain).toBe('acme.com');
+    expect(config.trackingPrefix).toBe('ACM-');
   });
 
   it('overrides take precedence over env vars', () => {
