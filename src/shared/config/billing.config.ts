@@ -208,6 +208,8 @@ export function shouldRetryPayment(lastBillingDate: Date, retryAttempt: number):
 export function computeAccessLevel(
   verificationStatus: ApprovalStatus | null | undefined,
   subscriptionStatus: SubscriptionStatus | null | undefined,
+  periodEnd: Date | string | null = null,
+  opts: { wasTrial?: boolean } = {},
 ): CompanyAccessLevel {
   if (verificationStatus !== ApprovalStatus.APPROVED) {
     return CompanyAccessLevel.RESTRICTED;
@@ -221,5 +223,12 @@ export function computeAccessLevel(
   if (subscriptionStatus === SubscriptionStatus.PAST_DUE) {
     return CompanyAccessLevel.PAST_DUE;
   }
+  if (subscriptionStatus === SubscriptionStatus.CANCELLING) {
+    const deadline = periodEnd ? new Date(periodEnd).getTime() : 0;
+    const live = deadline > Date.now();
+    if (!live) return CompanyAccessLevel.RESTRICTED;
+    return opts.wasTrial ? CompanyAccessLevel.TRIAL : CompanyAccessLevel.FULL;
+  }
+  // CANCELLED and unknown statuses
   return CompanyAccessLevel.RESTRICTED;
 }

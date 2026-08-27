@@ -383,6 +383,26 @@ describe('computeAccessLevel', () => {
   it('returns RESTRICTED when both are undefined', () => {
     expect(computeAccessLevel(undefined, undefined)).toBe(CompanyAccessLevel.RESTRICTED);
   });
+
+  it('returns RESTRICTED for APPROVED + CANCELLING with no periodEnd', () => {
+    expect(computeAccessLevel(ApprovalStatus.APPROVED, SubscriptionStatus.CANCELLING)).toBe(
+      CompanyAccessLevel.RESTRICTED,
+    );
+  });
+
+  it('keeps ACCESS for APPROVED + CANCELLING while periodEnd is in the future', () => {
+    const future = new Date(Date.now() + 5 * 24 * 3600 * 1000);
+    expect(computeAccessLevel(ApprovalStatus.APPROVED, SubscriptionStatus.CANCELLING, future)).toBe(
+      CompanyAccessLevel.FULL,
+    );
+  });
+
+  it('restricts APPROVED + CANCELLING once periodEnd is in the past', () => {
+    const past = new Date(Date.now() - 24 * 3600 * 1000);
+    expect(computeAccessLevel(ApprovalStatus.APPROVED, SubscriptionStatus.CANCELLING, past)).toBe(
+      CompanyAccessLevel.RESTRICTED,
+    );
+  });
 });
 
 // ─── Shared payment allocation (backend webhook + workers reconciliation) ────
