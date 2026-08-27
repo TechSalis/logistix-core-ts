@@ -1,4 +1,4 @@
-CREATE TYPE "public"."AdminRole" AS ENUM('ADMIN', 'SUPER_ADMIN');--> statement-breakpoint
+CREATE TYPE "public"."AdminRole" AS ENUM('OPERATOR', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED', 'DISABLED');--> statement-breakpoint
 CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
 CREATE TYPE "public"."ChannelType" AS ENUM('SYSTEM_POOL', 'MY_CHANNEL');--> statement-breakpoint
@@ -6,7 +6,7 @@ CREATE TYPE "public"."CompanyChannelStatus" AS ENUM('PENDING', 'ACTIVE', 'DEACTI
 CREATE TYPE "public"."Currency" AS ENUM('NGN');--> statement-breakpoint
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."DevicePlatform" AS ENUM('ANDROID', 'IOS', 'WEB');--> statement-breakpoint
-CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'DISPATCHER');--> statement-breakpoint
+CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'STAFF');--> statement-breakpoint
 CREATE TYPE "public"."EntityType" AS ENUM('USER', 'DELIVERY', 'RIDER', 'COMPANY', 'DISPATCHER', 'SYSTEM', 'COMPANY_CHANNEL', 'MESSAGE');--> statement-breakpoint
 CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN', 'DISPATCHER');--> statement-breakpoint
 CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'TAKEN_OVER');--> statement-breakpoint

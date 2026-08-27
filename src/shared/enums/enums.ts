@@ -5,13 +5,13 @@ export enum UserRole {
 }
 
 export enum AdminRole {
-  ADMIN = 'ADMIN',
+  OPERATOR = 'OPERATOR',
   SUPER_ADMIN = 'SUPER_ADMIN',
 }
 
 export enum DispatcherRole {
   OWNER = 'OWNER',
-  DISPATCHER = 'DISPATCHER',
+  STAFF = 'STAFF',
 }
 
 export enum DeliveryStatus {
