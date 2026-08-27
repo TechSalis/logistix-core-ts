@@ -100,6 +100,7 @@ export enum SubscriptionTier {
 export enum SubscriptionStatus {
   TRIAL = 'TRIAL',
   ACTIVE = 'ACTIVE',
+  CANCELLING = 'CANCELLING',
   PAST_DUE = 'PAST_DUE',
   CANCELLED = 'CANCELLED',
 }

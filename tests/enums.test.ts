@@ -6,6 +6,7 @@ import {
   PaymentMethod,
   PaymentStatus,
   SubscriptionTier,
+  SubscriptionStatus,
   EntityType,
   EventType,
   ErrorCode,
@@ -78,6 +79,21 @@ describe('Enums', () => {
     it('has STARTER and PROFESSIONAL', () => {
       const tiers = [SubscriptionTier.STARTER, SubscriptionTier.PROFESSIONAL];
       expect(tiers).toEqual(['STARTER', 'PROFESSIONAL']);
+    });
+  });
+
+  describe('SubscriptionStatus', () => {
+    it('includes CANCELLING as the wire value', () => {
+      expect(SubscriptionStatus.CANCELLING).toBe('CANCELLING');
+    });
+
+    it('keeps the existing members stable', () => {
+      expect([
+        SubscriptionStatus.TRIAL,
+        SubscriptionStatus.ACTIVE,
+        SubscriptionStatus.PAST_DUE,
+        SubscriptionStatus.CANCELLED,
+      ]).toEqual(['TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELLED']);
     });
   });
 
