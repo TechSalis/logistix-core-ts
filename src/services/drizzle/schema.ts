@@ -805,6 +805,9 @@ export const subscriptionTransactions = pgTable(
       'btree',
       table.reference.asc().nullsLast().op('text_ops'),
     ),
+    uniqueIndex('subscription_transactions_one_pending_company')
+      .on(table.companyId)
+      .where(sql`${table.status} = ${sql.raw(`'${TransactionStatus.PENDING}'`)}`),
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
