@@ -23,6 +23,7 @@ import {
   DeliveryStatus,
   DispatcherRole,
   EscalatedTo,
+  EscalationStatus,
   LedgerAdjustmentType,
   ChannelPlatform,
   CompanyChannelStatus,
@@ -76,6 +77,7 @@ export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvi
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
 export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
+export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
 export const currencyEnum = pgEnum('Currency', enumValues(Currency));
@@ -244,6 +246,11 @@ export const conversations = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
     escalatedAt: timestamp('escalated_at', { precision: 3, mode: 'date' }),
+    escalationStatus: escalationStatus('escalation_status'),
+    escalatedTo: escalatedTo('escalated_to'),
+    escalatedBy: text('escalated_by'),
+    resolvedAt: timestamp('resolved_at', { precision: 3, mode: 'date' }),
+    resolution: jsonb('resolution'),
     metadata: jsonb(),
     channelType: channelType('channel_type').notNull(),
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
@@ -285,6 +292,9 @@ export const conversations = pgTable(
       'btree',
       table.escalatedAt.asc().nullsLast().op('timestamp_ops'),
     ),
+    index('conversations_escalation_status_idx')
+      .on(table.escalationStatus.asc().nullsLast().op('enum_ops'))
+      .where(sql`${table.escalationStatus} IS NOT NULL`),
     index('conversations_last_message_at_idx').using(
       'btree',
       table.lastMessageAt.asc().nullsLast().op('timestamp_ops'),
@@ -897,6 +907,8 @@ export const eventLogs = pgTable(
     actorId: text('actor_id'),
     companyId: text('company_id'),
     metadata: jsonb(),
+    severity: text('severity'),
+    ipAddress: text('ip_address'),
     success: boolean().default(true).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
       .default(sql`CURRENT_TIMESTAMP`)
@@ -927,6 +939,12 @@ export const eventLogs = pgTable(
       'btree',
       table.eventType.asc().nullsLast().op('enum_ops'),
       table.success.asc().nullsLast().op('bool_ops'),
+      table.createdAt.desc().nullsLast().op('timestamp_ops'),
+    ),
+    index('event_logs_event_type_severity_created_at_idx').using(
+      'btree',
+      table.eventType.asc().nullsLast().op('enum_ops'),
+      table.severity.asc().nullsLast().op('text_ops'),
       table.createdAt.desc().nullsLast().op('timestamp_ops'),
     ),
     index('event_logs_company_entity_type_event_created_at_idx').using(

@@ -9,6 +9,7 @@ CREATE TYPE "public"."DevicePlatform" AS ENUM('ANDROID', 'IOS', 'WEB');--> state
 CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'DISPATCHER');--> statement-breakpoint
 CREATE TYPE "public"."EntityType" AS ENUM('USER', 'DELIVERY', 'RIDER', 'COMPANY', 'DISPATCHER', 'SYSTEM', 'COMPANY_CHANNEL', 'MESSAGE');--> statement-breakpoint
 CREATE TYPE "public"."EscalatedTo" AS ENUM('COMPANY', 'ADMIN', 'DISPATCHER');--> statement-breakpoint
+CREATE TYPE "public"."EscalationStatus" AS ENUM('OPEN', 'RESOLVED', 'TAKEN_OVER');--> statement-breakpoint
 CREATE TYPE "public"."EventType" AS ENUM('DELIVERY_ASSIGNED', 'DELIVERY_UPDATED', 'DELIVERY_CREATED', 'DELIVERY_STATUS_CHANGED', 'DELIVERY_DELETED', 'RIDER_LOCATION_UPDATED', 'RIDER_ACCEPTED', 'RIDER_CREATED', 'RIDER_UPDATED', 'RIDER_STATUS_CHANGED', 'RIDER_DELETED', 'RIDER_DOCUMENTS_VERIFIED', 'RIDER_DOCUMENTS_REJECTED', 'CHANNEL_SETUP', 'CHANNEL_ACTIVATED', 'CHANNEL_DEACTIVATED', 'CHANNEL_REJECTED', 'CHANNEL_REMOVED', 'SUBSCRIPTION_STATUS_CHANGED', 'DISPATCHER_CREATED', 'DISPATCHER_UPDATED', 'DISPATCHER_STATUS_CHANGED', 'DISPATCHER_DELETED', 'AI_EXECUTION', 'SECURITY_INCIDENT', 'ADMIN_PROOF_READ', 'ADMIN_DOCUMENT_READ', 'COMPANY_ACTIVATED', 'COMPANY_DEACTIVATED', 'COMPANY_TIER_CHANGED', 'COMPANY_VERIFIED', 'COMPANY_VERIFICATION_REJECTED', 'USER_PURGED', 'CANCELLED_PAYMENT_TIMEOUT', 'DOWNGRADE', 'MESSAGE_DELETED', 'LEDGER_ADJUSTED');--> statement-breakpoint
 CREATE TYPE "public"."LedgerAdjustmentType" AS ENUM('CREDIT', 'DEBIT', 'CORRECTION', 'CHANNEL_FEE', 'OVERAGE', 'REFUND');--> statement-breakpoint
 CREATE TYPE "public"."MessageStatus" AS ENUM('SENT', 'DELIVERED', 'READ', 'FAILED');--> statement-breakpoint
@@ -98,6 +99,11 @@ CREATE TABLE "conversations" (
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"escalated_at" timestamp (3),
+	"escalation_status" "EscalationStatus",
+	"escalated_to" "EscalatedTo",
+	"escalated_by" text,
+	"resolved_at" timestamp (3),
+	"resolution" jsonb,
 	"metadata" jsonb,
 	"channel_type" "ChannelType" NOT NULL,
 	"last_customer_message_at" timestamp (3),
@@ -178,6 +184,8 @@ CREATE TABLE "event_logs" (
 	"actor_id" text,
 	"company_id" text,
 	"metadata" jsonb,
+	"severity" text,
+	"ip_address" text,
 	"success" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -354,6 +362,7 @@ CREATE UNIQUE INDEX "conversations_platform_platform_id_company_id_key" ON "conv
 CREATE INDEX "conversations_handled_by_type_idx" ON "conversations" USING btree ("handled_by_type" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_channel_type_idx" ON "conversations" USING btree ("channel_type" enum_ops);--> statement-breakpoint
 CREATE INDEX "conversations_escalated_at_idx" ON "conversations" USING btree ("escalated_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "conversations_escalation_status_idx" ON "conversations" USING btree ("escalation_status" enum_ops) WHERE "conversations"."escalation_status" IS NOT NULL;--> statement-breakpoint
 CREATE INDEX "conversations_last_message_at_idx" ON "conversations" USING btree ("last_message_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "conversations_metadata_gin" ON "conversations" USING gin ("metadata");--> statement-breakpoint
 CREATE INDEX "deliveries_company_id_status_idx" ON "deliveries" USING btree ("company_id" text_ops,"status" enum_ops);--> statement-breakpoint
@@ -383,6 +392,7 @@ CREATE INDEX "event_logs_company_id_created_at_idx" ON "event_logs" USING btree 
 CREATE INDEX "event_logs_entity_id_created_at_idx" ON "event_logs" USING btree ("entity_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_event_type_created_at_idx" ON "event_logs" USING btree ("event_type" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_event_type_success_created_at_idx" ON "event_logs" USING btree ("event_type" enum_ops,"success" bool_ops,"created_at" timestamp_ops);--> statement-breakpoint
+CREATE INDEX "event_logs_event_type_severity_created_at_idx" ON "event_logs" USING btree ("event_type" enum_ops,"severity" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_company_entity_type_event_created_at_idx" ON "event_logs" USING btree ("company_id" text_ops,"entity_type" enum_ops,"event_type" enum_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_created_at_idx" ON "event_logs" USING btree ("created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "event_logs_metadata_gin" ON "event_logs" USING gin ("metadata");--> statement-breakpoint
