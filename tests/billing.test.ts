@@ -62,6 +62,10 @@ describe('BILLING_CONFIG', () => {
   it('has max total attempts equal to 1 initial + retry intervals', () => {
     expect(BILLING_CONFIG.PAYMENT_RETRY.MAX_ATTEMPTS).toBe(4);
   });
+
+  it('has a positive fundWallet idempotency window', () => {
+    expect(BILLING_CONFIG.FUND_IDEMPOTENCY_WINDOW_MS).toBeGreaterThan(0);
+  });
 });
 
 describe('KOBO_PER_NAIRA', () => {

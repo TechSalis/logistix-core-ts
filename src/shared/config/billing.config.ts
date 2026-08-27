@@ -117,6 +117,12 @@ export const BILLING_CONFIG = {
   REFUND_WINDOW_DAYS: 14,
 
   /**
+   * Window (ms) within which fundWallet requests with the same company + amount
+   * reuse a single PENDING reference so double-submits coalesce into one checkout.
+   */
+  FUND_IDEMPOTENCY_WINDOW_MS: 5 * 60 * 1000,
+
+  /**
    * HTTP timeout (ms) for Squad API calls.
    */
   SQUAD_HTTP_TIMEOUT: 30_000,
