@@ -126,7 +126,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `SecuritySeverity`         | LOW, MEDIUM, HIGH, CRITICAL                                 |
 | `ErrorCode`                | Standardized error codes                                    |
 | `DayOfWeek`                | Monday, Tuesday, Wednesday, Thursday, Friday, Saturday      |
-| `WEEKDAYS`                 | `readonly DayOfWeek[]` (MONDAY–SATURDAY)                    |
+| `ALL_DAYS`                 | `readonly DayOfWeek[]` (all seven days)                     |
 | `MetricDomain`             | DELIVERIES, CONVERSATIONS, RIDERS, REVENUE                  |
 | `MetricGranularity`        | DAY, WEEK, MONTH, LIFETIME                                  |
 | `SystemStatus`             | UP, DOWN, DEGRADED                                          |
@@ -241,7 +241,6 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `KOBO_PER_NAIRA`             | `number`   | Kobo/Naira conversion constant               |
 | `getSubscriptionPrice()`     | `function` | Calculates subscription price for a tier     |
 | `formatAmount()`             | `function` | Formats an amount in kobo to display string  |
-| `formatNaira()`              | `function` | Formats a number as ₦ display string         |
 | `isBillableTier()`           | `function` | Checks if a tier requires payment            |
 | `shouldBillNow()`            | `function` | Checks if billing should trigger now         |
 | `shouldRetryPayment()`       | `function` | Checks if a failed payment should be retried |

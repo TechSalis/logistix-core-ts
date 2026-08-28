@@ -158,15 +158,6 @@ export function formatAmount(kobo: number): string {
 }
 
 /**
- * Legacy: format a raw kobo amount using `formatAmount` instead.
- * This helper only exists for the transition; new code must not pass
- * naira-denominated values here.
- */
-export function formatNaira(amount: number, decimals = 2): string {
-  return `${REGIONAL_CONFIG.currencySymbol}${amount.toLocaleString(REGIONAL_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
-}
-
-/**
  * Check if a tier is billable (has a positive subscription price)
  */
 export function isBillableTier(tier: SubscriptionTier): boolean {

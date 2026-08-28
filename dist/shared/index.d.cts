@@ -301,19 +301,15 @@ declare enum LogLevel {
 declare enum ApiTag {
     TRACKING = "Tracking",
     AUTH = "Auth",
-    CONTACT = "Contact",
-    BILLING = "Billing",
     ADMIN = "Admin",
     GRAPHQL = "GraphQL",
-    SYSTEM = "System",
-    ONBOARDING = "Onboarding"
+    SYSTEM = "System"
 }
 declare enum SseEventType {
     CONNECTED = "connected",
     DELIVERY = "delivery",
     RIDER = "rider",
     MESSAGE = "message",
-    INITIAL = "initial",
     COMPANY = "company",
     RIDER_LOCATION = "rider-location",
     TYPING = "typing"
@@ -385,6 +381,24 @@ declare enum DeliverySyncScope {
 declare enum AdminEscalationAction {
     TAKE_OVER = "TAKE_OVER",
     RESOLVE = "RESOLVE"
+}
+/**
+ * Admin message-delivery management action. Wire value = member string,
+ * matching the backend GraphQL enum `AdminDeliveryAction`.
+ */
+declare enum AdminDeliveryAction {
+    ASSIGN = "ASSIGN",
+    UPDATE = "UPDATE",
+    UPDATE_STATUS = "UPDATE_STATUS"
+}
+/**
+ * Scope filter for the `conversations` list query. Wire value = member
+ * string, matching the backend GraphQL enum `ConversationScope`.
+ */
+declare enum ConversationScope {
+    ALL = "ALL",
+    COMPANY = "COMPANY",
+    SYSTEM_ONLY = "SYSTEM_ONLY"
 }
 declare enum NotificationPriority {
     URGENT = "URGENT"
@@ -1138,7 +1152,7 @@ interface SessionConfig {
 declare const SESSION_CONFIG: SessionConfig;
 
 interface FetchWithTimeoutOptions extends Omit<RequestInit, 'signal'> {
-    /** Timeout in milliseconds. Defaults to 20 000 ms. */
+    /** Timeout in milliseconds. Defaults to `LIMITS_CONFIG.externalApiTimeoutMs`. */
     timeoutMs?: number;
     /** Custom fetch implementation (useful for testing). */
     fetch?: typeof globalThis.fetch;
@@ -1265,4 +1279,4 @@ declare function getDateStringInTimezone(date: Date, timezone?: string): string;
  */
 declare function getRetentionCutoff(retentionMonths: number, timezone?: string): Date;
 
-export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ALL_DAYS, AdminEscalationAction, AdminRole, ApiTag, ApprovalStatus, AuditActorType, BILLING_CONFIG, BRAND, BRAND_NAME, type BankDetails, type BrandConfig, type CACEvidenceStatus, CAC_EVIDENCE_STATUS, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelPlatform, ChannelType, ChannelsUpdateType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, CompanyChannelStatus, type CompanyMetadata, ContactCategory, ConversationHandlerType, type ConversationMetadata, Currency, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, DeliveryExpiryReason, type DeliveryMetadata, DeliveryStatus, DeliverySyncScope, DevicePlatform, type DispatcherBase, DispatcherRole, ENUM_CATALOG, EntityType, type EnumCatalog, type EnumValue, ErrorCode, EscalatedTo, EscalationStatus, EventType, ExportDataType, ExportReason, FcmNotificationType, HQ_LOCATION, IdType, JobType, JwtTokenType, KOBO_PER_NAIRA, LEAD_CATEGORIES, LIFETIME_BUCKET_START, LIMITS_CONFIG, LedgerAdjustmentType, type LedgerMetadata, LlmRole, LogLevel, MESSAGE_STATUS_RANK, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, MessageStatus, MetricDomain, MetricGranularity, NodeEnv, NotificationPriority, PAGINATION_CONFIG, PaymentMethod, PaymentProvider, PaymentStatus, ProviderCapability, ProviderRole, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SecurityEventType, SecuritySeverity, SenderType, SseEventType, SubscriptionEventType, SubscriptionHealth, SubscriptionStatus, SubscriptionTier, type SystemConfig, SystemStatus, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, TransactionStatus, TransactionType, UserAuditAction, UserRole, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildBrandConfig, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, safeEnumValue, shouldBillNow, shouldRetryPayment };
+export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ALL_DAYS, AdminDeliveryAction, AdminEscalationAction, AdminRole, ApiTag, ApprovalStatus, AuditActorType, BILLING_CONFIG, BRAND, BRAND_NAME, type BankDetails, type BrandConfig, type CACEvidenceStatus, CAC_EVIDENCE_STATUS, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelPlatform, ChannelType, ChannelsUpdateType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, CompanyChannelStatus, type CompanyMetadata, ContactCategory, ConversationHandlerType, type ConversationMetadata, ConversationScope, Currency, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, DeliveryExpiryReason, type DeliveryMetadata, DeliveryStatus, DeliverySyncScope, DevicePlatform, type DispatcherBase, DispatcherRole, ENUM_CATALOG, EntityType, type EnumCatalog, type EnumValue, ErrorCode, EscalatedTo, EscalationStatus, EventType, ExportDataType, ExportReason, FcmNotificationType, HQ_LOCATION, IdType, JobType, JwtTokenType, KOBO_PER_NAIRA, LEAD_CATEGORIES, LIFETIME_BUCKET_START, LIMITS_CONFIG, LedgerAdjustmentType, type LedgerMetadata, LlmRole, LogLevel, MESSAGE_STATUS_RANK, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, MessageStatus, MetricDomain, MetricGranularity, NodeEnv, NotificationPriority, PAGINATION_CONFIG, PaymentMethod, PaymentProvider, PaymentStatus, ProviderCapability, ProviderRole, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SecurityEventType, SecuritySeverity, SenderType, SseEventType, SubscriptionEventType, SubscriptionHealth, SubscriptionStatus, SubscriptionTier, type SystemConfig, SystemStatus, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, TransactionStatus, TransactionType, UserAuditAction, UserRole, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildBrandConfig, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, safeEnumValue, shouldBillNow, shouldRetryPayment };

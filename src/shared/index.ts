@@ -67,6 +67,8 @@ export {
   AuditActorType,
   DeliverySyncScope,
   AdminEscalationAction,
+  AdminDeliveryAction,
+  ConversationScope,
   safeEnumValue,
   LEAD_CATEGORIES,
   CAC_EVIDENCE_STATUS,

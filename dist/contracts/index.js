@@ -45,6 +45,7 @@ var baseTypeDefs = `
     CUSTOMER
     AGENT
     DISPATCHER
+    ADMIN
     SYSTEM
   }
 

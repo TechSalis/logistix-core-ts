@@ -3,6 +3,16 @@ import { withRetry } from '../shared/utils/retry.js';
 import { extractErrorContext } from '../shared/utils/error-utils.js';
 import { LIMITS_CONFIG } from '../shared/config/limits.config.js';
 
+/**
+ * Single `SupabaseClient` type identity for cross-repo consumers (see
+ * `services/drizzle/orm.ts` for the same rationale for drizzle-orm). Because two
+ * independently-installed `@supabase/supabase-js` copies of the SAME version are
+ * structurally incompatible (private members), consumers that pass a supabase
+ * client across the core-ts boundary MUST import this type from here rather than
+ * from their own bare `@supabase/supabase-js`.
+ */
+export type { SupabaseClient } from '@supabase/supabase-js';
+
 const SUPABASE_AUTH_RETRIES = 3;
 
 export function createSupabaseAdminClient(url: string, serviceKey: string): SupabaseClient {

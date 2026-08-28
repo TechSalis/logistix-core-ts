@@ -238,6 +238,28 @@ var MetricGranularity = /* @__PURE__ */ ((MetricGranularity2) => {
 })(MetricGranularity || {});
 var ALL_DAYS = Object.values(DayOfWeek);
 
+// src/shared/config/brand.config.ts
+var BRAND_DEFAULTS = {
+  brandName: "Logistix",
+  trackingPrefix: "LGX-"
+};
+function buildBrandConfig(overrides) {
+  return {
+    brandName: overrides?.brandName ?? process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
+    trackingPrefix: overrides?.trackingPrefix ?? process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
+  };
+}
+var _brand = null;
+function getBrandConfig() {
+  if (!_brand) _brand = buildBrandConfig();
+  return _brand;
+}
+var BRAND = new Proxy({}, {
+  get(_, prop) {
+    return getBrandConfig()[prop];
+  }
+});
+
 // src/shared/config/system.config.ts
 var DEFAULT_WORKING_HOURS = {
   ["Monday" /* MONDAY */]: { start: "07:00", close: "19:00" },
@@ -247,31 +269,9 @@ var DEFAULT_WORKING_HOURS = {
   ["Friday" /* FRIDAY */]: { start: "07:00", close: "19:00" },
   ["Saturday" /* SATURDAY */]: { start: "07:00", close: "19:00" }
 };
-function buildSystemConfig(overrides = {}) {
-  const emailDomain = overrides.emailDomain ?? "";
-  return {
-    jwtIssuer: overrides.jwtIssuer ?? "",
-    customerBaseUrl: overrides.customerBaseUrl ?? "",
-    businessBaseUrl: overrides.businessBaseUrl ?? "",
-    emailDomain,
-    supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ""),
-    paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ""),
-    brandName: overrides.brandName ?? process.env.BRAND_NAME ?? "Logistix"
-  };
-}
-var _systemConfig = null;
-function getSystemConfig() {
-  if (!_systemConfig) {
-    _systemConfig = buildSystemConfig({
-      ...process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {},
-      ...process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}
-    });
-  }
-  return _systemConfig;
-}
 var _brandName = null;
 function getBrandName() {
-  if (_brandName === null) _brandName = getSystemConfig().brandName;
+  if (_brandName === null) _brandName = getBrandConfig().brandName;
   return _brandName;
 }
 var BRAND_NAME = getBrandName();
@@ -1429,12 +1429,6 @@ function createEncryptor(currentKey, previousKey) {
 }
 
 // src/shared/utils/error-utils.ts
-function extractErrorContext(error) {
-  return {
-    error: extractErrorMessage(error),
-    stack: error instanceof Error ? error.stack : void 0
-  };
-}
 function extractErrorMessage(error) {
   if (error instanceof Error) {
     const parts = [error.message];
@@ -2375,44 +2369,6 @@ var SquadClient = class {
     return { success: true, transactionRef: params.transactionRef };
   }
 };
-
-// src/services/supabase.ts
-import { createClient } from "@supabase/supabase-js";
-var SUPABASE_AUTH_RETRIES = 3;
-function createSupabaseAdminClient(url, serviceKey) {
-  return createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
-}
-async function deleteSupabaseUser(supabase, userId, log) {
-  try {
-    await withRetry(
-      async () => {
-        const result = await Promise.race([
-          supabase.auth.admin.deleteUser(userId),
-          new Promise(
-            (_, reject) => setTimeout(
-              () => reject(new Error("Supabase auth deleteUser timeout")),
-              LIMITS_CONFIG.externalApiTimeoutMs
-            )
-          )
-        ]);
-        if (!result.error) return;
-        const msg = result.error.message?.toLowerCase() ?? "";
-        if (msg.includes("not found") || msg.includes("doesn't exist")) return;
-        throw new Error(`Supabase auth error: ${result.error.message}`);
-      },
-      { maxRetries: SUPABASE_AUTH_RETRIES }
-    );
-    return true;
-  } catch (error) {
-    log?.("[SupabaseAuth] deleteUser failed after retries", {
-      userId,
-      ...extractErrorContext(error)
-    });
-    return false;
-  }
-}
 export {
   EmailService,
   FcmService,
@@ -2438,9 +2394,7 @@ export {
   conversations,
   conversationsRelations,
   createEncryptor,
-  createSupabaseAdminClient,
   currencyEnum,
-  deleteSupabaseUser,
   deliveries,
   deliveriesRelations,
   deliveryAllocations,

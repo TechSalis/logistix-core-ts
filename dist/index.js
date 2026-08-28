@@ -330,12 +330,9 @@ var LogLevel = /* @__PURE__ */ ((LogLevel2) => {
 var ApiTag = /* @__PURE__ */ ((ApiTag2) => {
   ApiTag2["TRACKING"] = "Tracking";
   ApiTag2["AUTH"] = "Auth";
-  ApiTag2["CONTACT"] = "Contact";
-  ApiTag2["BILLING"] = "Billing";
   ApiTag2["ADMIN"] = "Admin";
   ApiTag2["GRAPHQL"] = "GraphQL";
   ApiTag2["SYSTEM"] = "System";
-  ApiTag2["ONBOARDING"] = "Onboarding";
   return ApiTag2;
 })(ApiTag || {});
 var SseEventType = /* @__PURE__ */ ((SseEventType2) => {
@@ -343,7 +340,6 @@ var SseEventType = /* @__PURE__ */ ((SseEventType2) => {
   SseEventType2["DELIVERY"] = "delivery";
   SseEventType2["RIDER"] = "rider";
   SseEventType2["MESSAGE"] = "message";
-  SseEventType2["INITIAL"] = "initial";
   SseEventType2["COMPANY"] = "company";
   SseEventType2["RIDER_LOCATION"] = "rider-location";
   SseEventType2["TYPING"] = "typing";
@@ -420,6 +416,18 @@ var AdminEscalationAction = /* @__PURE__ */ ((AdminEscalationAction2) => {
   AdminEscalationAction2["RESOLVE"] = "RESOLVE";
   return AdminEscalationAction2;
 })(AdminEscalationAction || {});
+var AdminDeliveryAction = /* @__PURE__ */ ((AdminDeliveryAction2) => {
+  AdminDeliveryAction2["ASSIGN"] = "ASSIGN";
+  AdminDeliveryAction2["UPDATE"] = "UPDATE";
+  AdminDeliveryAction2["UPDATE_STATUS"] = "UPDATE_STATUS";
+  return AdminDeliveryAction2;
+})(AdminDeliveryAction || {});
+var ConversationScope = /* @__PURE__ */ ((ConversationScope2) => {
+  ConversationScope2["ALL"] = "ALL";
+  ConversationScope2["COMPANY"] = "COMPANY";
+  ConversationScope2["SYSTEM_ONLY"] = "SYSTEM_ONLY";
+  return ConversationScope2;
+})(ConversationScope || {});
 var NotificationPriority = /* @__PURE__ */ ((NotificationPriority2) => {
   NotificationPriority2["URGENT"] = "URGENT";
   return NotificationPriority2;
@@ -505,47 +513,6 @@ var ENUM_CATALOG = {
   metricGranularities: buildValues(MetricGranularity)
 };
 
-// src/shared/config/system.config.ts
-var DELETED_USER_SENTINEL = "DELETED_USER";
-var SYSTEM_ACTOR_ID = "system";
-var ADMIN_ACTOR_ID = "admin";
-var DEFAULT_WORKING_HOURS = {
-  ["Monday" /* MONDAY */]: { start: "07:00", close: "19:00" },
-  ["Tuesday" /* TUESDAY */]: { start: "07:00", close: "19:00" },
-  ["Wednesday" /* WEDNESDAY */]: { start: "07:00", close: "19:00" },
-  ["Thursday" /* THURSDAY */]: { start: "07:00", close: "19:00" },
-  ["Friday" /* FRIDAY */]: { start: "07:00", close: "19:00" },
-  ["Saturday" /* SATURDAY */]: { start: "07:00", close: "19:00" }
-};
-function buildSystemConfig(overrides = {}) {
-  const emailDomain = overrides.emailDomain ?? "";
-  return {
-    jwtIssuer: overrides.jwtIssuer ?? "",
-    customerBaseUrl: overrides.customerBaseUrl ?? "",
-    businessBaseUrl: overrides.businessBaseUrl ?? "",
-    emailDomain,
-    supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ""),
-    paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ""),
-    brandName: overrides.brandName ?? process.env.BRAND_NAME ?? "Logistix"
-  };
-}
-var _systemConfig = null;
-function getSystemConfig() {
-  if (!_systemConfig) {
-    _systemConfig = buildSystemConfig({
-      ...process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {},
-      ...process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}
-    });
-  }
-  return _systemConfig;
-}
-var _brandName = null;
-function getBrandName() {
-  if (_brandName === null) _brandName = getSystemConfig().brandName;
-  return _brandName;
-}
-var BRAND_NAME = getBrandName();
-
 // src/shared/config/brand.config.ts
 var BRAND_DEFAULTS = {
   brandName: "Logistix",
@@ -567,6 +534,39 @@ var BRAND = new Proxy({}, {
     return getBrandConfig()[prop];
   }
 });
+
+// src/shared/config/system.config.ts
+var DELETED_USER_SENTINEL = "DELETED_USER";
+var SYSTEM_ACTOR_ID = "system";
+var ADMIN_ACTOR_ID = "admin";
+var DEFAULT_WORKING_HOURS = {
+  ["Monday" /* MONDAY */]: { start: "07:00", close: "19:00" },
+  ["Tuesday" /* TUESDAY */]: { start: "07:00", close: "19:00" },
+  ["Wednesday" /* WEDNESDAY */]: { start: "07:00", close: "19:00" },
+  ["Thursday" /* THURSDAY */]: { start: "07:00", close: "19:00" },
+  ["Friday" /* FRIDAY */]: { start: "07:00", close: "19:00" },
+  ["Saturday" /* SATURDAY */]: { start: "07:00", close: "19:00" }
+};
+function buildSystemConfig(overrides = {}) {
+  const emailDomain = overrides.emailDomain ?? "";
+  return {
+    jwtIssuer: overrides.jwtIssuer ?? "",
+    customerBaseUrl: overrides.customerBaseUrl ?? "",
+    businessBaseUrl: overrides.businessBaseUrl ?? "",
+    emailDomain,
+    supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ""),
+    paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ""),
+    // Default brand name delegates to BrandConfig — a single authoritative
+    // source for the brand. Explicit overrides (web's PUBLIC_BRAND_NAME) win.
+    brandName: overrides.brandName ?? getBrandConfig().brandName
+  };
+}
+var _brandName = null;
+function getBrandName() {
+  if (_brandName === null) _brandName = getBrandConfig().brandName;
+  return _brandName;
+}
+var BRAND_NAME = getBrandName();
 
 // src/shared/config/regional.config.ts
 var rawRegionalConfig = {
@@ -3095,48 +3095,11 @@ var SquadClient = class {
     return { success: true, transactionRef: params.transactionRef };
   }
 };
-
-// src/services/supabase.ts
-import { createClient } from "@supabase/supabase-js";
-var SUPABASE_AUTH_RETRIES = 3;
-function createSupabaseAdminClient(url, serviceKey) {
-  return createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
-}
-async function deleteSupabaseUser(supabase, userId, log) {
-  try {
-    await withRetry(
-      async () => {
-        const result = await Promise.race([
-          supabase.auth.admin.deleteUser(userId),
-          new Promise(
-            (_, reject) => setTimeout(
-              () => reject(new Error("Supabase auth deleteUser timeout")),
-              LIMITS_CONFIG.externalApiTimeoutMs
-            )
-          )
-        ]);
-        if (!result.error) return;
-        const msg = result.error.message?.toLowerCase() ?? "";
-        if (msg.includes("not found") || msg.includes("doesn't exist")) return;
-        throw new Error(`Supabase auth error: ${result.error.message}`);
-      },
-      { maxRetries: SUPABASE_AUTH_RETRIES }
-    );
-    return true;
-  } catch (error) {
-    log?.("[SupabaseAuth] deleteUser failed after retries", {
-      userId,
-      ...extractErrorContext(error)
-    });
-    return false;
-  }
-}
 export {
   ADMIN_ACTOR_ID,
   ALLOWED_STATUS_TRANSITIONS,
   ALL_DAYS,
+  AdminDeliveryAction,
   AdminEscalationAction,
   AdminRole,
   ApiTag,
@@ -3155,6 +3118,7 @@ export {
   CompanyChannelStatus,
   ContactCategory,
   ConversationHandlerType,
+  ConversationScope,
   Currency,
   DATA_RETENTION,
   DEDICATED_TIERS,
@@ -3266,9 +3230,7 @@ export {
   conversations,
   conversationsRelations,
   createEncryptor,
-  createSupabaseAdminClient,
   currencyEnum,
-  deleteSupabaseUser,
   deliveries,
   deliveriesRelations,
   deliveryAllocations,

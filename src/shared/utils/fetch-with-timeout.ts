@@ -5,11 +5,11 @@
 
 import { LIMITS_CONFIG } from '../config/limits.config.js';
 
-/** @deprecated Pass explicit `timeoutMs` per call. This is only the fallback. */
+/** Default fallback timeout, sourced from `LIMITS_CONFIG.externalApiTimeoutMs`. */
 export const DEFAULT_TIMEOUT_MS = LIMITS_CONFIG.externalApiTimeoutMs;
 
 interface FetchWithTimeoutOptions extends Omit<RequestInit, 'signal'> {
-  /** Timeout in milliseconds. Defaults to 20 000 ms. */
+  /** Timeout in milliseconds. Defaults to `LIMITS_CONFIG.externalApiTimeoutMs`. */
   timeoutMs?: number;
   /** Custom fetch implementation (useful for testing). */
   fetch?: typeof globalThis.fetch;

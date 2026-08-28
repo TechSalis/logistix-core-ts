@@ -1,4 +1,5 @@
 import { DayOfWeek } from '../enums/enums.js';
+import { getBrandConfig } from './brand.config.js';
 
 export interface BankDetails {
   readonly bankName: string;
@@ -49,7 +50,9 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
     emailDomain,
     supportEmail: overrides.supportEmail ?? (emailDomain ? `contact@${emailDomain}` : ''),
     paymentsEmail: overrides.paymentsEmail ?? (emailDomain ? `payments@${emailDomain}` : ''),
-    brandName: overrides.brandName ?? process.env.BRAND_NAME ?? 'Logistix',
+    // Default brand name delegates to BrandConfig — a single authoritative
+    // source for the brand. Explicit overrides (web's PUBLIC_BRAND_NAME) win.
+    brandName: overrides.brandName ?? getBrandConfig().brandName,
   };
 }
 
@@ -61,16 +64,19 @@ export function getSystemConfig(): SystemConfig {
   if (!_systemConfig) {
     _systemConfig = buildSystemConfig({
       ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
-      ...(process.env.BRAND_NAME ? { brandName: process.env.BRAND_NAME } : {}),
     });
   }
   return _systemConfig;
 }
 
-/** Lazy singleton — defers process.env reads until first access. */
+/**
+ * Lazy convenience accessor for the brand name — single source is
+ * `BrandConfig` (via `getBrandConfig`), kept here so existing `BRAND_NAME`
+ * consumers resolve the same authoritative value.
+ */
 let _brandName: string | null = null;
 export function getBrandName(): string {
-  if (_brandName === null) _brandName = getSystemConfig().brandName;
+  if (_brandName === null) _brandName = getBrandConfig().brandName;
   return _brandName;
 }
 

@@ -1,12 +1,12 @@
 import { sql } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
-import { extractErrorMessage } from '../shared/utils/error-utils.js';
 import { QUEUE_SERVICE_CONFIG } from '../shared/config/service.config.js';
 
 // Accepts both NodePgDatabase (workers) and PgDatabase<postgres-js> (backend).
 // The three `any` params are for TQueryResult, TFullSchema, and TSchema generics —
 // each project uses a different concrete PgQueryResultHKT and schema shape,
 // and drizzle-orm does not export a unifying base type for PgDatabase.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Required: unified PgDatabase type for both dialects.
 export type DrizzleDB = PgDatabase<any, any, any>;
 
 export interface JobRow {
@@ -91,7 +91,9 @@ function toRows(result: unknown): Record<string, unknown>[] {
  * The message JSON contains the original payload + _meta with companyId/dedupeKey.
  */
 function pgmqRowToJobRow(row: Record<string, unknown>, type: string): JobRow {
-  const msg = (typeof row.message === 'object' && row.message !== null ? row.message : {}) as Record<string, unknown>;
+  const msg = (
+    typeof row.message === 'object' && row.message !== null ? row.message : {}
+  ) as Record<string, unknown>;
   const meta = (msg._meta as Record<string, unknown>) ?? {};
   return {
     id: String(row.msg_id),

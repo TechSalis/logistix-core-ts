@@ -8,7 +8,6 @@ import {
   KOBO_PER_NAIRA,
   getSubscriptionPrice,
   formatAmount,
-  formatNaira,
   isBillableTier,
   shouldBillNow,
   shouldRetryPayment,
@@ -150,20 +149,6 @@ describe('formatAmount', () => {
     const result = formatAmount(10_000_000);
     expect(result).toMatch(/₦/);
     expect(result).toMatch(/100,000\.00/);
-  });
-});
-
-describe('formatNaira', () => {
-  it('formats naira amount with default decimals', () => {
-    expect(formatNaira(1500)).toMatch(/₦1,500\.00/);
-  });
-
-  it('formats with custom decimals', () => {
-    expect(formatNaira(1500, 0)).toMatch(/₦1,500/);
-  });
-
-  it('formats zero', () => {
-    expect(formatNaira(0)).toMatch(/₦0\.00/);
   });
 });
 

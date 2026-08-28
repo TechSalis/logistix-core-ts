@@ -446,6 +446,26 @@ export enum AdminEscalationAction {
   RESOLVE = 'RESOLVE',
 }
 
+/**
+ * Admin message-delivery management action. Wire value = member string,
+ * matching the backend GraphQL enum `AdminDeliveryAction`.
+ */
+export enum AdminDeliveryAction {
+  ASSIGN = 'ASSIGN',
+  UPDATE = 'UPDATE',
+  UPDATE_STATUS = 'UPDATE_STATUS',
+}
+
+/**
+ * Scope filter for the `conversations` list query. Wire value = member
+ * string, matching the backend GraphQL enum `ConversationScope`.
+ */
+export enum ConversationScope {
+  ALL = 'ALL',
+  COMPANY = 'COMPANY',
+  SYSTEM_ONLY = 'SYSTEM_ONLY',
+}
+
 export enum NotificationPriority {
   URGENT = 'URGENT',
 }
