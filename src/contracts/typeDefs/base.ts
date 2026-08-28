@@ -44,6 +44,7 @@ export const baseTypeDefs = `
     CUSTOMER
     AGENT
     DISPATCHER
+    ADMIN
     SYSTEM
   }
 

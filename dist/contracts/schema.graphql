@@ -46,6 +46,7 @@ enum SenderType {
   CUSTOMER
   AGENT
   DISPATCHER
+  ADMIN
   SYSTEM
 }
 
