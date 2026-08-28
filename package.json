@@ -68,12 +68,16 @@
     "prepack": "npm run build"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "src/**/*.{js,ts}": [
       "prettier --write",
       "eslint --fix",
       "vitest related --run --passWithNoTests"
     ],
-    "!dist/**": []
+    "scripts/**/*.{js,ts,mjs}": [
+      "prettier --write",
+      "eslint --fix",
+      "vitest related --run --passWithNoTests"
+    ]
   },
   "keywords": [
     "logistix",

@@ -1317,5 +1317,10 @@ var adminTypeDefs = `
 `;
 
 // src/contracts/index.ts
-var CONTRACTS_SCHEMA_PATH = 'contracts/schema.graphql';
-export { CONTRACTS_SCHEMA_PATH, adminTypeDefs, baseTypeDefs, publicTypeDefs };
+var CONTRACTS_SCHEMA_PATH = "contracts/schema.graphql";
+export {
+  CONTRACTS_SCHEMA_PATH,
+  adminTypeDefs,
+  baseTypeDefs,
+  publicTypeDefs
+};

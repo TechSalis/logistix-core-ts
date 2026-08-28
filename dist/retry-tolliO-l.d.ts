@@ -17,17 +17,17 @@ declare const RETRYABLE_NETWORK_ERROR_CODES: Set<string>;
  */
 declare const RETRYABLE_SQLSTATE_CODES: Set<string>;
 interface WithRetryOptions {
-  maxRetries?: number;
-  baseMs?: number;
-  maxDelayMs?: number;
-  label?: string;
-  isRetryable?: (error: unknown) => boolean;
-  onRetry?: (info: {
-    attempt: number;
-    maxRetries: number;
-    error: unknown;
-    delayMs: number;
-  }) => void;
+    maxRetries?: number;
+    baseMs?: number;
+    maxDelayMs?: number;
+    label?: string;
+    isRetryable?: (error: unknown) => boolean;
+    onRetry?: (info: {
+        attempt: number;
+        maxRetries: number;
+        error: unknown;
+        delayMs: number;
+    }) => void;
 }
 /**
  * Retries a function with exponential backoff + jitter.
@@ -35,10 +35,7 @@ interface WithRetryOptions {
  * Does NOT retry 4xx (client errors) or success responses.
  * Pass a custom `isRetryable` to change retry eligibility (e.g. always retry).
  */
-declare function withRetry<T>(
-  fn: (attempt: number) => Promise<T>,
-  options?: WithRetryOptions,
-): Promise<T>;
+declare function withRetry<T>(fn: (attempt: number) => Promise<T>, options?: WithRetryOptions): Promise<T>;
 /**
  * Classifies an error as transient (retryable) from HTTP status codes, known
  * network/timeout error codes, and message substrings. Also unwraps
@@ -48,11 +45,4 @@ declare function withRetry<T>(
  */
 declare function isTransientHttpError(error: unknown): boolean;
 
-export {
-  RETRYABLE_NETWORK_ERROR_CODES as R,
-  type WithRetryOptions as W,
-  RETRYABLE_SQLSTATE_CODES as a,
-  isTransientHttpError as i,
-  sleep as s,
-  withRetry as w,
-};
+export { RETRYABLE_NETWORK_ERROR_CODES as R, type WithRetryOptions as W, RETRYABLE_SQLSTATE_CODES as a, isTransientHttpError as i, sleep as s, withRetry as w };

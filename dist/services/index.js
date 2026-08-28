@@ -75,9 +75,9 @@ import {
   transactionType,
   transactionsRelations,
   users,
-  vehicleType,
-} from '../chunk-T4DKFY4G.js';
-import '../chunk-ZCLRRHR4.js';
+  vehicleType
+} from "../chunk-T4DKFY4G.js";
+import "../chunk-ZCLRRHR4.js";
 export {
   EmailService,
   FcmService,
@@ -155,5 +155,5 @@ export {
   transactionType,
   transactionsRelations,
   users,
-  vehicleType,
+  vehicleType
 };
