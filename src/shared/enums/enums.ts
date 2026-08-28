@@ -352,12 +352,9 @@ export enum LogLevel {
 export enum ApiTag {
   TRACKING = 'Tracking',
   AUTH = 'Auth',
-  CONTACT = 'Contact',
-  BILLING = 'Billing',
   ADMIN = 'Admin',
   GRAPHQL = 'GraphQL',
   SYSTEM = 'System',
-  ONBOARDING = 'Onboarding',
 }
 
 export enum SseEventType {
@@ -365,7 +362,6 @@ export enum SseEventType {
   DELIVERY = 'delivery',
   RIDER = 'rider',
   MESSAGE = 'message',
-  INITIAL = 'initial',
   COMPANY = 'company',
   RIDER_LOCATION = 'rider-location',
   TYPING = 'typing',
