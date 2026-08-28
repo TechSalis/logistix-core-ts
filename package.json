@@ -64,7 +64,8 @@
     "lint": "eslint src/",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "prepack": "npm run build"
   },
   "lint-staged": {
     "*.{js,ts}": [

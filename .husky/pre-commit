@@ -6,5 +6,6 @@ if [ -n "$staged" ]; then
   npx --no-install tsc --noEmit || exit $?
 fi
 
-# Rebuild dist as a build smoke test (dist is gitignored, not committed)
-npx --no-install tsup src/index.ts --format esm,cjs --dts --clean || exit $?
+# Rebuild dist as a build smoke test using the FULL build (dist is committed
+# and must include the contracts surface for git-pinned consumers).
+npm run build || exit $?

@@ -11,8 +11,11 @@ scratch/
 !.env.example
 !.env.test
 
-# TypeScript build output
-dist/
-*.tsbuildinfo
+# TypeScript build output is COMMITTED — consumers install this package via
+# git-pin (github:TECH/logistix-core-ts#sha), and npm 11 gates dependency
+# lifecycle scripts behind allowScripts (prepare/build do NOT run for git
+# deps), so git-pinned installs have no dist/ unless it is committed. Keep
+# dist/ in the repo and always rebuild via `npm run build` before committing.
+# *.tsbuildinfo
 # Coverage output
 coverage/
