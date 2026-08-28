@@ -254,6 +254,7 @@ export enum SenderType {
   CUSTOMER = 'CUSTOMER',
   AGENT = 'AGENT',
   DISPATCHER = 'DISPATCHER',
+  ADMIN = 'ADMIN',
   SYSTEM = 'SYSTEM',
 }
 
