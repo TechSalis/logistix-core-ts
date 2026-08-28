@@ -121,7 +121,6 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `ConversationHandlerType`  | AI, DISPATCHER, ADMIN                                       |
 | `ExportDataType`           | DELIVERIES, BILLING, CHAT                                   |
 | `ExportReason`             | QUEUED, DUPLICATE, QUOTA_EXCEEDED                           |
-| `JobStatus`                | PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED           |
 | `JobType`                  | delivery-notification, squad-webhook, export, ai:batch      |
 | `SecurityEventType`        | RATE_LIMIT, MALICIOUS_REQUEST, BRUTE_FORCE                  |
 | `SecuritySeverity`         | LOW, MEDIUM, HIGH, CRITICAL                                 |

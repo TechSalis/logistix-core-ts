@@ -258,14 +258,6 @@ export enum SenderType {
   SYSTEM = 'SYSTEM',
 }
 
-export enum JobStatus {
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-}
-
 export type SecurityEventType = 'RATE_LIMIT' | 'MALICIOUS_REQUEST' | 'BRUTE_FORCE';
 export const SecurityEventType = {
   RATE_LIMIT: 'RATE_LIMIT',

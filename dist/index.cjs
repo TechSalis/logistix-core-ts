@@ -77,7 +77,6 @@ __export(index_exports, {
   FcmService: () => FcmService,
   HQ_LOCATION: () => HQ_LOCATION,
   IdType: () => IdType,
-  JobStatus: () => JobStatus,
   JobType: () => JobType,
   JwtTokenType: () => JwtTokenType,
   KOBO_PER_NAIRA: () => KOBO_PER_NAIRA,
@@ -492,14 +491,6 @@ var SenderType = /* @__PURE__ */ ((SenderType2) => {
   SenderType2["SYSTEM"] = "SYSTEM";
   return SenderType2;
 })(SenderType || {});
-var JobStatus = /* @__PURE__ */ ((JobStatus2) => {
-  JobStatus2["PENDING"] = "PENDING";
-  JobStatus2["PROCESSING"] = "PROCESSING";
-  JobStatus2["COMPLETED"] = "COMPLETED";
-  JobStatus2["FAILED"] = "FAILED";
-  JobStatus2["CANCELLED"] = "CANCELLED";
-  return JobStatus2;
-})(JobStatus || {});
 var SecurityEventType = {
   RATE_LIMIT: "RATE_LIMIT",
   MALICIOUS_REQUEST: "MALICIOUS_REQUEST",
@@ -1081,7 +1072,6 @@ var TIER_LIMITS = {
     maxDispatchers: 2,
     maxRiders: 20,
     maxDeliveriesPerMonth: 500,
-    maxActiveDeliveries: 20,
     maxExportsPerDay: 2,
     maxExportsPerMonth: 10
   },
@@ -1093,7 +1083,6 @@ var TIER_LIMITS = {
     maxDispatchers: 10,
     maxRiders: 100,
     maxDeliveriesPerMonth: 5e3,
-    maxActiveDeliveries: 50,
     maxExportsPerDay: 5,
     maxExportsPerMonth: 30
   }
@@ -3422,7 +3411,6 @@ async function deleteSupabaseUser(supabase, userId, log) {
   FcmService,
   HQ_LOCATION,
   IdType,
-  JobStatus,
   JobType,
   JwtTokenType,
   KOBO_PER_NAIRA,

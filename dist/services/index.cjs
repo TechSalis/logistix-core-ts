@@ -1694,7 +1694,6 @@ var TIER_LIMITS = {
     maxDispatchers: 2,
     maxRiders: 20,
     maxDeliveriesPerMonth: 500,
-    maxActiveDeliveries: 20,
     maxExportsPerDay: 2,
     maxExportsPerMonth: 10
   },
@@ -1706,7 +1705,6 @@ var TIER_LIMITS = {
     maxDispatchers: 10,
     maxRiders: 100,
     maxDeliveriesPerMonth: 5e3,
-    maxActiveDeliveries: 50,
     maxExportsPerDay: 5,
     maxExportsPerMonth: 30
   }

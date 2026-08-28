@@ -43,7 +43,6 @@ export {
   ConversationHandlerType,
   ExportDataType,
   ExportReason,
-  JobStatus,
   JobType,
   SecurityEventType,
   SecuritySeverity,
