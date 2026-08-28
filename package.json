@@ -36,6 +36,11 @@
         "types": "./dist/services/index.d.cts",
         "default": "./dist/services/index.cjs"
       }
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "import": "./dist/contracts/index.js",
+      "require": "./dist/contracts/index.cjs"
     }
   },
   "files": [
@@ -44,7 +49,9 @@
     "!dist/**/*.spec.*"
   ],
   "scripts": {
-    "build": "npx -y tsup src/index.ts src/shared/index.ts src/services/index.ts --format esm,cjs --dts --clean",
+    "build": "npx -y tsup src/index.ts src/shared/index.ts src/services/index.ts src/contracts/index.ts --format esm,cjs --dts --clean && npm run schema:build-copy",
+    "schema:generate": "npx tsx scripts/generate-schema.ts",
+    "schema:build-copy": "node scripts/copy-schema-to-dist.mjs",
     "dev": "npx -y tsup src/index.ts src/shared/index.ts src/services/index.ts --format esm,cjs --dts --watch",
     "check": "tsc --noEmit",
     "test:typecheck": "tsc --noEmit -p tsconfig.test.json",
@@ -78,6 +85,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@supabase/supabase-js": "^2.105.1",
     "@types/node": "^22.0.0",
     "@types/nodemailer": "^8.0.1",
     "@vitest/coverage-v8": "^4.1.10",
@@ -86,6 +94,7 @@
     "eslint": "^10.4.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
+    "nodemailer": "^9.0.3",
     "postgres": "^3.4.4",
     "prettier": "^3.8.4",
     "tsup": "^8.5.0",
@@ -95,14 +104,20 @@
     "vitest": "^4.1.8"
   },
   "peerDependencies": {
-    "drizzle-orm": "^0.45.2",
     "@supabase/supabase-js": "^2.105.1",
+    "drizzle-orm": "^0.45.2",
     "nodemailer": "^9.0.3"
   },
   "peerDependenciesMeta": {
-    "drizzle-orm": { "optional": false },
-    "@supabase/supabase-js": { "optional": true },
-    "nodemailer": { "optional": true }
+    "drizzle-orm": {
+      "optional": false
+    },
+    "@supabase/supabase-js": {
+      "optional": true
+    },
+    "nodemailer": {
+      "optional": true
+    }
   },
   "dependencies": {
     "zod": "^4.4.3"
