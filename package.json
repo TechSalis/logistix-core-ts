@@ -72,7 +72,8 @@
       "prettier --write",
       "eslint --fix",
       "vitest related --run --passWithNoTests"
-    ]
+    ],
+    "!dist/**": []
   },
   "keywords": [
     "logistix",
