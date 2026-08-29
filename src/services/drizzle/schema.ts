@@ -309,7 +309,10 @@ export const conversations = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
-    check('conversations_handled_by_type_check', sql`${table.handledByType} IN ('AI','HUMAN')`),
+    check(
+      'conversations_handled_by_type_check',
+      sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`,
+    ),
   ],
 );
 

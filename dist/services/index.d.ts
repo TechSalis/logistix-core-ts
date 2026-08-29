@@ -1,7 +1,7 @@
 import * as drizzle_orm from 'drizzle-orm';
 import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import { PgDatabase } from 'drizzle-orm/pg-core';
-import { n as ConversationHandlerType, h as ChannelPlatform, a0 as SecuritySeverity, ad as WithRetryOptions } from '../retry-Dqe-nMO5.js';
+import { n as ConversationHandlerType, h as ChannelPlatform, a0 as SecuritySeverity, J as JobType, ad as WithRetryOptions } from '../retry-Dqe-nMO5.js';
 
 declare const deliveryStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const ledgerAdjustmentType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -4358,10 +4358,10 @@ interface DrainResult {
 type QueueHandler = (job: JobRow) => Promise<void>;
 declare class QueueService {
     private lastPruneAtMs;
-    enqueue(db: DrizzleDB, type: string, payload?: Record<string, unknown>, options?: EnqueueOptions): Promise<JobRow>;
-    enqueueWithDedupe(db: DrizzleDB, type: string, payload?: Record<string, unknown>, options?: EnqueueWithDedupeOptions): Promise<JobRow | null>;
-    countRecent(db: DrizzleDB, type: string, companyId: string, since: Date): Promise<number>;
-    drain(db: DrizzleDB, type: string, handler: QueueHandler, options: DrainOptions): Promise<DrainResult>;
+    enqueue(db: DrizzleDB, type: JobType, payload?: Record<string, unknown>, options?: EnqueueOptions): Promise<JobRow>;
+    enqueueWithDedupe(db: DrizzleDB, type: JobType, payload?: Record<string, unknown>, options?: EnqueueWithDedupeOptions): Promise<JobRow | null>;
+    countRecent(db: DrizzleDB, type: JobType, companyId: string, since: Date): Promise<number>;
+    drain(db: DrizzleDB, type: JobType, handler: QueueHandler, options: DrainOptions): Promise<DrainResult>;
     pruneTerminal(db: DrizzleDB, queueName: string): Promise<number>;
 }
 declare const queueService: QueueService;

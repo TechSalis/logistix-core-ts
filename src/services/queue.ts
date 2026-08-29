@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import type { PgDatabase } from 'drizzle-orm/pg-core';
 import { QUEUE_SERVICE_CONFIG } from '../shared/config/service.config.js';
+import { JobType } from '../shared/enums/enums.js';
 
 // Accepts both NodePgDatabase (workers) and PgDatabase<postgres-js> (backend).
 // The three `any` params are for TQueryResult, TFullSchema, and TSchema generics —
@@ -59,15 +60,15 @@ export interface DrainResult {
 
 export type QueueHandler = (job: JobRow) => Promise<void>;
 
-const JOB_TYPE_TO_QUEUE: Record<string, string> = {
-  DELIVERY_NOTIFICATION: 'delivery_notifications',
-  AI_BATCH: 'ai_batch',
-  SQUAD_WEBHOOK: 'squid_webhooks',
-  EXPORT: 'exports',
+const JOB_TYPE_TO_QUEUE: Record<JobType, string> = {
+  [JobType.DELIVERY_NOTIFICATION]: 'delivery_notifications',
+  [JobType.AI_BATCH]: 'ai_batch',
+  [JobType.SQUAD_WEBHOOK]: 'squid_webhooks',
+  [JobType.EXPORT]: 'exports',
 };
 
-function toQueueName(type: string): string {
-  return JOB_TYPE_TO_QUEUE[type] ?? type;
+function toQueueName(type: JobType): string {
+  return JOB_TYPE_TO_QUEUE[type];
 }
 
 function retryBackoffSeconds(retryCount: number): number {
@@ -118,7 +119,7 @@ class QueueService {
 
   async enqueue(
     db: DrizzleDB,
-    type: string,
+    type: JobType,
     payload?: Record<string, unknown>,
     options?: EnqueueOptions,
   ): Promise<JobRow> {
@@ -165,7 +166,7 @@ class QueueService {
 
   async enqueueWithDedupe(
     db: DrizzleDB,
-    type: string,
+    type: JobType,
     payload?: Record<string, unknown>,
     options?: EnqueueWithDedupeOptions,
   ): Promise<JobRow | null> {
@@ -174,7 +175,7 @@ class QueueService {
     if (options?.dedupeKey) {
       const existing = await db.execute(sql`
         SELECT msg_id FROM pgmq.q_${sql.raw(queueName)}
-        WHERE message->>'_dedupeKey' = ${options.dedupeKey}
+        WHERE message -> '_meta' ->> 'dedupeKey' = ${options.dedupeKey}
           AND (read_ct = 0 OR vt >= clock_timestamp())
         LIMIT 1
       `);
@@ -221,13 +222,18 @@ class QueueService {
     };
   }
 
-  async countRecent(db: DrizzleDB, type: string, companyId: string, since: Date): Promise<number> {
+  async countRecent(db: DrizzleDB, type: JobType, companyId: string, since: Date): Promise<number> {
     const queueName = toQueueName(type);
     const result = await db.execute(sql`
-      SELECT COUNT(*)::integer as count
-      FROM pgmq.a_${sql.raw(queueName)}
-      WHERE enqueued_at >= ${since}
-        AND message->>'_meta' @> ${JSON.stringify({ companyId })}
+      SELECT
+        (SELECT COUNT(*)::integer AS count FROM pgmq.q_${sql.raw(queueName)}
+          WHERE enqueued_at >= ${since.toISOString()}::timestamptz
+            AND message -> '_meta' @> ${JSON.stringify({ companyId })}::jsonb)
+        +
+        (SELECT COUNT(*)::integer AS count FROM pgmq.a_${sql.raw(queueName)}
+          WHERE enqueued_at >= ${since.toISOString()}::timestamptz
+            AND message -> '_meta' @> ${JSON.stringify({ companyId })}::jsonb)
+        AS count
     `);
 
     const rows = toRows(result);
@@ -236,7 +242,7 @@ class QueueService {
 
   async drain(
     db: DrizzleDB,
-    type: string,
+    type: JobType,
     handler: QueueHandler,
     options: DrainOptions,
   ): Promise<DrainResult> {

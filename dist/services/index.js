@@ -484,7 +484,7 @@ var conversations = pgTable(
       foreignColumns: [companies.id],
       name: "conversations_company_id_fkey"
     }).onUpdate("cascade").onDelete("cascade"),
-    check("conversations_handled_by_type_check", sql`${table.handledByType} IN ('AI','HUMAN')`)
+    check("conversations_handled_by_type_check", sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`)
   ]
 );
 var messages = pgTable(
@@ -2256,13 +2256,13 @@ var PermanentJobError = class extends Error {
   }
 };
 var JOB_TYPE_TO_QUEUE = {
-  DELIVERY_NOTIFICATION: "delivery_notifications",
-  AI_BATCH: "ai_batch",
-  SQUAD_WEBHOOK: "squid_webhooks",
-  EXPORT: "exports"
+  ["delivery-notification" /* DELIVERY_NOTIFICATION */]: "delivery_notifications",
+  ["ai:batch" /* AI_BATCH */]: "ai_batch",
+  ["squad-webhook" /* SQUAD_WEBHOOK */]: "squid_webhooks",
+  ["export" /* EXPORT */]: "exports"
 };
 function toQueueName(type) {
-  return JOB_TYPE_TO_QUEUE[type] ?? type;
+  return JOB_TYPE_TO_QUEUE[type];
 }
 function retryBackoffSeconds(retryCount) {
   const ms = Math.min(
@@ -2338,7 +2338,7 @@ var QueueService = class {
     if (options?.dedupeKey) {
       const existing = await db.execute(sql3`
         SELECT msg_id FROM pgmq.q_${sql3.raw(queueName)}
-        WHERE message->>'_dedupeKey' = ${options.dedupeKey}
+        WHERE message -> '_meta' ->> 'dedupeKey' = ${options.dedupeKey}
           AND (read_ct = 0 OR vt >= clock_timestamp())
         LIMIT 1
       `);
@@ -2383,10 +2383,15 @@ var QueueService = class {
   async countRecent(db, type, companyId, since) {
     const queueName = toQueueName(type);
     const result = await db.execute(sql3`
-      SELECT COUNT(*)::integer as count
-      FROM pgmq.a_${sql3.raw(queueName)}
-      WHERE enqueued_at >= ${since}
-        AND message->>'_meta' @> ${JSON.stringify({ companyId })}
+      SELECT
+        (SELECT COUNT(*)::integer AS count FROM pgmq.q_${sql3.raw(queueName)}
+          WHERE enqueued_at >= ${since.toISOString()}::timestamptz
+            AND message -> '_meta' @> ${JSON.stringify({ companyId })}::jsonb)
+        +
+        (SELECT COUNT(*)::integer AS count FROM pgmq.a_${sql3.raw(queueName)}
+          WHERE enqueued_at >= ${since.toISOString()}::timestamptz
+            AND message -> '_meta' @> ${JSON.stringify({ companyId })}::jsonb)
+        AS count
     `);
     const rows = toRows(result);
     return Number(rows[0]?.count ?? 0);

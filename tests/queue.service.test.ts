@@ -126,7 +126,7 @@ describe('enqueueWithDedupe', () => {
 });
 
 describe('countRecent', () => {
-  it('returns the count from the archive table', async () => {
+  it('returns the total count from live queue + archive', async () => {
     const db = mockDb([{ count: 5 }]);
     const count = await queueService.countRecent(db, 'EXPORT', 'company-1', new Date());
     expect(count).toBe(5);

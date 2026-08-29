@@ -110,7 +110,7 @@ CREATE TABLE "conversations" (
 	"handled_by_type" text NOT NULL,
 	"handled_at" timestamp (3),
 	CONSTRAINT "conversations_platform_platform_id_company_id_key" UNIQUE NULLS NOT DISTINCT("platform","platform_id","company_id"),
-	CONSTRAINT "conversations_handled_by_type_check" CHECK ("conversations"."handled_by_type" IN ('AI','HUMAN'))
+	CONSTRAINT "conversations_handled_by_type_check" CHECK ("conversations"."handled_by_type" IN ('AI','DISPATCHER','ADMIN'))
 );
 --> statement-breakpoint
 CREATE TABLE "deliveries" (
@@ -319,10 +319,16 @@ CREATE TABLE "subscription_transactions" (
 	CONSTRAINT "subscription_transactions_currency_check" CHECK ("subscription_transactions"."currency" IN ('NGN'))
 );
 --> statement-breakpoint
-CREATE TABLE "auth"."users" (
-	"id" text PRIMARY KEY NOT NULL,
-	"phone_verified_at" timestamp (3)
-);
+-- auth.users is Supabase-managed (created by the platform, not this project).
+-- Only our additive column is declared here; once set, phone_verified_at is
+-- permanent (no TTL). Dispatchers do NOT need phone verification -- only
+-- companies and riders.
+DO $$
+BEGIN
+  ALTER TABLE "auth"."users" ADD COLUMN IF NOT EXISTS "phone_verified_at" timestamp;
+EXCEPTION WHEN insufficient_privilege THEN
+  RAISE WARNING 'Cannot ALTER auth.users (not owner) - apply this ADD COLUMN manually as a role owning auth.users (e.g. supabase_admin)';
+END $$;
 --> statement-breakpoint
 ALTER TABLE "company_channels" ADD CONSTRAINT "company_channels_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_settings" ADD CONSTRAINT "company_settings_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -479,6 +485,14 @@ SELECT pgmq.create('delivery_notifications');
 SELECT pgmq.create('ai_batch');
 SELECT pgmq.create('squid_webhooks');
 SELECT pgmq.create('exports');
+
+-- Note: CREATE EXTENSION pgmq (and pg_cron) run their install scripts inside the
+-- migrated transaction, and pgmq's script leaves search_path clobbered to an empty
+-- string for the remainder of that transaction. psql autocommits per statement and
+-- is unaffected, but drizzle's migrator runs every chunk in ONE transaction, so any
+-- unqualified CREATE after the extensions fails with 3F000 ("no schema has been
+-- selected to create in"). Restore the documented default search_path here.
+SET search_path = "$user", public, extensions;
 
 -- -------------------------------------------------------
 -- 3. PL/pgSQL functions for worker DB-only tasks
