@@ -484,10 +484,7 @@ var conversations = pgTable(
       foreignColumns: [companies.id],
       name: "conversations_company_id_fkey"
     }).onUpdate("cascade").onDelete("cascade"),
-    check(
-      "conversations_handled_by_type_check",
-      sql`${table.handledByType} IN ('AI','HUMAN')`
-    )
+    check("conversations_handled_by_type_check", sql`${table.handledByType} IN ('AI','HUMAN')`)
   ]
 );
 var messages = pgTable(
@@ -1866,15 +1863,15 @@ var METADATA_KEYS = {
   paidAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paidVia: {
     scope: "DELIVERY",
-    shape: z2.union([
-      z2.nativeEnum(PaymentProvider),
-      z2.literal("BANK_TRANSFER"),
-      z2.literal("CASH")
-    ]).nullish(),
+    shape: z2.union([z2.nativeEnum(PaymentProvider), z2.literal("BANK_TRANSFER"), z2.literal("CASH")]).nullish(),
     required: false
   },
   paymentRequired: { scope: "DELIVERY", shape: boolNullish, required: false },
-  paymentStatus: { scope: "DELIVERY", shape: z2.nativeEnum(PaymentStatus).nullish(), required: false },
+  paymentStatus: {
+    scope: "DELIVERY",
+    shape: z2.nativeEnum(PaymentStatus).nullish(),
+    required: false
+  },
   paymentLinkGenerated: { scope: "DELIVERY", shape: boolNullish, required: false },
   paymentLinkGeneratedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
@@ -1978,7 +1975,11 @@ var METADATA_KEYS = {
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
   totalFee: { scope: "LEDGER", shape: num, required: true }
 };
-var REQUIRED_LEDGER_KEYS = ["feePerDelivery", "deliveryCount", "totalFee"];
+var REQUIRED_LEDGER_KEYS = [
+  "feePerDelivery",
+  "deliveryCount",
+  "totalFee"
+];
 function scopeMatches(scope, domain) {
   return Array.isArray(scope) ? scope.includes(domain) : scope === domain;
 }

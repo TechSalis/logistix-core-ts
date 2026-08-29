@@ -575,10 +575,7 @@ var conversations = (0, import_pg_core.pgTable)(
       foreignColumns: [companies.id],
       name: "conversations_company_id_fkey"
     }).onUpdate("cascade").onDelete("cascade"),
-    (0, import_pg_core.check)(
-      "conversations_handled_by_type_check",
-      import_drizzle_orm.sql`${table.handledByType} IN ('AI','HUMAN')`
-    )
+    (0, import_pg_core.check)("conversations_handled_by_type_check", import_drizzle_orm.sql`${table.handledByType} IN ('AI','HUMAN')`)
   ]
 );
 var messages = (0, import_pg_core.pgTable)(
@@ -1957,15 +1954,15 @@ var METADATA_KEYS = {
   paidAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paidVia: {
     scope: "DELIVERY",
-    shape: import_zod2.z.union([
-      import_zod2.z.nativeEnum(PaymentProvider),
-      import_zod2.z.literal("BANK_TRANSFER"),
-      import_zod2.z.literal("CASH")
-    ]).nullish(),
+    shape: import_zod2.z.union([import_zod2.z.nativeEnum(PaymentProvider), import_zod2.z.literal("BANK_TRANSFER"), import_zod2.z.literal("CASH")]).nullish(),
     required: false
   },
   paymentRequired: { scope: "DELIVERY", shape: boolNullish, required: false },
-  paymentStatus: { scope: "DELIVERY", shape: import_zod2.z.nativeEnum(PaymentStatus).nullish(), required: false },
+  paymentStatus: {
+    scope: "DELIVERY",
+    shape: import_zod2.z.nativeEnum(PaymentStatus).nullish(),
+    required: false
+  },
   paymentLinkGenerated: { scope: "DELIVERY", shape: boolNullish, required: false },
   paymentLinkGeneratedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
@@ -2069,7 +2066,11 @@ var METADATA_KEYS = {
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
   totalFee: { scope: "LEDGER", shape: num, required: true }
 };
-var REQUIRED_LEDGER_KEYS = ["feePerDelivery", "deliveryCount", "totalFee"];
+var REQUIRED_LEDGER_KEYS = [
+  "feePerDelivery",
+  "deliveryCount",
+  "totalFee"
+];
 function scopeMatches(scope, domain) {
   return Array.isArray(scope) ? scope.includes(domain) : scope === domain;
 }

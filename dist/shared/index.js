@@ -552,15 +552,15 @@ var METADATA_KEYS = {
   paidAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paidVia: {
     scope: "DELIVERY",
-    shape: z.union([
-      z.nativeEnum(PaymentProvider),
-      z.literal("BANK_TRANSFER"),
-      z.literal("CASH")
-    ]).nullish(),
+    shape: z.union([z.nativeEnum(PaymentProvider), z.literal("BANK_TRANSFER"), z.literal("CASH")]).nullish(),
     required: false
   },
   paymentRequired: { scope: "DELIVERY", shape: boolNullish, required: false },
-  paymentStatus: { scope: "DELIVERY", shape: z.nativeEnum(PaymentStatus).nullish(), required: false },
+  paymentStatus: {
+    scope: "DELIVERY",
+    shape: z.nativeEnum(PaymentStatus).nullish(),
+    required: false
+  },
   paymentLinkGenerated: { scope: "DELIVERY", shape: boolNullish, required: false },
   paymentLinkGeneratedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
@@ -664,7 +664,11 @@ var METADATA_KEYS = {
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
   totalFee: { scope: "LEDGER", shape: num, required: true }
 };
-var REQUIRED_LEDGER_KEYS = ["feePerDelivery", "deliveryCount", "totalFee"];
+var REQUIRED_LEDGER_KEYS = [
+  "feePerDelivery",
+  "deliveryCount",
+  "totalFee"
+];
 function scopeMatches(scope, domain) {
   return Array.isArray(scope) ? scope.includes(domain) : scope === domain;
 }
