@@ -1925,7 +1925,10 @@ var conversations = (0, import_pg_core.pgTable)(
       foreignColumns: [companies.id],
       name: "conversations_company_id_fkey"
     }).onUpdate("cascade").onDelete("cascade"),
-    (0, import_pg_core.check)("conversations_handled_by_type_check", import_drizzle_orm.sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`)
+    (0, import_pg_core.check)(
+      "conversations_handled_by_type_check",
+      import_drizzle_orm.sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`
+    )
   ]
 );
 var messages = (0, import_pg_core.pgTable)(

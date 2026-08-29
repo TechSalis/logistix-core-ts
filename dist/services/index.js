@@ -484,7 +484,10 @@ var conversations = pgTable(
       foreignColumns: [companies.id],
       name: "conversations_company_id_fkey"
     }).onUpdate("cascade").onDelete("cascade"),
-    check("conversations_handled_by_type_check", sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`)
+    check(
+      "conversations_handled_by_type_check",
+      sql`${table.handledByType} IN ('AI','DISPATCHER','ADMIN')`
+    )
   ]
 );
 var messages = pgTable(
