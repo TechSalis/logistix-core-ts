@@ -941,11 +941,20 @@ var baseTypeDefs = `
   type PlaceSearchResult {
     places: [SimplePlace!]!
   }
+
+  # Empty root placeholders (no fields here). Each surface (public/admin)
+  # EXTENDS these roots from its own contiguous typeDefs block, so the shared
+  # base can be composed independently with either surface AND concatenated
+  # (base + public + admin) into a single union SDL for client codegen without
+  # colliding on a second type Query/Mutation definition.
+  type Query
+
+  type Mutation
 `;
 
 // src/contracts/typeDefs/public.ts
 var publicTypeDefs = `
-  type Query {
+  extend type Query {
     # Riders
     meRider: Rider
 
@@ -999,7 +1008,7 @@ var publicTypeDefs = `
     companyOnboardingStatus: CompanyOnboardingStatus!
   }
 
-  type Mutation {
+  extend type Mutation {
     # Onboarding & Company
     submitRiderProfile(input: SubmitRiderProfileInput!): AuthResponse!
     createCompanyProfile(input: CreateCompanyProfileInput!): AuthResponse!
@@ -1217,6 +1226,10 @@ var adminTypeDefs = `
     total: Int!
   }
 
+  # Admin schema is a STANDALONE surface (base + admin only). It EXTENDS the
+  # empty Query/Mutation placeholders declared in base.ts, never the public
+  # schema's roots, so the admin schema never inherits client-facing operations.
+  # Only admin operations appear below; shared object types/inputs come from base.
   extend type Query {
     # Admin
     systemAnalytics: AdminSystemAnalytics!

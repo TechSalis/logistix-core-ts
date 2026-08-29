@@ -1,5 +1,5 @@
 export const publicTypeDefs = `
-  type Query {
+  extend type Query {
     # Riders
     meRider: Rider
 
@@ -53,7 +53,7 @@ export const publicTypeDefs = `
     companyOnboardingStatus: CompanyOnboardingStatus!
   }
 
-  type Mutation {
+  extend type Mutation {
     # Onboarding & Company
     submitRiderProfile(input: SubmitRiderProfileInput!): AuthResponse!
     createCompanyProfile(input: CreateCompanyProfileInput!): AuthResponse!

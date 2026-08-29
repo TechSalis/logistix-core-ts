@@ -940,4 +940,13 @@ export const baseTypeDefs = `
   type PlaceSearchResult {
     places: [SimplePlace!]!
   }
+
+  # Empty root placeholders (no fields here). Each surface (public/admin)
+  # EXTENDS these roots from its own contiguous typeDefs block, so the shared
+  # base can be composed independently with either surface AND concatenated
+  # (base + public + admin) into a single union SDL for client codegen without
+  # colliding on a second type Query/Mutation definition.
+  type Query
+
+  type Mutation
 `;

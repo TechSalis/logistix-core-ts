@@ -161,6 +161,10 @@ export const adminTypeDefs = `
     total: Int!
   }
 
+  # Admin schema is a STANDALONE surface (base + admin only). It EXTENDS the
+  # empty Query/Mutation placeholders declared in base.ts, never the public
+  # schema's roots, so the admin schema never inherits client-facing operations.
+  # Only admin operations appear below; shared object types/inputs come from base.
   extend type Query {
     # Admin
     systemAnalytics: AdminSystemAnalytics!
