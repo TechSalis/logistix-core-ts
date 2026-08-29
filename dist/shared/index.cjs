@@ -43,7 +43,6 @@ __export(shared_exports, {
   ContactCategory: () => ContactCategory,
   ConversationHandlerType: () => ConversationHandlerType,
   ConversationScope: () => ConversationScope,
-  Currency: () => Currency,
   DATA_RETENTION: () => DATA_RETENTION,
   DEDICATED_TIERS: () => DEDICATED_TIERS,
   DEFAULT_MESSAGE_LIMIT: () => DEFAULT_MESSAGE_LIMIT,
@@ -77,6 +76,7 @@ __export(shared_exports, {
   LlmRole: () => LlmRole,
   LogLevel: () => LogLevel,
   MESSAGE_STATUS_RANK: () => MESSAGE_STATUS_RANK,
+  METADATA_KEYS: () => METADATA_KEYS,
   METRICS_FOLD_CHAIN: () => METRICS_FOLD_CHAIN,
   METRICS_RETENTION: () => METRICS_RETENTION,
   METRIC_DOMAIN_MAPPINGS: () => METRIC_DOMAIN_MAPPINGS,
@@ -85,8 +85,8 @@ __export(shared_exports, {
   MessageStatus: () => MessageStatus,
   MetricDomain: () => MetricDomain,
   MetricGranularity: () => MetricGranularity,
+  NOTIFICATION_PRIORITY: () => NOTIFICATION_PRIORITY,
   NodeEnv: () => NodeEnv,
-  NotificationPriority: () => NotificationPriority,
   PAGINATION_CONFIG: () => PAGINATION_CONFIG,
   PaymentMethod: () => PaymentMethod,
   PaymentProvider: () => PaymentProvider,
@@ -127,6 +127,7 @@ __export(shared_exports, {
   VehicleType: () => VehicleType,
   addDays: () => addDays,
   buildBrandConfig: () => buildBrandConfig,
+  buildMetadata: () => buildMetadata,
   buildSystemConfig: () => buildSystemConfig,
   computeAccessLevel: () => computeAccessLevel,
   computeExpiresAt: () => computeExpiresAt,
@@ -154,6 +155,7 @@ __export(shared_exports, {
   shouldBillNow: () => shouldBillNow,
   shouldRetryPayment: () => shouldRetryPayment,
   sleep: () => sleep,
+  validateMetadata: () => validateMetadata,
   withRetry: () => withRetry
 });
 module.exports = __toCommonJS(shared_exports);
@@ -301,10 +303,6 @@ var ChannelType = /* @__PURE__ */ ((ChannelType2) => {
   ChannelType2["MY_CHANNEL"] = "MY_CHANNEL";
   return ChannelType2;
 })(ChannelType || {});
-var Currency = /* @__PURE__ */ ((Currency2) => {
-  Currency2["NGN"] = "NGN";
-  return Currency2;
-})(Currency || {});
 var PaymentProvider = /* @__PURE__ */ ((PaymentProvider2) => {
   PaymentProvider2["SQUAD"] = "SQUAD";
   PaymentProvider2["SYSTEM"] = "SYSTEM";
@@ -588,10 +586,7 @@ var ConversationScope = /* @__PURE__ */ ((ConversationScope2) => {
   ConversationScope2["SYSTEM_ONLY"] = "SYSTEM_ONLY";
   return ConversationScope2;
 })(ConversationScope || {});
-var NotificationPriority = /* @__PURE__ */ ((NotificationPriority2) => {
-  NotificationPriority2["URGENT"] = "URGENT";
-  return NotificationPriority2;
-})(NotificationPriority || {});
+var NOTIFICATION_PRIORITY = "URGENT";
 var DeliveryExpiryReason = {
   STALE_PENDING_DELIVERY: "STALE_PENDING_DELIVERY",
   SCHEDULED_WINDOW_MISSED: "SCHEDULED_WINDOW_MISSED",
@@ -672,6 +667,208 @@ var ENUM_CATALOG = {
   metricDomains: buildValues(MetricDomain),
   metricGranularities: buildValues(MetricGranularity)
 };
+
+// src/shared/types/metadata.ts
+var import_zod = require("zod");
+var str = import_zod.z.string();
+var strNullish = import_zod.z.string().nullish();
+var num = import_zod.z.number();
+var numNullish = import_zod.z.number().nullish();
+var boolNullish = import_zod.z.boolean().nullish();
+var rec = import_zod.z.record(import_zod.z.string(), import_zod.z.unknown());
+var cacEvidenceShape = import_zod.z.object({
+  status: import_zod.z.string(),
+  registeredName: import_zod.z.string().nullish(),
+  entityType: import_zod.z.string().nullish(),
+  cacStatus: import_zod.z.string().nullish(),
+  registrationDate: import_zod.z.string().nullish(),
+  checkedAt: import_zod.z.string(),
+  nextCheckAt: import_zod.z.string().nullish(),
+  attempts: import_zod.z.number()
+});
+var credentialsShape = import_zod.z.object({
+  accessToken: import_zod.z.string(),
+  wabaId: import_zod.z.string(),
+  phoneNumberId: import_zod.z.string(),
+  tokenExpiresAt: import_zod.z.number().nullish()
+});
+var executedActionsShape = import_zod.z.array(
+  import_zod.z.union([
+    import_zod.z.string(),
+    import_zod.z.object({ type: import_zod.z.string(), success: import_zod.z.boolean().nullish(), message: import_zod.z.string().nullish() })
+  ])
+);
+var METADATA_KEYS = {
+  // ── DELIVERY ──────────────────────────────────────────────────────────────
+  pickupPlaceId: { scope: "DELIVERY", shape: strNullish, required: false },
+  dropOffPlaceId: { scope: "DELIVERY", shape: strNullish, required: false },
+  dropOffState: { scope: "DELIVERY", shape: strNullish, required: false },
+  proofOfDeliveryImagePath: { scope: "DELIVERY", shape: strNullish, required: false },
+  fulfilledByCompanyId: { scope: "DELIVERY", shape: strNullish, required: false },
+  failReason: { scope: "DELIVERY", shape: strNullish, required: false },
+  failedAt: { scope: ["DELIVERY", "TRANSACTION"], shape: strNullish, required: false },
+  instructions: { scope: "DELIVERY", shape: strNullish, required: false },
+  scheduledDayOffset: { scope: "DELIVERY", shape: numNullish, required: false },
+  scheduledTime: { scope: "DELIVERY", shape: strNullish, required: false },
+  paid: { scope: "DELIVERY", shape: boolNullish, required: false },
+  paidAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  paidVia: {
+    scope: "DELIVERY",
+    shape: import_zod.z.union([
+      import_zod.z.nativeEnum(PaymentProvider),
+      import_zod.z.literal("BANK_TRANSFER"),
+      import_zod.z.literal("CASH")
+    ]).nullish(),
+    required: false
+  },
+  paymentRequired: { scope: "DELIVERY", shape: boolNullish, required: false },
+  paymentStatus: { scope: "DELIVERY", shape: import_zod.z.nativeEnum(PaymentStatus).nullish(), required: false },
+  paymentLinkGenerated: { scope: "DELIVERY", shape: boolNullish, required: false },
+  paymentLinkGeneratedAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
+  cancelReason: { scope: "DELIVERY", shape: strNullish, required: false },
+  cancelledAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  proofPromotionFailed: { scope: "DELIVERY", shape: boolNullish, required: false },
+  // ── CONVERSATION ──────────────────────────────────────────────────────────
+  escalatedTo: { scope: "CONVERSATION", shape: strNullish, required: false },
+  escalationStatus: { scope: "CONVERSATION", shape: strNullish, required: false },
+  escalatedBy: { scope: "CONVERSATION", shape: strNullish, required: false },
+  escalatedAt: { scope: "CONVERSATION", shape: strNullish, required: false },
+  resolvedAt: { scope: "CONVERSATION", shape: strNullish, required: false },
+  resolution: { scope: "CONVERSATION", shape: rec.nullish(), required: false },
+  timezone: { scope: "CONVERSATION", shape: strNullish, required: false },
+  aiPausedUntil: { scope: "CONVERSATION", shape: strNullish, required: false },
+  aiPermanentlyDisabled: { scope: "CONVERSATION", shape: boolNullish, required: false },
+  // ── COMPANY ───────────────────────────────────────────────────────────────
+  logoUrl: { scope: "COMPANY", shape: strNullish, required: false },
+  cac: { scope: "COMPANY", shape: strNullish, required: false },
+  nipostLicenseNumber: { scope: "COMPANY", shape: strNullish, required: false },
+  address: { scope: "COMPANY", shape: strNullish, required: false },
+  placeId: { scope: "COMPANY", shape: strNullish, required: false },
+  verificationNote: { scope: ["RIDER", "COMPANY"], shape: strNullish, required: false },
+  cacVerification: { scope: "COMPANY", shape: cacEvidenceShape.nullish(), required: false },
+  // ── CHANNEL (company channel metadata) ────────────────────────────────────
+  displayPhoneNumber: { scope: ["CHANNEL", "MESSAGE"], shape: strNullish, required: false },
+  credentials: { scope: "CHANNEL", shape: credentialsShape.nullish(), required: false },
+  webhookUrl: { scope: "CHANNEL", shape: strNullish, required: false },
+  webhookVerified: { scope: "CHANNEL", shape: boolNullish, required: false },
+  webhookVerifiedAt: { scope: "CHANNEL", shape: strNullish, required: false },
+  botEnabled: { scope: "CHANNEL", shape: boolNullish, required: false },
+  aiDisabled: { scope: "CHANNEL", shape: boolNullish, required: false },
+  rejectionReason: { scope: "CHANNEL", shape: strNullish, required: false },
+  rejectedAt: { scope: "CHANNEL", shape: strNullish, required: false },
+  deactivatedReason: { scope: "CHANNEL", shape: strNullish, required: false },
+  // phoneNumberId also lives in CHAT message metadata.
+  phoneNumberId: { scope: ["CHANNEL", "MESSAGE"], shape: strNullish, required: false },
+  // ── TRANSACTION ───────────────────────────────────────────────────────────
+  userId: { scope: "TRANSACTION", shape: strNullish, required: false },
+  platformId: { scope: "TRANSACTION", shape: strNullish, required: false },
+  initializedAt: { scope: "TRANSACTION", shape: strNullish, required: false },
+  deliveryCount: { scope: ["TRANSACTION", "LEDGER"], shape: numNullish, required: false },
+  channelFeePerDelivery: { scope: "TRANSACTION", shape: numNullish, required: false },
+  narration: { scope: "TRANSACTION", shape: strNullish, required: false },
+  squadResponse: { scope: "TRANSACTION", shape: rec.nullish(), required: false },
+  ledgerRestored: { scope: "TRANSACTION", shape: boolNullish, required: false },
+  error: { scope: "TRANSACTION", shape: str.nullish(), required: false },
+  reconciledAt: { scope: "TRANSACTION", shape: strNullish, required: false },
+  checkoutUrl: { scope: "TRANSACTION", shape: strNullish, required: false },
+  fundWallet: { scope: "TRANSACTION", shape: boolNullish, required: false },
+  reason: { scope: "TRANSACTION", shape: strNullish, required: false },
+  accountNumber: { scope: "TRANSACTION", shape: strNullish, required: false },
+  bankCode: { scope: "TRANSACTION", shape: strNullish, required: false },
+  originalReferences: { scope: "TRANSACTION", shape: import_zod.z.array(str).nullish(), required: false },
+  trackingIds: { scope: "TRANSACTION", shape: import_zod.z.array(str).nullish(), required: false },
+  requiresManualReconciliation: { scope: "TRANSACTION", shape: boolNullish, required: false },
+  receiptSessionId: { scope: "TRANSACTION", shape: strNullish, required: false },
+  isPendingReceiptClaim: { scope: "TRANSACTION", shape: boolNullish, required: false },
+  webhookPayload: { scope: "TRANSACTION", shape: rec.nullish(), required: false },
+  confirmedAt: { scope: "TRANSACTION", shape: strNullish, required: false },
+  expiredAt: { scope: "TRANSACTION", shape: strNullish, required: false },
+  expiredReason: { scope: "TRANSACTION", shape: strNullish, required: false },
+  isPartialPaymentContinuation: { scope: "TRANSACTION", shape: boolNullish, required: false },
+  originalReference: { scope: ["TRANSACTION", "LEDGER"], shape: strNullish, required: false },
+  deliveryId: { scope: "TRANSACTION", shape: strNullish, required: false },
+  eventSource: { scope: "TRANSACTION", shape: strNullish, required: false },
+  rolledBackAt: { scope: "TRANSACTION", shape: strNullish, required: false },
+  // ── MESSAGE (chat message metadata) ───────────────────────────────────────
+  latitude: { scope: "MESSAGE", shape: numNullish, required: false },
+  longitude: { scope: "MESSAGE", shape: numNullish, required: false },
+  parentId: { scope: "MESSAGE", shape: strNullish, required: false },
+  staleParentId: { scope: "MESSAGE", shape: strNullish, required: false },
+  pushName: { scope: "MESSAGE", shape: strNullish, required: false },
+  senderName: { scope: "MESSAGE", shape: strNullish, required: false },
+  mimeType: { scope: "MESSAGE", shape: strNullish, required: false },
+  mediaId: { scope: "MESSAGE", shape: strNullish, required: false },
+  visionExtraction: { scope: "MESSAGE", shape: strNullish, required: false },
+  mediaUrl: { scope: "MESSAGE", shape: strNullish, required: false },
+  displayPhoneNumberId: { scope: "MESSAGE", shape: strNullish, required: false },
+  executedActions: { scope: "MESSAGE", shape: executedActionsShape.nullish(), required: false },
+  editedAt: { scope: "MESSAGE", shape: strNullish, required: false },
+  editCount: { scope: "MESSAGE", shape: numNullish, required: false },
+  // ── RIDER ─────────────────────────────────────────────────────────────────
+  idType: { scope: "RIDER", shape: strNullish, required: false },
+  idNumber: { scope: "RIDER", shape: strNullish, required: false },
+  nin: { scope: "RIDER", shape: strNullish, required: false },
+  driverLicense: { scope: "RIDER", shape: strNullish, required: false },
+  passportNumber: { scope: "RIDER", shape: strNullish, required: false },
+  passportPhotoUrl: { scope: "RIDER", shape: strNullish, required: false },
+  vehicleVin: { scope: "RIDER", shape: strNullish, required: false },
+  vehiclePermitUrl: { scope: "RIDER", shape: strNullish, required: false },
+  photoUrl: { scope: "RIDER", shape: strNullish, required: false },
+  // NOTE: `phoneNumber` here is the RIDER-scope key; distinct from `phoneNumberId`.
+  phoneNumber: { scope: "RIDER", shape: strNullish, required: false },
+  registrationNumber: { scope: "RIDER", shape: strNullish, required: false },
+  riderCardNumber: { scope: "RIDER", shape: strNullish, required: false },
+  currentState: { scope: "RIDER", shape: strNullish, required: false },
+  batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
+  // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
+  type: { scope: "LEDGER", shape: strNullish, required: false },
+  feePerDelivery: { scope: "LEDGER", shape: num, required: true },
+  totalFee: { scope: "LEDGER", shape: num, required: true }
+};
+var REQUIRED_LEDGER_KEYS = ["feePerDelivery", "deliveryCount", "totalFee"];
+function scopeMatches(scope, domain) {
+  return Array.isArray(scope) ? scope.includes(domain) : scope === domain;
+}
+function buildMetadata(domain, entries) {
+  const out = {};
+  for (const [key, value] of Object.entries(entries)) {
+    const spec = METADATA_KEYS[key];
+    if (!spec) {
+      throw new Error(`Metadata key "${key}" is not registered for domain "${domain}"`);
+    }
+    if (!scopeMatches(spec.scope, domain)) {
+      throw new Error(`Metadata key "${key}" is not valid for domain "${domain}"`);
+    }
+    if (value === void 0) continue;
+    const parsed = spec.shape.safeParse(value);
+    if (!parsed.success) {
+      throw new Error(
+        `Metadata key "${key}" failed validation for domain "${domain}": ${parsed.error.message}`
+      );
+    }
+    out[key] = value;
+  }
+  const required = domain === "LEDGER" ? REQUIRED_LEDGER_KEYS : Object.keys(METADATA_KEYS).filter((k) => {
+    const s = METADATA_KEYS[k];
+    return s.required && scopeMatches(s.scope, domain);
+  });
+  for (const key of required) {
+    if (!(key in entries) || entries[key] === void 0) {
+      throw new Error(`Metadata key "${key}" is required for domain "${domain}"`);
+    }
+  }
+  return out;
+}
+function validateMetadata(domain, value) {
+  if (value === null || value === void 0) return;
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Metadata payload for domain "${domain}" must be a plain object`);
+  }
+  const entries = value;
+  if (Object.keys(entries).length === 0) return;
+  buildMetadata(domain, entries);
+}
 
 // src/shared/config/brand.config.ts
 var BRAND_DEFAULTS = {
@@ -781,12 +978,12 @@ var REGIONAL_LOCALE = "en-NG";
 var HQ_LOCATION = "Lagos, Nigeria";
 
 // src/shared/config/retention.config.ts
-var import_zod = require("zod");
-var retentionConfigSchema = import_zod.z.object({
-  accountPurgeRetentionDays: import_zod.z.number(),
-  companyPurgeRetentionDays: import_zod.z.number(),
-  lockedCompanyPurgeRetentionDays: import_zod.z.number(),
-  eventLogRetentionMonths: import_zod.z.number()
+var import_zod2 = require("zod");
+var retentionConfigSchema = import_zod2.z.object({
+  accountPurgeRetentionDays: import_zod2.z.number(),
+  companyPurgeRetentionDays: import_zod2.z.number(),
+  lockedCompanyPurgeRetentionDays: import_zod2.z.number(),
+  eventLogRetentionMonths: import_zod2.z.number()
 });
 var rawRetentionConfig = {
   accountPurgeRetentionDays: 90,
@@ -826,9 +1023,9 @@ var SUPPORT_SLA = {
 };
 var BILLING_CONFIG = {
   /**
-   * Currency to use across the system
+   * Currency to use across the system (single-value — NGN only)
    */
-  CURRENCY: "NGN" /* NGN */,
+  CURRENCY: "NGN",
   /**
    * Monthly subscription pricing (in Kobo — single currency unit)
    * ₦15,000 = 1_500_000 kobo, ₦30,000 = 3_000_000 kobo.
@@ -1453,7 +1650,6 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   ContactCategory,
   ConversationHandlerType,
   ConversationScope,
-  Currency,
   DATA_RETENTION,
   DEDICATED_TIERS,
   DEFAULT_MESSAGE_LIMIT,
@@ -1487,6 +1683,7 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   LlmRole,
   LogLevel,
   MESSAGE_STATUS_RANK,
+  METADATA_KEYS,
   METRICS_FOLD_CHAIN,
   METRICS_RETENTION,
   METRIC_DOMAIN_MAPPINGS,
@@ -1495,8 +1692,8 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   MessageStatus,
   MetricDomain,
   MetricGranularity,
+  NOTIFICATION_PRIORITY,
   NodeEnv,
-  NotificationPriority,
   PAGINATION_CONFIG,
   PaymentMethod,
   PaymentProvider,
@@ -1537,6 +1734,7 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   VehicleType,
   addDays,
   buildBrandConfig,
+  buildMetadata,
   buildSystemConfig,
   computeAccessLevel,
   computeExpiresAt,
@@ -1564,5 +1762,6 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   shouldBillNow,
   shouldRetryPayment,
   sleep,
+  validateMetadata,
   withRetry
 });

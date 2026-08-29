@@ -1,6 +1,6 @@
 {
-  "id": "b39c17e0-3a27-4493-82fa-f3fc25b47ed9",
-  "prevId": "9ec7c5e5-709f-4dbb-8879-544464b1374d",
+  "id": "1492e757-578d-48d0-ba4d-897fa284b754",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -746,6 +746,38 @@
           "primaryKey": false,
           "notNull": false
         },
+        "escalation_status": {
+          "name": "escalation_status",
+          "type": "EscalationStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escalated_to": {
+          "name": "escalated_to",
+          "type": "EscalatedTo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "escalated_by": {
+          "name": "escalated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolution": {
+          "name": "resolution",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
         "metadata": {
           "name": "metadata",
           "type": "jsonb",
@@ -901,6 +933,23 @@
           "method": "btree",
           "with": {}
         },
+        "conversations_escalation_status_idx": {
+          "name": "conversations_escalation_status_idx",
+          "columns": [
+            {
+              "expression": "escalation_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"conversations\".\"escalation_status\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "conversations_last_message_at_idx": {
           "name": "conversations_last_message_at_idx",
           "columns": [
@@ -961,7 +1010,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "conversations_handled_by_type_check": {
+          "name": "conversations_handled_by_type_check",
+          "value": "\"conversations\".\"handled_by_type\" IN ('AI','HUMAN')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.deliveries": {
@@ -1143,8 +1197,7 @@
         },
         "vehicle_type": {
           "name": "vehicle_type",
-          "type": "VehicleType",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'BIKE'"
@@ -1490,7 +1543,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "deliveries_vehicle_type_check": {
+          "name": "deliveries_vehicle_type_check",
+          "value": "\"deliveries\".\"vehicle_type\" IN ('BIKE')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.delivery_allocations": {
@@ -1914,6 +1972,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "severity": {
+          "name": "severity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "success": {
           "name": "success",
           "type": "boolean",
@@ -2038,6 +2108,36 @@
               "asc": true,
               "nulls": "last",
               "opclass": "bool_ops"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last",
+              "opclass": "timestamp_ops"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_logs_event_type_severity_created_at_idx": {
+          "name": "event_logs_event_type_severity_created_at_idx",
+          "columns": [
+            {
+              "expression": "event_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "enum_ops"
+            },
+            {
+              "expression": "severity",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops"
             },
             {
               "expression": "created_at",
@@ -2202,222 +2302,6 @@
               "asc": true,
               "nulls": "last",
               "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.job_queue": {
-      "name": "job_queue",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "payload": {
-          "name": "payload",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "JobStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'PENDING'"
-        },
-        "priority": {
-          "name": "priority",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "max_retries": {
-          "name": "max_retries",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 3
-        },
-        "retry_count": {
-          "name": "retry_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_error": {
-          "name": "last_error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "scheduled_at": {
-          "name": "scheduled_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "started_at": {
-          "name": "started_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "completed_at": {
-          "name": "completed_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "company_id": {
-          "name": "company_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dedupe_key": {
-          "name": "dedupe_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "job_queue_type_status_idx": {
-          "name": "job_queue_type_status_idx",
-          "columns": [
-            {
-              "expression": "type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "text_ops"
-            },
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "job_queue_status_priority_created_at_idx": {
-          "name": "job_queue_status_priority_created_at_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "enum_ops"
-            },
-            {
-              "expression": "priority",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last",
-              "opclass": "int4_ops"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "job_queue_scheduled_at_idx": {
-          "name": "job_queue_scheduled_at_idx",
-          "columns": [
-            {
-              "expression": "scheduled_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last",
-              "opclass": "timestamp_ops"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "job_queue_dedupe_key_unique": {
-          "name": "job_queue_dedupe_key_unique",
-          "columns": [
-            {
-              "expression": "\"dedupe_key\"",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"job_queue\".\"dedupe_key\" IS NOT NULL AND \"job_queue\".\"status\" IN ('PENDING', 'PROCESSING')",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "job_queue_export_count_idx": {
-          "name": "job_queue_export_count_idx",
-          "columns": [
-            {
-              "expression": "\"type\"",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "\"company_id\"",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "\"created_at\"",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
             }
           ],
           "isUnique": false,
@@ -3022,8 +2906,7 @@
         },
         "currency": {
           "name": "currency",
-          "type": "Currency",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'NGN'"
@@ -3166,7 +3049,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "payment_transactions_currency_check": {
+          "name": "payment_transactions_currency_check",
+          "value": "\"payment_transactions\".\"currency\" IN ('NGN')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.phone_verifications": {
@@ -3316,8 +3204,7 @@
         },
         "vehicle_type": {
           "name": "vehicle_type",
-          "type": "VehicleType",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'BIKE'"
@@ -3564,7 +3451,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "riders_vehicle_type_check": {
+          "name": "riders_vehicle_type_check",
+          "value": "\"riders\".\"vehicle_type\" IN ('BIKE')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.subscription_transactions": {
@@ -3591,8 +3483,7 @@
         },
         "currency": {
           "name": "currency",
-          "type": "Currency",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "'NGN'"
@@ -3718,6 +3609,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "subscription_transactions_one_pending_company": {
+          "name": "subscription_transactions_one_pending_company",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"subscription_transactions\".\"status\" = 'PENDING'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3738,7 +3645,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "subscription_transactions_currency_check": {
+          "name": "subscription_transactions_currency_check",
+          "value": "\"subscription_transactions\".\"currency\" IN ('NGN')"
+        }
+      },
       "isRLSEnabled": false
     },
     "auth.users": {
@@ -3772,7 +3684,7 @@
       "name": "AdminRole",
       "schema": "public",
       "values": [
-        "ADMIN",
+        "OPERATOR",
         "SUPER_ADMIN"
       ]
     },
@@ -3816,13 +3728,6 @@
         "REMOVED"
       ]
     },
-    "public.Currency": {
-      "name": "Currency",
-      "schema": "public",
-      "values": [
-        "NGN"
-      ]
-    },
     "public.DeliveryStatus": {
       "name": "DeliveryStatus",
       "schema": "public",
@@ -3849,7 +3754,7 @@
       "schema": "public",
       "values": [
         "OWNER",
-        "DISPATCHER"
+        "STAFF"
       ]
     },
     "public.EntityType": {
@@ -3873,6 +3778,15 @@
         "COMPANY",
         "ADMIN",
         "DISPATCHER"
+      ]
+    },
+    "public.EscalationStatus": {
+      "name": "EscalationStatus",
+      "schema": "public",
+      "values": [
+        "OPEN",
+        "RESOLVED",
+        "TAKEN_OVER"
       ]
     },
     "public.EventType": {
@@ -3916,17 +3830,6 @@
         "DOWNGRADE",
         "MESSAGE_DELETED",
         "LEDGER_ADJUSTED"
-      ]
-    },
-    "public.JobStatus": {
-      "name": "JobStatus",
-      "schema": "public",
-      "values": [
-        "PENDING",
-        "PROCESSING",
-        "COMPLETED",
-        "FAILED",
-        "CANCELLED"
       ]
     },
     "public.LedgerAdjustmentType": {
@@ -4003,6 +3906,7 @@
         "CUSTOMER",
         "AGENT",
         "DISPATCHER",
+        "ADMIN",
         "SYSTEM"
       ]
     },
@@ -4012,6 +3916,7 @@
       "values": [
         "TRIAL",
         "ACTIVE",
+        "CANCELLING",
         "PAST_DUE",
         "CANCELLED"
       ]
@@ -4043,13 +3948,6 @@
         "ADJUSTMENT",
         "SETTLEMENT",
         "REFUND"
-      ]
-    },
-    "public.VehicleType": {
-      "name": "VehicleType",
-      "schema": "public",
-      "values": [
-        "BIKE"
       ]
     }
   },

@@ -1,471 +1,6 @@
-export { R as RETRYABLE_NETWORK_ERROR_CODES, a as RETRYABLE_SQLSTATE_CODES, W as WithRetryOptions, i as isTransientHttpError, s as sleep, w as withRetry } from '../retry-tolliO-l.js';
-
-declare enum UserRole {
-    ADMIN = "ADMIN",
-    DISPATCHER = "DISPATCHER",
-    RIDER = "RIDER"
-}
-declare enum AdminRole {
-    OPERATOR = "OPERATOR",
-    SUPER_ADMIN = "SUPER_ADMIN"
-}
-declare enum DispatcherRole {
-    OWNER = "OWNER",
-    STAFF = "STAFF"
-}
-declare enum DeliveryStatus {
-    PENDING = "PENDING",
-    ASSIGNED = "ASSIGNED",
-    IN_TRANSIT = "IN_TRANSIT",
-    DELIVERED = "DELIVERED",
-    CANCELLED = "CANCELLED",
-    FAILED = "FAILED"
-}
-declare enum PaymentMethod {
-    PREPAID = "PREPAID",
-    PAY_ON_DELIVERY = "PAY_ON_DELIVERY"
-}
-declare enum PaymentStatus {
-    AWAITING = "AWAITING",
-    COMPLETED = "COMPLETED",
-    FAILED = "FAILED"
-}
-declare enum RiderStatus {
-    ONLINE = "ONLINE",
-    OFFLINE = "OFFLINE",
-    BUSY = "BUSY"
-}
-declare enum ApprovalStatus {
-    PENDING = "PENDING",
-    APPROVED = "APPROVED",
-    REJECTED = "REJECTED",
-    SUSPENDED = "SUSPENDED",
-    DISABLED = "DISABLED"
-}
-type CompanyAccessLevel = 'FULL' | 'TRIAL' | 'PAST_DUE' | 'RESTRICTED';
-declare const CompanyAccessLevel: {
-    readonly FULL: "FULL";
-    readonly TRIAL: "TRIAL";
-    readonly PAST_DUE: "PAST_DUE";
-    readonly RESTRICTED: "RESTRICTED";
-};
-declare enum EntityType {
-    USER = "USER",
-    DELIVERY = "DELIVERY",
-    RIDER = "RIDER",
-    COMPANY = "COMPANY",
-    DISPATCHER = "DISPATCHER",
-    SYSTEM = "SYSTEM",
-    COMPANY_CHANNEL = "COMPANY_CHANNEL",
-    MESSAGE = "MESSAGE"
-}
-declare enum ChannelPlatform {
-    WHATSAPP = "WHATSAPP",
-    INSTAGRAM = "INSTAGRAM",
-    FACEBOOK = "FACEBOOK",
-    TIKTOK = "TIKTOK"
-}
-declare enum CompanyChannelStatus {
-    PENDING = "PENDING",
-    ACTIVE = "ACTIVE",
-    DEACTIVATED = "DEACTIVATED",
-    REJECTED = "REJECTED",
-    REMOVED = "REMOVED"
-}
-declare enum NodeEnv {
-    Development = "development",
-    Production = "production",
-    Test = "test"
-}
-declare enum VehicleType {
-    BIKE = "BIKE"
-}
-declare enum SubscriptionTier {
-    STARTER = "STARTER",
-    PROFESSIONAL = "PROFESSIONAL"
-}
-declare enum SubscriptionStatus {
-    TRIAL = "TRIAL",
-    ACTIVE = "ACTIVE",
-    CANCELLING = "CANCELLING",
-    PAST_DUE = "PAST_DUE",
-    CANCELLED = "CANCELLED"
-}
-/**
- * Derived subscription health surfaced to clients (wire value = member string).
- * Backend computes it via `deriveSubscriptionHealth`; clients use the served
- * value and fall back to their own derivation only when it is absent.
- */
-declare enum SubscriptionHealth {
-    HEALTHY = "HEALTHY",
-    IN_TRIAL = "IN_TRIAL",
-    PAST_DUE = "PAST_DUE",
-    EXPIRING_SOON = "EXPIRING_SOON",
-    CANCELLED = "CANCELLED"
-}
-declare enum TransactionStatus {
-    PENDING = "PENDING",
-    SUCCESS = "SUCCESS",
-    FAILED = "FAILED",
-    REVERSED = "REVERSED"
-}
-declare enum TransactionType {
-    DELIVERY_PAYMENT = "DELIVERY_PAYMENT",
-    SUBSCRIPTION = "SUBSCRIPTION",
-    ADJUSTMENT = "ADJUSTMENT",
-    SETTLEMENT = "SETTLEMENT",
-    REFUND = "REFUND"
-}
-declare enum LedgerAdjustmentType {
-    CREDIT = "CREDIT",
-    DEBIT = "DEBIT",
-    CORRECTION = "CORRECTION",
-    CHANNEL_FEE = "CHANNEL_FEE",
-    OVERAGE = "OVERAGE",
-    REFUND = "REFUND"
-}
-declare enum ChannelType {
-    SYSTEM_POOL = "SYSTEM_POOL",
-    MY_CHANNEL = "MY_CHANNEL"
-}
-declare enum Currency {
-    NGN = "NGN"
-}
-declare enum PaymentProvider {
-    SQUAD = "SQUAD",
-    SYSTEM = "SYSTEM"
-}
-declare enum EventType {
-    DELIVERY_ASSIGNED = "DELIVERY_ASSIGNED",
-    DELIVERY_UPDATED = "DELIVERY_UPDATED",
-    DELIVERY_CREATED = "DELIVERY_CREATED",
-    DELIVERY_STATUS_CHANGED = "DELIVERY_STATUS_CHANGED",
-    DELIVERY_DELETED = "DELIVERY_DELETED",
-    RIDER_LOCATION_UPDATED = "RIDER_LOCATION_UPDATED",
-    RIDER_ACCEPTED = "RIDER_ACCEPTED",
-    RIDER_CREATED = "RIDER_CREATED",
-    RIDER_UPDATED = "RIDER_UPDATED",
-    RIDER_STATUS_CHANGED = "RIDER_STATUS_CHANGED",
-    RIDER_DELETED = "RIDER_DELETED",
-    RIDER_DOCUMENTS_VERIFIED = "RIDER_DOCUMENTS_VERIFIED",
-    RIDER_DOCUMENTS_REJECTED = "RIDER_DOCUMENTS_REJECTED",
-    CHANNEL_SETUP = "CHANNEL_SETUP",
-    CHANNEL_ACTIVATED = "CHANNEL_ACTIVATED",
-    CHANNEL_DEACTIVATED = "CHANNEL_DEACTIVATED",
-    CHANNEL_REJECTED = "CHANNEL_REJECTED",
-    CHANNEL_REMOVED = "CHANNEL_REMOVED",
-    SUBSCRIPTION_STATUS_CHANGED = "SUBSCRIPTION_STATUS_CHANGED",
-    DISPATCHER_CREATED = "DISPATCHER_CREATED",
-    DISPATCHER_UPDATED = "DISPATCHER_UPDATED",
-    DISPATCHER_STATUS_CHANGED = "DISPATCHER_STATUS_CHANGED",
-    DISPATCHER_DELETED = "DISPATCHER_DELETED",
-    AI_EXECUTION = "AI_EXECUTION",
-    SECURITY_INCIDENT = "SECURITY_INCIDENT",
-    ADMIN_PROOF_READ = "ADMIN_PROOF_READ",
-    ADMIN_DOCUMENT_READ = "ADMIN_DOCUMENT_READ",
-    COMPANY_ACTIVATED = "COMPANY_ACTIVATED",
-    COMPANY_DEACTIVATED = "COMPANY_DEACTIVATED",
-    COMPANY_TIER_CHANGED = "COMPANY_TIER_CHANGED",
-    COMPANY_VERIFIED = "COMPANY_VERIFIED",
-    COMPANY_VERIFICATION_REJECTED = "COMPANY_VERIFICATION_REJECTED",
-    USER_PURGED = "USER_PURGED",
-    CANCELLED_PAYMENT_TIMEOUT = "CANCELLED_PAYMENT_TIMEOUT",
-    DOWNGRADE = "DOWNGRADE",
-    MESSAGE_DELETED = "MESSAGE_DELETED",
-    LEDGER_ADJUSTED = "LEDGER_ADJUSTED"
-}
-declare enum SubscriptionEventType {
-    CREATED = "CREATED",
-    UPDATED = "UPDATED",
-    DELETED = "DELETED",
-    ASSIGNED = "ASSIGNED",
-    STATUS_CHANGED = "STATUS_CHANGED",
-    UNASSIGNED = "UNASSIGNED"
-}
-type UserAuditAction = 'LOGIN' | 'LOGOUT' | 'PROFILE_UPDATE' | 'DEACTIVATED';
-declare const UserAuditAction: {
-    readonly LOGIN: "LOGIN";
-    readonly LOGOUT: "LOGOUT";
-    readonly PROFILE_UPDATE: "PROFILE_UPDATE";
-    readonly DEACTIVATED: "DEACTIVATED";
-};
-declare enum ChannelsUpdateType {
-    MESSAGE = "MESSAGE",
-    OWNERSHIP = "OWNERSHIP",
-    CONVERSATION = "CONVERSATION",
-    CHANNEL = "CHANNEL",
-    AI_THINKING = "AI_THINKING"
-}
-declare enum MessageStatus {
-    SENT = "SENT",
-    DELIVERED = "DELIVERED",
-    READ = "READ",
-    FAILED = "FAILED"
-}
-declare const MESSAGE_STATUS_RANK: Record<MessageStatus, number>;
-declare enum EscalationStatus {
-    OPEN = "OPEN",
-    RESOLVED = "RESOLVED",
-    TAKEN_OVER = "TAKEN_OVER"
-}
-declare enum EscalatedTo {
-    COMPANY = "COMPANY",
-    ADMIN = "ADMIN",
-    DISPATCHER = "DISPATCHER"
-}
-declare enum SenderType {
-    CUSTOMER = "CUSTOMER",
-    AGENT = "AGENT",
-    DISPATCHER = "DISPATCHER",
-    ADMIN = "ADMIN",
-    SYSTEM = "SYSTEM"
-}
-type SecurityEventType = 'RATE_LIMIT' | 'MALICIOUS_REQUEST' | 'BRUTE_FORCE';
-declare const SecurityEventType: {
-    readonly RATE_LIMIT: "RATE_LIMIT";
-    readonly MALICIOUS_REQUEST: "MALICIOUS_REQUEST";
-    readonly BRUTE_FORCE: "BRUTE_FORCE";
-};
-declare enum SecuritySeverity {
-    LOW = "LOW",
-    MEDIUM = "MEDIUM",
-    HIGH = "HIGH",
-    CRITICAL = "CRITICAL"
-}
-declare enum ErrorCode {
-    INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-    UNAUTHORIZED = "UNAUTHORIZED",
-    FORBIDDEN = "FORBIDDEN",
-    NOT_FOUND = "NOT_FOUND",
-    VALIDATION_ERROR = "VALIDATION_ERROR",
-    TOO_MANY_ATTEMPTS = "TOO_MANY_ATTEMPTS",
-    RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
-    BULK_DELIVERY_CREATION = "BULK_DELIVERY_CREATION",
-    OPERATIONAL_AVAILABILITY = "OPERATIONAL_AVAILABILITY",
-    CHAT_PROCESSOR_HYDRATION = "CHAT_PROCESSOR_HYDRATION",
-    CHAT_PROCESSOR_INFERENCE = "CHAT_PROCESSOR_INFERENCE",
-    CHAT_PROCESSOR_PIPELINE = "CHAT_PROCESSOR_PIPELINE",
-    PROVIDER_CONFIG_LOAD = "PROVIDER_CONFIG_LOAD",
-    PAYMENT_POST_PROCESSING = "PAYMENT_POST_PROCESSING",
-    LLM_FAILOVER = "LLM_FAILOVER",
-    INTER_STATE_DELIVERY = "INTER_STATE_DELIVERY",
-    COMPANY_CLOSED = "COMPANY_CLOSED",
-    COMPANY_NOT_OPEN_YET = "COMPANY_NOT_OPEN_YET",
-    COMPANY_NOT_OPERATING_TODAY = "COMPANY_NOT_OPERATING_TODAY",
-    TIER_LIMIT_EXCEEDED = "TIER_LIMIT_EXCEEDED",
-    NO_DELIVERIES_PROVIDED = "NO_DELIVERIES_PROVIDED",
-    INVALID_ACTOR = "INVALID_ACTOR",
-    CHANNEL_PLATFORM_ID_CONFLICT = "CHANNEL_PLATFORM_ID_CONFLICT",
-    CHANNEL_ACTIVATION_FAILED = "CHANNEL_ACTIVATION_FAILED",
-    NETWORK_ERROR = "NETWORK_ERROR",
-    INVALID = "INVALID",
-    PIN_REQUIRED = "PIN_REQUIRED",
-    UNKNOWN = "UNKNOWN"
-}
-/**
- * Job queue type identifiers shared across backend (enqueue) and workers
- * (drain). Never define a second copy; add new job types here.
- */
-declare enum JobType {
-    DELIVERY_NOTIFICATION = "delivery-notification",
-    SQUAD_WEBHOOK = "squad-webhook",
-    EXPORT = "export",
-    AI_BATCH = "ai:batch"
-}
-declare enum SystemStatus {
-    UP = "UP",
-    DOWN = "DOWN",
-    DEGRADED = "DEGRADED"
-}
-declare enum LlmRole {
-    USER = "user",
-    ASSISTANT = "assistant",
-    SYSTEM = "system"
-}
-declare enum ProviderRole {
-    INTERPRET = "interpret",
-    SYNTHESIZE = "synthesize"
-}
-declare enum ProviderCapability {
-    JSON = "json",
-    TOOLS = "tools",
-    VISION = "vision"
-}
-declare enum LogLevel {
-    DEBUG = "debug",
-    INFO = "info",
-    WARN = "warn",
-    ERROR = "error",
-    SILENT = "silent"
-}
-declare enum ApiTag {
-    TRACKING = "Tracking",
-    AUTH = "Auth",
-    ADMIN = "Admin",
-    GRAPHQL = "GraphQL",
-    SYSTEM = "System"
-}
-declare enum SseEventType {
-    CONNECTED = "connected",
-    DELIVERY = "delivery",
-    RIDER = "rider",
-    MESSAGE = "message",
-    COMPANY = "company",
-    RIDER_LOCATION = "rider-location",
-    TYPING = "typing"
-}
-declare enum JwtTokenType {
-    ACCESS = "access",
-    REFRESH = "refresh"
-}
-declare enum DevicePlatform {
-    ANDROID = "ANDROID",
-    IOS = "IOS",
-    WEB = "WEB"
-}
-declare enum AuditActorType {
-    USER = "USER",
-    SYSTEM = "SYSTEM",
-    ANONYMOUS = "ANONYMOUS"
-}
-declare enum ContactCategory {
-    PARTNERSHIP = "Become a Partner",
-    BUSINESS = "For Business",
-    SUPPORT = "Support",
-    TRACKING_INQUIRY = "Tracking Inquiry",
-    FEEDBACK = "Feedback"
-}
-declare enum IdType {
-    NIN = "NIN",
-    DRIVER_LICENSE = "DRIVER_LICENSE",
-    PASSPORT = "PASSPORT"
-}
-declare enum ConversationHandlerType {
-    AI = "AI",
-    DISPATCHER = "DISPATCHER",
-    ADMIN = "ADMIN"
-}
-declare enum ExportDataType {
-    DELIVERIES = "DELIVERIES",
-    BILLING = "BILLING",
-    CHAT = "CHAT"
-}
-declare enum ExportReason {
-    QUEUED = "QUEUED",
-    DUPLICATE = "DUPLICATE",
-    QUOTA_EXCEEDED = "QUOTA_EXCEEDED"
-}
-declare enum FcmNotificationType {
-    SUBSCRIPTION_CANCELLED = "SUBSCRIPTION_CANCELLED",
-    DELIVERY_ASSIGNED = "DELIVERY_ASSIGNED",
-    COMPANY_STATUS_CHANGED = "COMPANY_STATUS_CHANGED",
-    SETTLEMENT_FAILED = "SETTLEMENT_FAILED",
-    SETTLEMENT_REVERSAL = "SETTLEMENT_REVERSAL",
-    HUMAN_REQUEST = "HUMAN_REQUEST",
-    DELIVERY_ANOMALY = "DELIVERY_ANOMALY",
-    RAPID_STATUS_CHANGES = "RAPID_STATUS_CHANGES",
-    RIDER_SILENT_BAN = "RIDER_SILENT_BAN"
-}
-/**
- * Scope of a deliverySync query. Wire value = member string, matching the
- * backend GraphQL enum `DeliverySyncScope`.
- */
-declare enum DeliverySyncScope {
-    RIDER = "RIDER",
-    COMPANY = "COMPANY"
-}
-/**
- * Admin escalation mutation action. Wire value = member string, matching the
- * backend GraphQL enum `AdminEscalationAction`.
- */
-declare enum AdminEscalationAction {
-    TAKE_OVER = "TAKE_OVER",
-    RESOLVE = "RESOLVE"
-}
-/**
- * Admin message-delivery management action. Wire value = member string,
- * matching the backend GraphQL enum `AdminDeliveryAction`.
- */
-declare enum AdminDeliveryAction {
-    ASSIGN = "ASSIGN",
-    UPDATE = "UPDATE",
-    UPDATE_STATUS = "UPDATE_STATUS"
-}
-/**
- * Scope filter for the `conversations` list query. Wire value = member
- * string, matching the backend GraphQL enum `ConversationScope`.
- */
-declare enum ConversationScope {
-    ALL = "ALL",
-    COMPANY = "COMPANY",
-    SYSTEM_ONLY = "SYSTEM_ONLY"
-}
-declare enum NotificationPriority {
-    URGENT = "URGENT"
-}
-/**
- * Why an undelivered delivery was auto-expired by the expiry job.
- * Wire values match the delivery-expiry service's inline constants exactly.
- */
-type DeliveryExpiryReason = 'STALE_PENDING_DELIVERY' | 'SCHEDULED_WINDOW_MISSED' | 'RIDER_SILENT' | 'IN_TRANSIT_STALL';
-declare const DeliveryExpiryReason: {
-    readonly STALE_PENDING_DELIVERY: "STALE_PENDING_DELIVERY";
-    readonly SCHEDULED_WINDOW_MISSED: "SCHEDULED_WINDOW_MISSED";
-    readonly RIDER_SILENT: "RIDER_SILENT";
-    readonly IN_TRANSIT_STALL: "IN_TRANSIT_STALL";
-};
-declare enum DayOfWeek {
-    MONDAY = "Monday",
-    TUESDAY = "Tuesday",
-    WEDNESDAY = "Wednesday",
-    THURSDAY = "Thursday",
-    FRIDAY = "Friday",
-    SATURDAY = "Saturday",
-    SUNDAY = "Sunday"
-}
-/**
- * Metric domains stored in the unified `metrics` table. Wire value = member
- * string (UPPERCASE_WITH_UNDERSCORES), matching the backend GraphQL enum.
- */
-declare enum MetricDomain {
-    DELIVERIES = "DELIVERIES",
-    CONVERSATIONS = "CONVERSATIONS",
-    RIDERS = "RIDERS",
-    REVENUE = "REVENUE"
-}
-/**
- * Bucket granularity for the unified `metrics` table. Coarser tiers are
- * derived from finer ones by the workers' compression ladder.
- */
-declare enum MetricGranularity {
-    DAY = "DAY",
-    WEEK = "WEEK",
-    MONTH = "MONTH",
-    LIFETIME = "LIFETIME"
-}
-declare const ALL_DAYS: readonly DayOfWeek[];
-declare const LEAD_CATEGORIES: ReadonlySet<ContactCategory>;
-/**
- * CAC verification verdicts written to `companies.metadata.cacVerification` by
- * the CAC verification cron. Wire values = the strings stored in the metadata
- * JSON; single source for the workers' writer and the web admin's reader.
- */
-declare const CAC_EVIDENCE_STATUS: {
-    readonly FOUND: "FOUND";
-    readonly INACTIVE: "INACTIVE";
-    readonly NOT_FOUND: "NOT_FOUND";
-    readonly ERROR: "ERROR";
-};
-type CACEvidenceStatus = (typeof CAC_EVIDENCE_STATUS)[keyof typeof CAC_EVIDENCE_STATUS];
-/**
- * Safely look up an enum value by its string representation.
- * Returns `undefined` instead of crashing on unknown values.
- *
- * @example
- * safeEnumValue(DeliveryStatus, 'IN_TRANSIT') // DeliveryStatus.IN_TRANSIT
- * safeEnumValue(DeliveryStatus, 'UNKNOWN')   // undefined
- */
-declare function safeEnumValue<T extends Record<string, string>>(enumObj: T, value: string): T[keyof T] | undefined;
+import { q as DeliveryStatus, e as ApprovalStatus, _ as RiderStatus, C as CACEvidenceStatus, v as EscalatedTo, w as EscalationStatus, U as PaymentProvider, V as PaymentStatus, D as DayOfWeek, a6 as SubscriptionTier, ac as VehicleType, y as ExportDataType, P as MetricGranularity, O as MetricDomain, i as ChannelType, a5 as SubscriptionStatus, k as CompanyAccessLevel } from '../retry-Dqe-nMO5.js';
+export { A as ALL_DAYS, a as AdminDeliveryAction, b as AdminEscalationAction, c as AdminRole, d as ApiTag, f as AuditActorType, g as CAC_EVIDENCE_STATUS, h as ChannelPlatform, j as ChannelsUpdateType, l as CompanyChannelStatus, m as ContactCategory, n as ConversationHandlerType, o as ConversationScope, p as DeliveryExpiryReason, r as DeliverySyncScope, s as DevicePlatform, t as DispatcherRole, E as EntityType, u as ErrorCode, x as EventType, z as ExportReason, F as FcmNotificationType, I as IdType, J as JobType, B as JwtTokenType, L as LEAD_CATEGORIES, G as LedgerAdjustmentType, H as LlmRole, K as LogLevel, M as MESSAGE_STATUS_RANK, N as MessageStatus, Q as NOTIFICATION_PRIORITY, R as NodeEnv, S as NotificationPriority, T as PaymentMethod, W as ProviderCapability, X as ProviderRole, Y as RETRYABLE_NETWORK_ERROR_CODES, Z as RETRYABLE_SQLSTATE_CODES, $ as SecurityEventType, a0 as SecuritySeverity, a1 as SenderType, a2 as SseEventType, a3 as SubscriptionEventType, a4 as SubscriptionHealth, a7 as SystemStatus, a8 as TransactionStatus, a9 as TransactionType, aa as UserAuditAction, ab as UserRole, ad as WithRetryOptions, ae as isTransientHttpError, af as safeEnumValue, ag as sleep, ah as withRetry } from '../retry-Dqe-nMO5.js';
+import { z } from 'zod';
 
 interface EnumValue {
     name: string;
@@ -690,6 +225,591 @@ interface LedgerMetadata {
     type?: string;
     originalReference?: string;
 }
+type MetadataScope = 'DELIVERY' | 'CONVERSATION' | 'MESSAGE' | 'COMPANY' | 'PICKUP' | 'TRANSACTION' | 'RIDER' | 'CHANNEL' | 'LEDGER' | 'EVENT' | 'MEMORY';
+interface MetadataKeySpec {
+    /** Domain(s) where this key is a legal JSONB metadata member. */
+    scope: MetadataScope | readonly MetadataScope[];
+    /** Zod shape for the value. Optional fields must use `.optional()`/`.nullish()`. */
+    shape: z.ZodType;
+    /** Whether a payload built for this key's scope MUST include the key. */
+    required: boolean;
+}
+type MetadataKey = keyof typeof METADATA_KEYS;
+declare const METADATA_KEYS: {
+    readonly pickupPlaceId: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly dropOffPlaceId: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly dropOffState: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly proofOfDeliveryImagePath: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly fulfilledByCompanyId: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly failReason: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly failedAt: {
+        readonly scope: readonly ["DELIVERY", "TRANSACTION"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly instructions: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly scheduledDayOffset: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly scheduledTime: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly paid: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly paidAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly paidVia: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodUnion<readonly [z.ZodEnum<typeof PaymentProvider>, z.ZodLiteral<"BANK_TRANSFER">, z.ZodLiteral<"CASH">]>>>;
+        readonly required: false;
+    };
+    readonly paymentRequired: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly paymentStatus: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodEnum<typeof PaymentStatus>>>;
+        readonly required: false;
+    };
+    readonly paymentLinkGenerated: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly paymentLinkGeneratedAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly paymentSessionId: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly cancelReason: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly cancelledAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly proofPromotionFailed: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly escalatedTo: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly escalationStatus: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly escalatedBy: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly escalatedAt: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly resolvedAt: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly resolution: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
+        readonly required: false;
+    };
+    readonly timezone: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly aiPausedUntil: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly aiPermanentlyDisabled: {
+        readonly scope: "CONVERSATION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly logoUrl: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly cac: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly nipostLicenseNumber: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly address: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly placeId: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly verificationNote: {
+        readonly scope: readonly ["RIDER", "COMPANY"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly cacVerification: {
+        readonly scope: "COMPANY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodObject<{
+            status: z.ZodString;
+            registeredName: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            entityType: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            cacStatus: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            registrationDate: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            checkedAt: z.ZodString;
+            nextCheckAt: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            attempts: z.ZodNumber;
+        }, z.core.$strip>>>;
+        readonly required: false;
+    };
+    readonly displayPhoneNumber: {
+        readonly scope: readonly ["CHANNEL", "MESSAGE"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly credentials: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodObject<{
+            accessToken: z.ZodString;
+            wabaId: z.ZodString;
+            phoneNumberId: z.ZodString;
+            tokenExpiresAt: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        }, z.core.$strip>>>;
+        readonly required: false;
+    };
+    readonly webhookUrl: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly webhookVerified: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly webhookVerifiedAt: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly botEnabled: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly aiDisabled: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly rejectionReason: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly rejectedAt: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly deactivatedReason: {
+        readonly scope: "CHANNEL";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly phoneNumberId: {
+        readonly scope: readonly ["CHANNEL", "MESSAGE"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly userId: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly platformId: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly initializedAt: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly deliveryCount: {
+        readonly scope: readonly ["TRANSACTION", "LEDGER"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly channelFeePerDelivery: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly narration: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly squadResponse: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
+        readonly required: false;
+    };
+    readonly ledgerRestored: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly error: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly reconciledAt: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly checkoutUrl: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly fundWallet: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly reason: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly accountNumber: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly bankCode: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly originalReferences: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodString>>>;
+        readonly required: false;
+    };
+    readonly trackingIds: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodString>>>;
+        readonly required: false;
+    };
+    readonly requiresManualReconciliation: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly receiptSessionId: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly isPendingReceiptClaim: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly webhookPayload: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodUnknown>>>;
+        readonly required: false;
+    };
+    readonly confirmedAt: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly expiredAt: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly expiredReason: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly isPartialPaymentContinuation: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+        readonly required: false;
+    };
+    readonly originalReference: {
+        readonly scope: readonly ["TRANSACTION", "LEDGER"];
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly deliveryId: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly eventSource: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly rolledBackAt: {
+        readonly scope: "TRANSACTION";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly latitude: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly longitude: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly parentId: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly staleParentId: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly pushName: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly senderName: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly mimeType: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly mediaId: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly visionExtraction: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly mediaUrl: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly displayPhoneNumberId: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly executedActions: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodUnion<readonly [z.ZodString, z.ZodObject<{
+            type: z.ZodString;
+            success: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
+            message: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        }, z.core.$strip>]>>>>;
+        readonly required: false;
+    };
+    readonly editedAt: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly editCount: {
+        readonly scope: "MESSAGE";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly idType: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly idNumber: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly nin: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly driverLicense: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly passportNumber: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly passportPhotoUrl: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly vehicleVin: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly vehiclePermitUrl: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly photoUrl: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly phoneNumber: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly registrationNumber: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly riderCardNumber: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly currentState: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly batteryLevel: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly type: {
+        readonly scope: "LEDGER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly feePerDelivery: {
+        readonly scope: "LEDGER";
+        readonly shape: z.ZodNumber;
+        readonly required: true;
+    };
+    readonly totalFee: {
+        readonly scope: "LEDGER";
+        readonly shape: z.ZodNumber;
+        readonly required: true;
+    };
+};
+/**
+ * Build a clean JSONB metadata object for `domain` from `entries`.
+ *
+ * Validates every provided key against `METADATA_KEYS` (unknown key, wrong
+ * scope, or shape violation all throw), drops keys whose value is `undefined`
+ * (so no `undefined` keys leak into JSONB serialization), and enforces that
+ * every `required` key for the domain is present. Returns a plain `Record`.
+ */
+declare function buildMetadata(domain: MetadataScope, entries: Record<string, unknown>): Record<string, unknown>;
+/**
+ * Runtime validator for the trust boundary (AI action payload → DB).
+ * Asserts `value` is a valid `domain` metadata payload (or no payload at all),
+ * throwing on unknown keys or shape violations. Returns void.
+ */
+declare function validateMetadata(domain: MetadataScope, value: unknown): void;
 
 interface BankDetails {
     readonly bankName: string;
@@ -975,9 +1095,9 @@ declare const SUPPORT_SLA: Record<SubscriptionTier, string>;
  */
 declare const BILLING_CONFIG: {
     /**
-     * Currency to use across the system
+     * Currency to use across the system (single-value — NGN only)
      */
-    readonly CURRENCY: Currency;
+    readonly CURRENCY: "NGN";
     /**
      * Monthly subscription pricing (in Kobo — single currency unit)
      * ₦15,000 = 1_500_000 kobo, ₦30,000 = 3_000_000 kobo.
@@ -1279,4 +1399,4 @@ declare function getDateStringInTimezone(date: Date, timezone?: string): string;
  */
 declare function getRetentionCutoff(retentionMonths: number, timezone?: string): Date;
 
-export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ALL_DAYS, AdminDeliveryAction, AdminEscalationAction, AdminRole, ApiTag, ApprovalStatus, AuditActorType, BILLING_CONFIG, BRAND, BRAND_NAME, type BankDetails, type BrandConfig, type CACEvidenceStatus, CAC_EVIDENCE_STATUS, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelPlatform, ChannelType, ChannelsUpdateType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, CompanyChannelStatus, type CompanyMetadata, ContactCategory, ConversationHandlerType, type ConversationMetadata, ConversationScope, Currency, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, DeliveryExpiryReason, type DeliveryMetadata, DeliveryStatus, DeliverySyncScope, DevicePlatform, type DispatcherBase, DispatcherRole, ENUM_CATALOG, EntityType, type EnumCatalog, type EnumValue, ErrorCode, EscalatedTo, EscalationStatus, EventType, ExportDataType, ExportReason, FcmNotificationType, HQ_LOCATION, IdType, JobType, JwtTokenType, KOBO_PER_NAIRA, LEAD_CATEGORIES, LIFETIME_BUCKET_START, LIMITS_CONFIG, LedgerAdjustmentType, type LedgerMetadata, LlmRole, LogLevel, MESSAGE_STATUS_RANK, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, MessageStatus, MetricDomain, MetricGranularity, NodeEnv, NotificationPriority, PAGINATION_CONFIG, PaymentMethod, PaymentProvider, PaymentStatus, ProviderCapability, ProviderRole, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SecurityEventType, SecuritySeverity, SenderType, SseEventType, SubscriptionEventType, SubscriptionHealth, SubscriptionStatus, SubscriptionTier, type SystemConfig, SystemStatus, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, TransactionStatus, TransactionType, UserAuditAction, UserRole, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildBrandConfig, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, safeEnumValue, shouldBillNow, shouldRetryPayment };
+export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ApprovalStatus, BILLING_CONFIG, BRAND, BRAND_NAME, type BankDetails, type BrandConfig, CACEvidenceStatus, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, type CompanyMetadata, type ConversationMetadata, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, type DeliveryMetadata, DeliveryStatus, type DispatcherBase, ENUM_CATALOG, type EnumCatalog, type EnumValue, EscalatedTo, EscalationStatus, ExportDataType, HQ_LOCATION, KOBO_PER_NAIRA, LIFETIME_BUCKET_START, LIMITS_CONFIG, type LedgerMetadata, METADATA_KEYS, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, type MetadataKey, type MetadataKeySpec, type MetadataScope, MetricDomain, MetricGranularity, PAGINATION_CONFIG, PaymentProvider, PaymentStatus, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SubscriptionStatus, SubscriptionTier, type SystemConfig, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildBrandConfig, buildMetadata, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, shouldBillNow, shouldRetryPayment, validateMetadata };

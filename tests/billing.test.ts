@@ -38,6 +38,8 @@ import {
 describe('BILLING_CONFIG', () => {
   it('has valid currency', () => {
     expect(BILLING_CONFIG.CURRENCY).toBe('NGN');
+    const c: 'NGN' = BILLING_CONFIG.CURRENCY;
+    expect(c).toBe('NGN');
   });
 
   it('has positive pricing for STARTER', () => {

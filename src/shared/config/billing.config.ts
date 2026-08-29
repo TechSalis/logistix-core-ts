@@ -1,7 +1,6 @@
 import {
   SubscriptionTier,
   ChannelType,
-  Currency,
   ApprovalStatus,
   SubscriptionStatus,
   CompanyAccessLevel,
@@ -57,9 +56,9 @@ export const SUPPORT_SLA: Record<SubscriptionTier, string> = {
  */
 export const BILLING_CONFIG = {
   /**
-   * Currency to use across the system
+   * Currency to use across the system (single-value — NGN only)
    */
-  CURRENCY: Currency.NGN,
+  CURRENCY: 'NGN' as const,
 
   /**
    * Monthly subscription pricing (in Kobo — single currency unit)

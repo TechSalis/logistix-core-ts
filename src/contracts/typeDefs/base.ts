@@ -74,10 +74,6 @@ export const baseTypeDefs = `
     WEB
   }
 
-  enum Currency {
-    NGN
-  }
-
   enum IdType {
     NIN
     DRIVER_LICENSE
@@ -672,7 +668,7 @@ export const baseTypeDefs = `
     id: ID!
     type: TransactionType!
     amount: Float!
-    currency: Currency!
+    currency: String!
     status: TransactionStatus!
     reference: String!
     provider: PaymentProvider

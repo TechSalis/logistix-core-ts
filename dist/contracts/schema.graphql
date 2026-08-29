@@ -76,10 +76,6 @@ enum DevicePlatform {
   WEB
 }
 
-enum Currency {
-  NGN
-}
-
 enum IdType {
   NIN
   DRIVER_LICENSE
@@ -674,7 +670,7 @@ type Transaction {
   id: ID!
   type: TransactionType!
   amount: Float!
-  currency: Currency!
+  currency: String!
   status: TransactionStatus!
   reference: String!
   provider: PaymentProvider
@@ -1131,7 +1127,7 @@ type AdminSubscriptionTx {
   id: ID!
   companyId: ID!
   amount: Float!
-  currency: Currency!
+  currency: String!
   status: TransactionStatus!
   reference: String
   provider: PaymentProvider

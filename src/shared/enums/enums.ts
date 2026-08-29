@@ -147,10 +147,6 @@ export enum ChannelType {
   MY_CHANNEL = 'MY_CHANNEL',
 }
 
-export enum Currency {
-  NGN = 'NGN',
-}
-
 export enum PaymentProvider {
   SQUAD = 'SQUAD',
   SYSTEM = 'SYSTEM',
@@ -466,9 +462,8 @@ export enum ConversationScope {
   SYSTEM_ONLY = 'SYSTEM_ONLY',
 }
 
-export enum NotificationPriority {
-  URGENT = 'URGENT',
-}
+export const NOTIFICATION_PRIORITY = 'URGENT' as const;
+export type NotificationPriority = typeof NOTIFICATION_PRIORITY;
 
 /**
  * Why an undelivered delivery was auto-expired by the expiry job.

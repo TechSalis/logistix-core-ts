@@ -3,7 +3,6 @@ CREATE TYPE "public"."ApprovalStatus" AS ENUM('PENDING', 'APPROVED', 'REJECTED',
 CREATE TYPE "public"."ChannelPlatform" AS ENUM('WHATSAPP', 'INSTAGRAM', 'FACEBOOK', 'TIKTOK');--> statement-breakpoint
 CREATE TYPE "public"."ChannelType" AS ENUM('SYSTEM_POOL', 'MY_CHANNEL');--> statement-breakpoint
 CREATE TYPE "public"."CompanyChannelStatus" AS ENUM('PENDING', 'ACTIVE', 'DEACTIVATED', 'REJECTED', 'REMOVED');--> statement-breakpoint
-CREATE TYPE "public"."Currency" AS ENUM('NGN');--> statement-breakpoint
 CREATE TYPE "public"."DeliveryStatus" AS ENUM('PENDING', 'ASSIGNED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."DevicePlatform" AS ENUM('ANDROID', 'IOS', 'WEB');--> statement-breakpoint
 CREATE TYPE "public"."DispatcherRole" AS ENUM('OWNER', 'STAFF');--> statement-breakpoint
@@ -18,12 +17,11 @@ CREATE TYPE "public"."MetricGranularity" AS ENUM('DAY', 'WEEK', 'MONTH', 'LIFETI
 CREATE TYPE "public"."PaymentMethod" AS ENUM('PREPAID', 'PAY_ON_DELIVERY');--> statement-breakpoint
 CREATE TYPE "public"."PaymentProvider" AS ENUM('SQUAD', 'SYSTEM');--> statement-breakpoint
 CREATE TYPE "public"."RiderStatus" AS ENUM('ONLINE', 'OFFLINE', 'BUSY');--> statement-breakpoint
-CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'SYSTEM');--> statement-breakpoint
-CREATE TYPE "public"."SubscriptionStatus" AS ENUM('TRIAL', 'ACTIVE', 'PAST_DUE', 'CANCELLED');--> statement-breakpoint
+CREATE TYPE "public"."SenderType" AS ENUM('CUSTOMER', 'AGENT', 'DISPATCHER', 'ADMIN', 'SYSTEM');--> statement-breakpoint
+CREATE TYPE "public"."SubscriptionStatus" AS ENUM('TRIAL', 'ACTIVE', 'CANCELLING', 'PAST_DUE', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."SubscriptionTier" AS ENUM('STARTER', 'PROFESSIONAL');--> statement-breakpoint
 CREATE TYPE "public"."TransactionStatus" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REVERSED');--> statement-breakpoint
 CREATE TYPE "public"."TransactionType" AS ENUM('DELIVERY_PAYMENT', 'SUBSCRIPTION', 'ADJUSTMENT', 'SETTLEMENT', 'REFUND');--> statement-breakpoint
-CREATE TYPE "public"."VehicleType" AS ENUM('BIKE');--> statement-breakpoint
 CREATE TABLE "admins" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
@@ -110,7 +108,9 @@ CREATE TABLE "conversations" (
 	"memory" jsonb,
 	"handled_by" text,
 	"handled_by_type" text NOT NULL,
-	"handled_at" timestamp (3)
+	"handled_at" timestamp (3),
+	CONSTRAINT "conversations_platform_platform_id_company_id_key" UNIQUE NULLS NOT DISTINCT("platform","platform_id","company_id"),
+	CONSTRAINT "conversations_handled_by_type_check" CHECK ("conversations"."handled_by_type" IN ('AI','HUMAN'))
 );
 --> statement-breakpoint
 CREATE TABLE "deliveries" (
@@ -142,7 +142,8 @@ CREATE TABLE "deliveries" (
 	"metadata" jsonb,
 	"creator_platform" text,
 	"pool" boolean DEFAULT false NOT NULL,
-	"vehicle_type" "VehicleType" DEFAULT 'BIKE' NOT NULL
+	"vehicle_type" text DEFAULT 'BIKE' NOT NULL,
+	CONSTRAINT "deliveries_vehicle_type_check" CHECK ("deliveries"."vehicle_type" IN ('BIKE'))
 );
 --> statement-breakpoint
 CREATE TABLE "delivery_allocations" (
@@ -251,14 +252,15 @@ CREATE TABLE "payment_transactions" (
 	"company_id" text,
 	"type" "TransactionType" NOT NULL,
 	"amount" double precision NOT NULL,
-	"currency" "Currency" DEFAULT 'NGN' NOT NULL,
+	"currency" text DEFAULT 'NGN' NOT NULL,
 	"status" "TransactionStatus" DEFAULT 'PENDING' NOT NULL,
 	"reference" text NOT NULL,
 	"provider" "PaymentProvider",
 	"description" text,
 	"metadata" jsonb,
 	"processed_at" timestamp (3),
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "payment_transactions_currency_check" CHECK ("payment_transactions"."currency" IN ('NGN'))
 );
 --> statement-breakpoint
 CREATE TABLE "phone_verifications" (
@@ -284,7 +286,7 @@ CREATE TABLE "riders" (
 	"user_id" text NOT NULL,
 	"email" text NOT NULL,
 	"full_name" text NOT NULL,
-	"vehicle_type" "VehicleType" DEFAULT 'BIKE' NOT NULL,
+	"vehicle_type" text DEFAULT 'BIKE' NOT NULL,
 	"approval_status" "ApprovalStatus" DEFAULT 'PENDING' NOT NULL,
 	"status" "RiderStatus" NOT NULL,
 	"last_lat" double precision,
@@ -295,14 +297,15 @@ CREATE TABLE "riders" (
 	"metadata" jsonb,
 	"deactivated_at" timestamp (3),
 	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"updated_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "riders_vehicle_type_check" CHECK ("riders"."vehicle_type" IN ('BIKE'))
 );
 --> statement-breakpoint
 CREATE TABLE "subscription_transactions" (
 	"id" text PRIMARY KEY NOT NULL,
 	"company_id" text NOT NULL,
 	"amount" double precision NOT NULL,
-	"currency" "Currency" DEFAULT 'NGN' NOT NULL,
+	"currency" text DEFAULT 'NGN' NOT NULL,
 	"status" "TransactionStatus" DEFAULT 'PENDING' NOT NULL,
 	"reference" text NOT NULL,
 	"provider" "PaymentProvider",
@@ -312,19 +315,14 @@ CREATE TABLE "subscription_transactions" (
 	"description" text,
 	"metadata" jsonb,
 	"processed_at" timestamp (3),
-	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created_at" timestamp (3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "subscription_transactions_currency_check" CHECK ("subscription_transactions"."currency" IN ('NGN'))
 );
 --> statement-breakpoint
--- auth.users is Supabase-managed (created by the platform, not this project).
--- Only our additive column is declared here; once set, phone_verified_at is
--- permanent (no TTL). Dispatchers do NOT need phone verification — only
--- companies and riders.
-DO $$
-BEGIN
-  ALTER TABLE "auth"."users" ADD COLUMN IF NOT EXISTS "phone_verified_at" timestamp;
-EXCEPTION WHEN insufficient_privilege THEN
-  RAISE WARNING 'Cannot ALTER auth.users (not owner) - apply this ADD COLUMN manually as a role owning auth.users (e.g. supabase_admin)';
-END $$;
+CREATE TABLE "auth"."users" (
+	"id" text PRIMARY KEY NOT NULL,
+	"phone_verified_at" timestamp (3)
+);
 --> statement-breakpoint
 ALTER TABLE "company_channels" ADD CONSTRAINT "company_channels_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "company_settings" ADD CONSTRAINT "company_settings_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -358,7 +356,6 @@ CREATE INDEX "company_settings_subscription_status_idx" ON "company_settings" US
 CREATE INDEX "conversations_company_id_idx" ON "conversations" USING btree ("company_id" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_company_id_last_message_at_idx" ON "conversations" USING btree ("company_id" text_ops,"last_message_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "conversations_platform_id_platform_idx" ON "conversations" USING btree ("platform_id" text_ops,"platform" enum_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "conversations_platform_platform_id_company_id_key" ON "conversations" USING btree ("platform" enum_ops,"platform_id" text_ops,"company_id" text_ops) NULLS NOT DISTINCT;--> statement-breakpoint
 CREATE INDEX "conversations_handled_by_type_idx" ON "conversations" USING btree ("handled_by_type" text_ops);--> statement-breakpoint
 CREATE INDEX "conversations_channel_type_idx" ON "conversations" USING btree ("channel_type" enum_ops);--> statement-breakpoint
 CREATE INDEX "conversations_escalated_at_idx" ON "conversations" USING btree ("escalated_at" timestamp_ops);--> statement-breakpoint
@@ -423,9 +420,8 @@ CREATE INDEX "riders_status_last_seen_idx" ON "riders" USING btree ("status" enu
 CREATE UNIQUE INDEX "riders_user_id_key" ON "riders" USING btree ("user_id" text_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_company_id_created_at_idx" ON "subscription_transactions" USING btree ("company_id" text_ops,"created_at" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "subscription_transactions_status_idx" ON "subscription_transactions" USING btree ("status" enum_ops);--> statement-breakpoint
-CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);
-
--- -----------------------------------------------------------------------------
+CREATE UNIQUE INDEX "subscription_transactions_reference_key" ON "subscription_transactions" USING btree ("reference" text_ops);--> statement-breakpoint
+CREATE UNIQUE INDEX "subscription_transactions_one_pending_company" ON "subscription_transactions" USING btree ("company_id") WHERE "subscription_transactions"."status" = 'PENDING';--> statement-breakpoint
 -- Row Level Security: deny-by-default hardening.
 --
 -- No policies are created on purpose: nothing may query the database

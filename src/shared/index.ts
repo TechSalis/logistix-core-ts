@@ -28,7 +28,6 @@ export {
   TransactionType,
   LedgerAdjustmentType,
   ChannelType,
-  Currency,
   PaymentProvider,
   EventType,
   SubscriptionEventType,
@@ -59,7 +58,6 @@ export {
   ApiTag,
   SseEventType,
   FcmNotificationType,
-  NotificationPriority,
   DeliveryExpiryReason,
   JwtTokenType,
   ContactCategory,
@@ -78,6 +76,9 @@ export {
 export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enums/enum-catalog.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+export { NOTIFICATION_PRIORITY } from './enums/enums.js';
+export type { NotificationPriority } from './enums/enums.js';
+
 export type { DeliveryBase, RiderBase, DispatcherBase } from './types/domain.js';
 
 export type {
@@ -92,6 +93,9 @@ export type {
   ChatMessageMetadata,
   LedgerMetadata,
 } from './types/metadata.js';
+
+export { METADATA_KEYS, buildMetadata, validateMetadata } from './types/metadata.js';
+export type { MetadataScope, MetadataKey, MetadataKeySpec } from './types/metadata.js';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {

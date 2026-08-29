@@ -1,6 +1,6 @@
 {
   "name": "logistix-core-ts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Shared TypeScript types, enums, config, and utilities for all Logistix services",
   "type": "module",
   "main": "./dist/index.cjs",

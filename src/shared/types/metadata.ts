@@ -1,9 +1,14 @@
+import { z } from 'zod';
 import type {
   PaymentProvider,
   PaymentStatus,
   EscalatedTo,
   EscalationStatus,
   CACEvidenceStatus,
+} from '../enums/enums.js';
+import {
+  PaymentProvider as PaymentProviderEnum,
+  PaymentStatus as PaymentStatusEnum,
 } from '../enums/enums.js';
 
 export interface ConversationMetadata {
@@ -177,4 +182,302 @@ export interface ChatMessageMetadata {
 export interface LedgerMetadata {
   type?: string;
   originalReference?: string;
+}
+
+// ─── Metadata key registry (SSOT) ─────────────────────────────────────────────
+//
+// Every JSONB `metadata:` shape in the system is described by a flat key in
+// `METADATA_KEYS`. Each key names the *value* written into a JSONB metadata
+// column, scoped to the domain(s) it legally appears in. `buildMetadata` and
+// `validateMetadata` are the narrow write-path helpers that consume this
+// registry, so hand-spread metadata sites can stop diverging (~14 inline
+// shapes collapsed onto this single catalog).
+//
+// `scope` is a single domain or a list of domains when a key legitimately
+// appears in more than one (e.g. `verificationNote` in both RIDER and COMPANY;
+// `phoneNumberId`/`displayPhoneNumber` in both CHANNEL and MESSAGE;
+// `deliveryCount` in both TRANSACTION and LEDGER).
+
+export type MetadataScope =
+  | 'DELIVERY'
+  | 'CONVERSATION'
+  | 'MESSAGE'
+  | 'COMPANY'
+  | 'PICKUP'
+  | 'TRANSACTION'
+  | 'RIDER'
+  | 'CHANNEL'
+  | 'LEDGER'
+  | 'EVENT'
+  | 'MEMORY';
+
+export interface MetadataKeySpec {
+  /** Domain(s) where this key is a legal JSONB metadata member. */
+  scope: MetadataScope | readonly MetadataScope[];
+  /** Zod shape for the value. Optional fields must use `.optional()`/`.nullish()`. */
+  shape: z.ZodType;
+  /** Whether a payload built for this key's scope MUST include the key. */
+  required: boolean;
+}
+
+export type MetadataKey = keyof typeof METADATA_KEYS;
+
+const str = z.string();
+const strNullish = z.string().nullish();
+const num = z.number();
+const numNullish = z.number().nullish();
+const boolNullish = z.boolean().nullish();
+const rec = z.record(z.string(), z.unknown());
+
+/** Zod shape for `CacVerificationEvidence` (nested COMPANY metadata object). */
+const cacEvidenceShape = z.object({
+  status: z.string(),
+  registeredName: z.string().nullish(),
+  entityType: z.string().nullish(),
+  cacStatus: z.string().nullish(),
+  registrationDate: z.string().nullish(),
+  checkedAt: z.string(),
+  nextCheckAt: z.string().nullish(),
+  attempts: z.number(),
+});
+
+/** Zod shape for `ChannelCredentials` (nested CHANNEL metadata object). */
+const credentialsShape = z.object({
+  accessToken: z.string(),
+  wabaId: z.string(),
+  phoneNumberId: z.string(),
+  tokenExpiresAt: z.number().nullish(),
+});
+
+/** Zod shape for `ChatMessageMetadata.executedActions` (mixed string | object list). */
+const executedActionsShape = z.array(
+  z.union([
+    z.string(),
+    z.object({ type: z.string(), success: z.boolean().nullish(), message: z.string().nullish() }),
+  ]),
+);
+
+export const METADATA_KEYS = {
+  // ── DELIVERY ──────────────────────────────────────────────────────────────
+  pickupPlaceId: { scope: 'DELIVERY', shape: strNullish, required: false },
+  dropOffPlaceId: { scope: 'DELIVERY', shape: strNullish, required: false },
+  dropOffState: { scope: 'DELIVERY', shape: strNullish, required: false },
+  proofOfDeliveryImagePath: { scope: 'DELIVERY', shape: strNullish, required: false },
+  fulfilledByCompanyId: { scope: 'DELIVERY', shape: strNullish, required: false },
+  failReason: { scope: 'DELIVERY', shape: strNullish, required: false },
+  failedAt: { scope: ['DELIVERY', 'TRANSACTION'], shape: strNullish, required: false },
+  instructions: { scope: 'DELIVERY', shape: strNullish, required: false },
+  scheduledDayOffset: { scope: 'DELIVERY', shape: numNullish, required: false },
+  scheduledTime: { scope: 'DELIVERY', shape: strNullish, required: false },
+  paid: { scope: 'DELIVERY', shape: boolNullish, required: false },
+  paidAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  paidVia: {
+    scope: 'DELIVERY',
+    shape: z
+      .union([z.nativeEnum(PaymentProviderEnum), z.literal('BANK_TRANSFER'), z.literal('CASH')])
+      .nullish(),
+    required: false,
+  },
+  paymentRequired: { scope: 'DELIVERY', shape: boolNullish, required: false },
+  paymentStatus: {
+    scope: 'DELIVERY',
+    shape: z.nativeEnum(PaymentStatusEnum).nullish(),
+    required: false,
+  },
+  paymentLinkGenerated: { scope: 'DELIVERY', shape: boolNullish, required: false },
+  paymentLinkGeneratedAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  paymentSessionId: { scope: 'DELIVERY', shape: strNullish, required: false },
+  cancelReason: { scope: 'DELIVERY', shape: strNullish, required: false },
+  cancelledAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  proofPromotionFailed: { scope: 'DELIVERY', shape: boolNullish, required: false },
+
+  // ── CONVERSATION ──────────────────────────────────────────────────────────
+  escalatedTo: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  escalationStatus: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  escalatedBy: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  escalatedAt: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  resolvedAt: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  resolution: { scope: 'CONVERSATION', shape: rec.nullish(), required: false },
+  timezone: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  aiPausedUntil: { scope: 'CONVERSATION', shape: strNullish, required: false },
+  aiPermanentlyDisabled: { scope: 'CONVERSATION', shape: boolNullish, required: false },
+
+  // ── COMPANY ───────────────────────────────────────────────────────────────
+  logoUrl: { scope: 'COMPANY', shape: strNullish, required: false },
+  cac: { scope: 'COMPANY', shape: strNullish, required: false },
+  nipostLicenseNumber: { scope: 'COMPANY', shape: strNullish, required: false },
+  address: { scope: 'COMPANY', shape: strNullish, required: false },
+  placeId: { scope: 'COMPANY', shape: strNullish, required: false },
+  verificationNote: { scope: ['RIDER', 'COMPANY'], shape: strNullish, required: false },
+  cacVerification: { scope: 'COMPANY', shape: cacEvidenceShape.nullish(), required: false },
+
+  // ── CHANNEL (company channel metadata) ────────────────────────────────────
+  displayPhoneNumber: { scope: ['CHANNEL', 'MESSAGE'], shape: strNullish, required: false },
+  credentials: { scope: 'CHANNEL', shape: credentialsShape.nullish(), required: false },
+  webhookUrl: { scope: 'CHANNEL', shape: strNullish, required: false },
+  webhookVerified: { scope: 'CHANNEL', shape: boolNullish, required: false },
+  webhookVerifiedAt: { scope: 'CHANNEL', shape: strNullish, required: false },
+  botEnabled: { scope: 'CHANNEL', shape: boolNullish, required: false },
+  aiDisabled: { scope: 'CHANNEL', shape: boolNullish, required: false },
+  rejectionReason: { scope: 'CHANNEL', shape: strNullish, required: false },
+  rejectedAt: { scope: 'CHANNEL', shape: strNullish, required: false },
+  deactivatedReason: { scope: 'CHANNEL', shape: strNullish, required: false },
+  // phoneNumberId also lives in CHAT message metadata.
+  phoneNumberId: { scope: ['CHANNEL', 'MESSAGE'], shape: strNullish, required: false },
+
+  // ── TRANSACTION ───────────────────────────────────────────────────────────
+  userId: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  platformId: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  initializedAt: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  deliveryCount: { scope: ['TRANSACTION', 'LEDGER'], shape: numNullish, required: false },
+  channelFeePerDelivery: { scope: 'TRANSACTION', shape: numNullish, required: false },
+  narration: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  squadResponse: { scope: 'TRANSACTION', shape: rec.nullish(), required: false },
+  ledgerRestored: { scope: 'TRANSACTION', shape: boolNullish, required: false },
+  error: { scope: 'TRANSACTION', shape: str.nullish(), required: false },
+  reconciledAt: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  checkoutUrl: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  fundWallet: { scope: 'TRANSACTION', shape: boolNullish, required: false },
+  reason: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  accountNumber: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  bankCode: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  originalReferences: { scope: 'TRANSACTION', shape: z.array(str).nullish(), required: false },
+  trackingIds: { scope: 'TRANSACTION', shape: z.array(str).nullish(), required: false },
+  requiresManualReconciliation: { scope: 'TRANSACTION', shape: boolNullish, required: false },
+  receiptSessionId: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  isPendingReceiptClaim: { scope: 'TRANSACTION', shape: boolNullish, required: false },
+  webhookPayload: { scope: 'TRANSACTION', shape: rec.nullish(), required: false },
+  confirmedAt: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  expiredAt: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  expiredReason: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  isPartialPaymentContinuation: { scope: 'TRANSACTION', shape: boolNullish, required: false },
+  originalReference: { scope: ['TRANSACTION', 'LEDGER'], shape: strNullish, required: false },
+  deliveryId: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  eventSource: { scope: 'TRANSACTION', shape: strNullish, required: false },
+  rolledBackAt: { scope: 'TRANSACTION', shape: strNullish, required: false },
+
+  // ── MESSAGE (chat message metadata) ───────────────────────────────────────
+  latitude: { scope: 'MESSAGE', shape: numNullish, required: false },
+  longitude: { scope: 'MESSAGE', shape: numNullish, required: false },
+  parentId: { scope: 'MESSAGE', shape: strNullish, required: false },
+  staleParentId: { scope: 'MESSAGE', shape: strNullish, required: false },
+  pushName: { scope: 'MESSAGE', shape: strNullish, required: false },
+  senderName: { scope: 'MESSAGE', shape: strNullish, required: false },
+  mimeType: { scope: 'MESSAGE', shape: strNullish, required: false },
+  mediaId: { scope: 'MESSAGE', shape: strNullish, required: false },
+  visionExtraction: { scope: 'MESSAGE', shape: strNullish, required: false },
+  mediaUrl: { scope: 'MESSAGE', shape: strNullish, required: false },
+  displayPhoneNumberId: { scope: 'MESSAGE', shape: strNullish, required: false },
+  executedActions: { scope: 'MESSAGE', shape: executedActionsShape.nullish(), required: false },
+  editedAt: { scope: 'MESSAGE', shape: strNullish, required: false },
+  editCount: { scope: 'MESSAGE', shape: numNullish, required: false },
+
+  // ── RIDER ─────────────────────────────────────────────────────────────────
+  idType: { scope: 'RIDER', shape: strNullish, required: false },
+  idNumber: { scope: 'RIDER', shape: strNullish, required: false },
+  nin: { scope: 'RIDER', shape: strNullish, required: false },
+  driverLicense: { scope: 'RIDER', shape: strNullish, required: false },
+  passportNumber: { scope: 'RIDER', shape: strNullish, required: false },
+  passportPhotoUrl: { scope: 'RIDER', shape: strNullish, required: false },
+  vehicleVin: { scope: 'RIDER', shape: strNullish, required: false },
+  vehiclePermitUrl: { scope: 'RIDER', shape: strNullish, required: false },
+  photoUrl: { scope: 'RIDER', shape: strNullish, required: false },
+  // NOTE: `phoneNumber` here is the RIDER-scope key; distinct from `phoneNumberId`.
+  phoneNumber: { scope: 'RIDER', shape: strNullish, required: false },
+  registrationNumber: { scope: 'RIDER', shape: strNullish, required: false },
+  riderCardNumber: { scope: 'RIDER', shape: strNullish, required: false },
+  currentState: { scope: 'RIDER', shape: strNullish, required: false },
+  batteryLevel: { scope: 'RIDER', shape: numNullish, required: false },
+
+  // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
+  type: { scope: 'LEDGER', shape: strNullish, required: false },
+  feePerDelivery: { scope: 'LEDGER', shape: num, required: true },
+  totalFee: { scope: 'LEDGER', shape: num, required: true },
+} as const satisfies Record<string, MetadataKeySpec>;
+
+// `deliveryCount` is required in the LEDGER channel-fee payload even though the
+// TRANSACTION-scope copy is optional. Registry entries carry a single `required`
+// flag, so we model the required LEDGER usage by (checked below) and rely on the
+// required-missing check upstream. Because `deliveryCount` is shared with
+// TRANSACTION (optional), the LEDGER required check is enforced in buildMetadata
+// for the LEDGER scope via REQUIRED_LEDGER_KEYS.
+
+/** Keys that MUST appear in any LEDGER-scope payload. */
+const REQUIRED_LEDGER_KEYS: readonly MetadataKey[] = [
+  'feePerDelivery',
+  'deliveryCount',
+  'totalFee',
+];
+
+function scopeMatches(
+  scope: MetadataScope | readonly MetadataScope[],
+  domain: MetadataScope,
+): boolean {
+  return Array.isArray(scope) ? scope.includes(domain) : scope === domain;
+}
+
+/**
+ * Build a clean JSONB metadata object for `domain` from `entries`.
+ *
+ * Validates every provided key against `METADATA_KEYS` (unknown key, wrong
+ * scope, or shape violation all throw), drops keys whose value is `undefined`
+ * (so no `undefined` keys leak into JSONB serialization), and enforces that
+ * every `required` key for the domain is present. Returns a plain `Record`.
+ */
+export function buildMetadata(
+  domain: MetadataScope,
+  entries: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(entries)) {
+    // Lightweight per-test unknown-key guard (handled below via scope check).
+    const spec = (METADATA_KEYS as Record<string, MetadataKeySpec | undefined>)[key];
+    if (!spec) {
+      throw new Error(`Metadata key "${key}" is not registered for domain "${domain}"`);
+    }
+    if (!scopeMatches(spec.scope, domain)) {
+      throw new Error(`Metadata key "${key}" is not valid for domain "${domain}"`);
+    }
+    if (value === undefined) continue;
+    const parsed = spec.shape.safeParse(value);
+    if (!parsed.success) {
+      throw new Error(
+        `Metadata key "${key}" failed validation for domain "${domain}": ${parsed.error.message}`,
+      );
+    }
+    out[key] = value;
+  }
+
+  // Required-keys check (per-domain).
+  const required =
+    domain === 'LEDGER'
+      ? REQUIRED_LEDGER_KEYS
+      : (Object.keys(METADATA_KEYS).filter((k) => {
+          const s = (METADATA_KEYS as Record<string, MetadataKeySpec>)[k];
+          return s.required && scopeMatches(s.scope, domain);
+        }) as MetadataKey[]);
+
+  for (const key of required) {
+    if (!(key in entries) || entries[key] === undefined) {
+      throw new Error(`Metadata key "${key}" is required for domain "${domain}"`);
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Runtime validator for the trust boundary (AI action payload → DB).
+ * Asserts `value` is a valid `domain` metadata payload (or no payload at all),
+ * throwing on unknown keys or shape violations. Returns void.
+ */
+export function validateMetadata(domain: MetadataScope, value: unknown): void {
+  if (value === null || value === undefined) return;
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`Metadata payload for domain "${domain}" must be a plain object`);
+  }
+  const entries = value as Record<string, unknown>;
+  if (Object.keys(entries).length === 0) return;
+  buildMetadata(domain, entries);
 }

@@ -104,10 +104,6 @@ var baseTypeDefs = `
     WEB
   }
 
-  enum Currency {
-    NGN
-  }
-
   enum IdType {
     NIN
     DRIVER_LICENSE
@@ -702,7 +698,7 @@ var baseTypeDefs = `
     id: ID!
     type: TransactionType!
     amount: Float!
-    currency: Currency!
+    currency: String!
     status: TransactionStatus!
     reference: String!
     provider: PaymentProvider
@@ -1161,7 +1157,7 @@ var adminTypeDefs = `
     id: ID!
     companyId: ID!
     amount: Float!
-    currency: Currency!
+    currency: String!
     status: TransactionStatus!
     reference: String
     provider: PaymentProvider

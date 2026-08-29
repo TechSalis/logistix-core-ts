@@ -15,6 +15,7 @@ import {
   doublePrecision,
   pgEnum,
   bigint,
+  check,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import {
@@ -37,13 +38,14 @@ import {
   SubscriptionStatus,
   TransactionStatus,
   TransactionType,
-  Currency,
   VehicleType,
   EventType,
   EntityType,
   MetricDomain,
   MetricGranularity,
   DevicePlatform,
+  ConversationHandlerType,
+  SecuritySeverity,
 } from '../../shared/enums/enums.js';
 import { DEFAULT_WORKING_HOURS as defaultWorkingHours } from '../../shared/config/system.config.js';
 
@@ -70,9 +72,10 @@ export const senderType = pgEnum('SenderType', enumValues(SenderType));
 export const subscriptionTier = pgEnum('SubscriptionTier', enumValues(SubscriptionTier));
 export const transactionStatus = pgEnum('TransactionStatus', enumValues(TransactionStatus));
 export const transactionType = pgEnum('TransactionType', enumValues(TransactionType));
-export const vehicleType = pgEnum('VehicleType', enumValues(VehicleType));
 // VehicleType is BIKE-only (wire enum trimmed to BIKE; backend DEFAULT_PRICING_SCHEMES
-// keys off VehicleType.BIKE) — every code path defaults to BIKE.
+// keys off VehicleType.BIKE) — every code path defaults to BIKE. The DB column is
+// `text` (no pgEnum): the value set is a single member, so a text column + app-level
+// typing suffices; the TS enum remains the wiring/input contract.
 export const paymentProvider = pgEnum('PaymentProvider', enumValues(PaymentProvider));
 export const subscriptionStatus = pgEnum('SubscriptionStatus', enumValues(SubscriptionStatus));
 export const channelType = pgEnum('ChannelType', enumValues(ChannelType));
@@ -80,7 +83,6 @@ export const escalatedTo = pgEnum('EscalatedTo', enumValues(EscalatedTo));
 export const escalationStatus = pgEnum('EscalationStatus', enumValues(EscalationStatus));
 export const eventType = pgEnum('EventType', enumValues(EventType));
 export const entityType = pgEnum('EntityType', enumValues(EntityType));
-export const currencyEnum = pgEnum('Currency', enumValues(Currency));
 export const adminRoleEnum = pgEnum('AdminRole', enumValues(AdminRole));
 export const dispatcherRoleEnum = pgEnum('DispatcherRole', enumValues(DispatcherRole));
 export const metricDomain = pgEnum('MetricDomain', enumValues(MetricDomain));
@@ -256,7 +258,7 @@ export const conversations = pgTable(
     lastCustomerMessageAt: timestamp('last_customer_message_at', { precision: 3, mode: 'date' }),
     memory: jsonb(),
     handledBy: text('handled_by'),
-    handledByType: text('handled_by_type').notNull(),
+    handledByType: text('handled_by_type').$type<ConversationHandlerType>().notNull(),
     handledAt: timestamp('handled_at', { precision: 3, mode: 'date' }),
   },
   (table) => [
@@ -307,6 +309,7 @@ export const conversations = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
+    check('conversations_handled_by_type_check', sql`${table.handledByType} IN ('AI','HUMAN')`),
   ],
 );
 
@@ -569,9 +572,9 @@ export const deliveries = pgTable(
     pin: text(),
     price: doublePrecision(),
     metadata: jsonb(),
-    creatorPlatform: text('creator_platform'),
+    creatorPlatform: text('creator_platform').$type<ChannelPlatform>(),
     pool: boolean().default(false).notNull(),
-    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
+    vehicleType: text('vehicle_type').default(VehicleType.BIKE).notNull(),
   },
   (table) => [
     index('deliveries_company_id_status_idx').using(
@@ -653,6 +656,7 @@ export const deliveries = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
+    check('deliveries_vehicle_type_check', sql`${table.vehicleType} IN ('BIKE')`),
   ],
 );
 
@@ -666,7 +670,7 @@ export const riders = pgTable(
     userId: text('user_id').notNull(),
     email: text().notNull(),
     fullName: text('full_name').notNull(),
-    vehicleType: vehicleType('vehicle_type').default(VehicleType.BIKE).notNull(),
+    vehicleType: text('vehicle_type').default(VehicleType.BIKE).notNull(),
     approvalStatus: approvalStatus('approval_status').default(ApprovalStatus.PENDING).notNull(),
     status: riderStatus().notNull(),
     lastLat: doublePrecision('last_lat'),
@@ -716,6 +720,7 @@ export const riders = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
+    check('riders_vehicle_type_check', sql`${table.vehicleType} IN ('BIKE')`),
   ],
 );
 
@@ -729,7 +734,7 @@ export const paymentTransactions = pgTable(
     companyId: text('company_id'),
     type: transactionType('type').notNull(),
     amount: doublePrecision().notNull(),
-    currency: currencyEnum().default(Currency.NGN).notNull(),
+    currency: text('currency').default('NGN').notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
     provider: paymentProvider('provider'),
@@ -765,6 +770,7 @@ export const paymentTransactions = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('restrict'),
+    check('payment_transactions_currency_check', sql`${table.currency} IN ('NGN')`),
   ],
 );
 
@@ -777,7 +783,7 @@ export const subscriptionTransactions = pgTable(
       .notNull(),
     companyId: text('company_id').notNull(),
     amount: doublePrecision().notNull(),
-    currency: currencyEnum().default(Currency.NGN).notNull(),
+    currency: text('currency').default('NGN').notNull(),
     status: transactionStatus().default(TransactionStatus.PENDING).notNull(),
     reference: text().notNull(),
     provider: paymentProvider('provider'),
@@ -815,6 +821,7 @@ export const subscriptionTransactions = pgTable(
     })
       .onUpdate('cascade')
       .onDelete('restrict'),
+    check('subscription_transactions_currency_check', sql`${table.currency} IN ('NGN')`),
   ],
 );
 
@@ -910,7 +917,7 @@ export const eventLogs = pgTable(
     actorId: text('actor_id'),
     companyId: text('company_id'),
     metadata: jsonb(),
-    severity: text('severity'),
+    severity: text().$type<SecuritySeverity>(),
     ipAddress: text('ip_address'),
     success: boolean().default(true).notNull(),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })

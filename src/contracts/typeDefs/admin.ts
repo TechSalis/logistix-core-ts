@@ -72,7 +72,7 @@ export const adminTypeDefs = `
     id: ID!
     companyId: ID!
     amount: Float!
-    currency: Currency!
+    currency: String!
     status: TransactionStatus!
     reference: String
     provider: PaymentProvider

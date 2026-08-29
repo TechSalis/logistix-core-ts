@@ -1,7 +1,7 @@
 import * as drizzle_orm from 'drizzle-orm';
 import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import { PgDatabase } from 'drizzle-orm/pg-core';
-import { W as WithRetryOptions } from '../retry-tolliO-l.cjs';
+import { n as ConversationHandlerType, h as ChannelPlatform, a0 as SecuritySeverity, ad as WithRetryOptions } from '../retry-Dqe-nMO5.cjs';
 
 declare const deliveryStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const ledgerAdjustmentType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -15,7 +15,6 @@ declare const senderType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const subscriptionTier: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const transactionStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const transactionType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
-declare const vehicleType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const paymentProvider: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const subscriptionStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const channelType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -23,7 +22,6 @@ declare const escalatedTo: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const escalationStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const eventType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const entityType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
-declare const currencyEnum: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const adminRoleEnum: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const dispatcherRoleEnum: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const metricDomain: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -1061,7 +1059,7 @@ declare const conversations: drizzle_orm_pg_core.PgTableWithColumns<{
             tableName: "conversations";
             dataType: "string";
             columnType: "PgText";
-            data: string;
+            data: ConversationHandlerType;
             driverParam: string;
             notNull: true;
             hasDefault: false;
@@ -1072,7 +1070,9 @@ declare const conversations: drizzle_orm_pg_core.PgTableWithColumns<{
             baseColumn: never;
             identity: undefined;
             generated: undefined;
-        }, {}, {}>;
+        }, {}, {
+            $type: ConversationHandlerType;
+        }>;
         handledAt: drizzle_orm_pg_core.PgColumn<{
             name: "handled_at";
             tableName: "conversations";
@@ -2562,7 +2562,7 @@ declare const deliveries: drizzle_orm_pg_core.PgTableWithColumns<{
             tableName: "deliveries";
             dataType: "string";
             columnType: "PgText";
-            data: string;
+            data: ChannelPlatform;
             driverParam: string;
             notNull: false;
             hasDefault: false;
@@ -2573,7 +2573,9 @@ declare const deliveries: drizzle_orm_pg_core.PgTableWithColumns<{
             baseColumn: never;
             identity: undefined;
             generated: undefined;
-        }, {}, {}>;
+        }, {}, {
+            $type: ChannelPlatform;
+        }>;
         pool: drizzle_orm_pg_core.PgColumn<{
             name: "pool";
             tableName: "deliveries";
@@ -2595,7 +2597,7 @@ declare const deliveries: drizzle_orm_pg_core.PgTableWithColumns<{
             name: "vehicle_type";
             tableName: "deliveries";
             dataType: "string";
-            columnType: "PgEnumColumn";
+            columnType: "PgText";
             data: string;
             driverParam: string;
             notNull: true;
@@ -2687,7 +2689,7 @@ declare const riders: drizzle_orm_pg_core.PgTableWithColumns<{
             name: "vehicle_type";
             tableName: "riders";
             dataType: "string";
-            columnType: "PgEnumColumn";
+            columnType: "PgText";
             data: string;
             driverParam: string;
             notNull: true;
@@ -2966,7 +2968,7 @@ declare const paymentTransactions: drizzle_orm_pg_core.PgTableWithColumns<{
             name: "currency";
             tableName: "payment_transactions";
             dataType: "string";
-            columnType: "PgEnumColumn";
+            columnType: "PgText";
             data: string;
             driverParam: string;
             notNull: true;
@@ -3160,7 +3162,7 @@ declare const subscriptionTransactions: drizzle_orm_pg_core.PgTableWithColumns<{
             name: "currency";
             tableName: "subscription_transactions";
             dataType: "string";
-            columnType: "PgEnumColumn";
+            columnType: "PgText";
             data: string;
             driverParam: string;
             notNull: true;
@@ -3726,7 +3728,7 @@ declare const eventLogs: drizzle_orm_pg_core.PgTableWithColumns<{
             tableName: "event_logs";
             dataType: "string";
             columnType: "PgText";
-            data: string;
+            data: SecuritySeverity;
             driverParam: string;
             notNull: false;
             hasDefault: false;
@@ -3737,7 +3739,9 @@ declare const eventLogs: drizzle_orm_pg_core.PgTableWithColumns<{
             baseColumn: never;
             identity: undefined;
             generated: undefined;
-        }, {}, {}>;
+        }, {}, {
+            $type: SecuritySeverity;
+        }>;
         ipAddress: drizzle_orm_pg_core.PgColumn<{
             name: "ip_address";
             tableName: "event_logs";
@@ -4488,4 +4492,4 @@ declare class SquadClient {
     chargeCard(params: ChargeCardParams): Promise<ChargeCardResult>;
 }
 
-export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, currencyEnum, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users, vehicleType };
+export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users };

@@ -23,9 +23,10 @@ import {
   ConversationHandlerType,
   UserAuditAction,
   FcmNotificationType,
-  NotificationPriority,
+  NOTIFICATION_PRIORITY,
   DeliveryExpiryReason,
   IdType,
+  type NotificationPriority,
 } from '../src/shared/enums/enums.js';
 
 describe('Enums', () => {
@@ -305,8 +306,12 @@ describe('Enums', () => {
   });
 
   describe('NotificationPriority', () => {
-    it('has URGENT', () => {
-      expect(NotificationPriority.URGENT).toBe('URGENT');
+    it('is a single-valued const with wire value URGENT', () => {
+      expect(NOTIFICATION_PRIORITY).toBe('URGENT');
+    });
+    it('exposes the const value as the only assignable type', () => {
+      const p: NotificationPriority = NOTIFICATION_PRIORITY;
+      expect(p).toBe('URGENT');
     });
   });
 

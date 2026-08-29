@@ -9,6 +9,7 @@ import {
 } from '../shared/enums/enums.js';
 import { LIMITS_CONFIG } from '../shared/config/limits.config.js';
 import { BILLING_CONFIG } from '../shared/config/billing.config.js';
+import { buildMetadata } from '../shared/types/metadata.js';
 import {
   deliveries,
   deliveryAllocations,
@@ -397,11 +398,11 @@ async function applyLedgerCredits(
           adjustmentType: LedgerAdjustmentType.CHANNEL_FEE,
           reference: `CHFEE-${randomUUID().slice(0, 8)}`,
           reason: `Channel fee for ${companyDeliveryCount} delivery(ies)`,
-          metadata: {
+          metadata: buildMetadata('LEDGER', {
             feePerDelivery: channelFeePerDelivery,
             deliveryCount: companyDeliveryCount,
             totalFee,
-          },
+          }),
           createdAt: new Date(),
         };
       })

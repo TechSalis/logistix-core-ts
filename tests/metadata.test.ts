@@ -17,12 +17,18 @@ import type {
   ChatMessageMetadata,
   LedgerMetadata,
 } from '../src/index.js';
+import {
+  METADATA_KEYS,
+  buildMetadata,
+  validateMetadata,
+  type MetadataScope,
+} from '../src/shared/index.js';
 
 // The canonical metadata shapes live ONLY in src/types/metadata.ts. This suite
 // locks the SSOT contract: every shape is exported from the package entry
 // point and has exactly the fields listed below, so a writer on any platform
 // (backend/workers/web/flutter) that drifts must do so explicitly.
-const METADATA_KEYS = {
+const METADATA_FIELD_NAMES = {
   ConversationMetadata: [
     'escalatedTo',
     'escalationStatus',
@@ -319,34 +325,34 @@ describe('metadata SSOT contract', () => {
 
   it('pins the exact field names of every metadata interface', () => {
     expectTypeOf<keyof ConversationMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['ConversationMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['ConversationMetadata'][number]
     >();
     expectTypeOf<keyof ChannelCredentials>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['ChannelCredentials'][number]
+      (typeof METADATA_FIELD_NAMES)['ChannelCredentials'][number]
     >();
     expectTypeOf<keyof CompanyChannelMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['CompanyChannelMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['CompanyChannelMetadata'][number]
     >();
     expectTypeOf<keyof DeliveryMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['DeliveryMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['DeliveryMetadata'][number]
     >();
     expectTypeOf<keyof RiderMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['RiderMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['RiderMetadata'][number]
     >();
     expectTypeOf<keyof CompanyMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['CompanyMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['CompanyMetadata'][number]
     >();
     expectTypeOf<keyof TransactionMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['TransactionMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['TransactionMetadata'][number]
     >();
     expectTypeOf<keyof ChatMessageMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['ChatMessageMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['ChatMessageMetadata'][number]
     >();
     expectTypeOf<keyof LedgerMetadata>().toEqualTypeOf<
-      (typeof METADATA_KEYS)['LedgerMetadata'][number]
+      (typeof METADATA_FIELD_NAMES)['LedgerMetadata'][number]
     >();
 
-    for (const [shape, keys] of Object.entries(METADATA_KEYS)) {
+    for (const [shape, keys] of Object.entries(METADATA_FIELD_NAMES)) {
       expect(Object.keys(SAMPLES[shape]).sort()).toEqual([...keys].sort());
     }
   });
@@ -357,5 +363,133 @@ describe('metadata SSOT contract', () => {
       expect(roundTripped).toEqual(sample);
       expect(Object.keys(roundTripped).sort()).toEqual(Object.keys(sample).sort());
     }
+  });
+});
+
+// ─── buildMetadata / validateMetadata / METADATA_KEYS registry ───────────────
+
+describe('metadata registry + build/validate helpers', () => {
+  it('registers a known live key for every delivery-write field', () => {
+    expect(METADATA_KEYS.pickupPlaceId).toBeDefined();
+    expect(METADATA_KEYS.dropOffPlaceId).toBeDefined();
+    expect(METADATA_KEYS.channelFeePerDelivery).toBeDefined();
+    expect(METADATA_KEYS.fulfilledByCompanyId).toBeDefined();
+    expect(METADATA_KEYS.verificationNote).toBeDefined();
+  });
+
+  it('every key has scope + shape + required', () => {
+    for (const spec of Object.values(METADATA_KEYS)) {
+      expect(['string', 'object']).toContain(typeof spec.scope);
+      expect(spec.shape).toBeDefined();
+      expect(typeof spec.required).toBe('boolean');
+    }
+  });
+
+  it('every interface field maps to a registered key (no orphan fields)', () => {
+    // Each named key must exist in the registry — guards against a field added
+    // to an interface but never given a zod shape. `ChannelCredentials`' fields
+    // are nested under the `credentials` object key, so they are intentionally
+    // not standalone registry keys.
+    const namedFields = [
+      ...new Set(
+        Object.values(METADATA_KEYS_MEMBER_NAMES).filter(
+          (name) => name !== 'accessToken' && name !== 'wabaId' && name !== 'tokenExpiresAt',
+        ),
+      ),
+    ];
+    for (const field of namedFields) {
+      expect(METADATA_KEYS[field as keyof typeof METADATA_KEYS]).toBeDefined();
+    }
+  });
+});
+
+// Field-name snapshot for the orphan-guard above (derived from the SAMPLES keys).
+const METADATA_KEYS_MEMBER_NAMES: string[] = Object.values(
+  Object.fromEntries(Object.entries(SAMPLES).map(([shape, sample]) => [shape, Object.keys(sample)])),
+).flat();
+
+describe('buildMetadata', () => {
+  it('accepts a MetadataScope-typed domain', () => {
+    const scope: MetadataScope = 'CONVERSATION';
+    const out = buildMetadata(scope, { escalatedTo: EscalatedTo.ADMIN });
+    expect(out).toEqual({ escalatedTo: EscalatedTo.ADMIN });
+  });
+
+  it('round-trips a valid RIDER metadata payload', () => {
+    const out = buildMetadata('RIDER', { batteryLevel: 80, currentState: 'LAGOS' });
+    expect(out).toEqual({ batteryLevel: 80, currentState: 'LAGOS' });
+  });
+
+  it('round-trips a valid DELIVERY metadata payload', () => {
+    const out = buildMetadata('DELIVERY', {
+      pickupPlaceId: 'place-1',
+      paymentRequired: true,
+    });
+    expect(out).toEqual({ pickupPlaceId: 'place-1', paymentRequired: true });
+  });
+
+  it('round-trips a valid LEDGER channel-fee payload', () => {
+    const out = buildMetadata('LEDGER', {
+      feePerDelivery: 200,
+      deliveryCount: 3,
+      totalFee: 600,
+    });
+    expect(out).toEqual({ feePerDelivery: 200, deliveryCount: 3, totalFee: 600 });
+  });
+
+  it('throws on a required key that is missing', () => {
+    expect(() => buildMetadata('LEDGER', { feePerDelivery: 200 })).toThrow();
+  });
+
+  it('throws on an unknown key', () => {
+    expect(() => buildMetadata('DELIVERY', { notARealKey: 'x' })).toThrow();
+  });
+
+  it('throws on a key registered for a different scope', () => {
+    // phoneNumberId is registered under CHANNEL/MESSAGE, not DELIVERY.
+    expect(() => buildMetadata('DELIVERY', { phoneNumberId: 'p1' })).toThrow();
+  });
+
+  it('throws on a shape violation (wrong value type)', () => {
+    expect(() => buildMetadata('RIDER', { batteryLevel: 'eighty' })).toThrow();
+  });
+
+  it('emits a clean object with no undefined keys present', () => {
+    const out = buildMetadata('DELIVERY', {
+      pickupPlaceId: 'place-1',
+      failReason: undefined,
+    });
+    expect('failReason' in out).toBe(false);
+    expect(Object.keys(out)).toEqual(['pickupPlaceId']);
+  });
+
+  it('is permissive about empty explicit values (null/empty object tolerated)', () => {
+    expect(() => buildMetadata('DELIVERY', { pickupPlaceId: 'p', dropOffPlaceId: null })).not.toThrow();
+  });
+});
+
+describe('validateMetadata', () => {
+  it('accepts a valid DELIVERY metadata object', () => {
+    expect(() =>
+      validateMetadata('DELIVERY', { pickupPlaceId: 'place-1', paymentRequired: true }),
+    ).not.toThrow();
+  });
+
+  it('accepts an empty object / null / undefined (no metadata)', () => {
+    expect(() => validateMetadata('DELIVERY', {})).not.toThrow();
+    expect(() => validateMetadata('DELIVERY', null)).not.toThrow();
+    expect(() => validateMetadata('DELIVERY', undefined)).not.toThrow();
+  });
+
+  it('rejects an unknown key', () => {
+    expect(() => validateMetadata('DELIVERY', { evil: 'x' })).toThrow();
+  });
+
+  it('rejects a shape violation', () => {
+    expect(() => validateMetadata('RIDER', { batteryLevel: 'eighty' })).toThrow();
+  });
+
+  it('rejects a non-object payload', () => {
+    expect(() => validateMetadata('DELIVERY', 'nope' as unknown)).toThrow();
   });
 });

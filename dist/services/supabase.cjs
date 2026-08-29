@@ -162,9 +162,9 @@ var SUPPORT_SLA = {
 };
 var BILLING_CONFIG = {
   /**
-   * Currency to use across the system
+   * Currency to use across the system (single-value — NGN only)
    */
-  CURRENCY: "NGN" /* NGN */,
+  CURRENCY: "NGN",
   /**
    * Monthly subscription pricing (in Kobo — single currency unit)
    * ₦15,000 = 1_500_000 kobo, ₦30,000 = 3_000_000 kobo.
