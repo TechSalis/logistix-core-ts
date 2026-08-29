@@ -9,7 +9,11 @@ cd logistix-workers && npx tsc --noEmit
 
 ## Package.json convention
 
-Consumers use `"logistix-core-ts": "file:../logistix-core-ts"`. A `preinstall` script clones + installs + builds core-ts if not present (for Render deploys). CI checks it out explicitly for caching.
+Consumers (backend + workers) depend on `"logistix-core-ts": "github:TechSalis/logistix-core-ts#<sha>"` (a git pin). **`dist/` is a committed, required artifact** — consumers resolve via `main`/`types`/`exports` → `dist/*`, and a `github:` git-checkout runs **no** `prepack`/`prepare` build hook on install. So a fresh/pinned install is broken unless `dist/` is in the tree; every core-ts source change needs a **pin bump** to go live in production/CI.
+
+Local dev only: setting `LOGISTIX_CORE_TS_SRC=/abs/path/to/core-ts` at install time makes the consumer's `postinstall` (`scripts/link-core-ts.mjs`) **symlink** `node_modules/logistix-core-ts` to that live checkout, so edits appear immediately without a pin bump. Deliberately a no-op unless the var is set AND `CI` is not truthy; production/CI always resolve the pinned committed copy.
+
+**Do NOT switch to a workspace / `file:` dep / "generate dist in consumers" right now.** Those models only work here if all repos merge into a single GitHub monorepo (root npm workspace) OR every CI job checks out sibling repos to the same relative path — both are significant repo-layout changes. With separate GitHub repos + a git pin, committing `dist/` is the correct, simplest model. Revisit only if a monorepo consolidation lands.
 
 ## Checks
 
@@ -21,6 +25,12 @@ cd logistix-web && npm run check --prefix shared && npm run check --prefix admin
 ```
 
 ## Progress
+
+### Done (this session — Aug 29, 2026, admin/public schema split + packaging decision)
+- **Admin GraphQL schema split from public** (`7278a91`) — admin is now a standalone, self-contained schema instead of a superset of public. `src/contracts/typeDefs/base.ts` declares **empty** `type Query`/`type Mutation` placeholders; `public.ts` (extend line 2 / line 56) and `admin.ts` (extend line 168 / line 247) both `extend` those roots. Result: `publicSchema = [base, public]` and `adminSchema = [base, admin]` are each independently valid, AND the combined `[base, public, admin]` is ONE valid SDL document for web codegen (no root collision). Backend (`9a58687e`) composes each endpoint from only its own root extensions (`sharedFieldResolvers` + `publicRootResolvers` / `adminSchemaResolvers`) — **zero public ops leak into admin** (verified: admin executable = 19 Query / 8 Mutation, fully standalone). Wire contract is **semantically unchanged** (proven: web `generated/index.ts` produced zero diff), so **no client code changes are needed** — web only refreshed its generated `shared/schema.graphql` (web `9550465`), Flutter needs nothing.
+- **Root `dist/` rebuilt + committed (`4e10cd2`)** — full multi-entry `tsup` without `--clean` restored `NodeEnv`/`JobType`/`ChannelsUpdateType`/`ApprovalStatus`/`MessageStatus` to `dist/index.*` (a partial concurrent-agent build had dropped them, breaking all backend/workers resolution). Committed dist/ only (14 files; non-dist concurrent-agent source left uncommitted for them). `dist/contracts/*` committed in `7278a91`.
+- **Packaging decision recorded (see `## Package.json convention`)** — committed `dist/` is required (git pin has no install build hook); do NOT move to workspace/`file:` until a monorepo consolidation. Standing `github:#<sha>` pin mode keeps working.
+- **⚠️ PENDING PIN BUMP (release step):** the consumers currently pin `github:TechSalis/logistix-core-ts#547c639` — **before** the split (`7278a91`) and dist rebuild (`4e10cd2`). Production/CI resolving that pin still gets the pre-split schema + old dist. A pin bump to the new HEAD SHA is required to ship this work to staging/prod (per the release/`git log --oneline -1` convention).
 
 ### Done (this session — Aug 8, 2026, consistency campaign — Phase 1)
 - **Plan `docs/superpowers/plans/2026-08-08-consistency-campaign.md` + `2026-08-08-phase-1-backend-workers-correctness.md`** — Tasks 1/4/6 DONE on branch `consistency-phase-1` (reviewed per SDD). Full ledger: `docs/superpowers/audit/phase-1-ledger.md`.
