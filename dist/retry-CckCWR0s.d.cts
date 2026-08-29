@@ -167,7 +167,8 @@ declare enum EventType {
     CANCELLED_PAYMENT_TIMEOUT = "CANCELLED_PAYMENT_TIMEOUT",
     DOWNGRADE = "DOWNGRADE",
     MESSAGE_DELETED = "MESSAGE_DELETED",
-    LEDGER_ADJUSTED = "LEDGER_ADJUSTED"
+    LEDGER_ADJUSTED = "LEDGER_ADJUSTED",
+    PAYMENT_UNMAPPED = "PAYMENT_UNMAPPED"
 }
 declare enum SubscriptionEventType {
     CREATED = "CREATED",
@@ -184,13 +185,6 @@ declare const UserAuditAction: {
     readonly PROFILE_UPDATE: "PROFILE_UPDATE";
     readonly DEACTIVATED: "DEACTIVATED";
 };
-declare enum ChannelsUpdateType {
-    MESSAGE = "MESSAGE",
-    OWNERSHIP = "OWNERSHIP",
-    CONVERSATION = "CONVERSATION",
-    CHANNEL = "CHANNEL",
-    AI_THINKING = "AI_THINKING"
-}
 declare enum MessageStatus {
     SENT = "SENT",
     DELIVERED = "DELIVERED",
@@ -359,7 +353,8 @@ declare enum FcmNotificationType {
     HUMAN_REQUEST = "HUMAN_REQUEST",
     DELIVERY_ANOMALY = "DELIVERY_ANOMALY",
     RAPID_STATUS_CHANGES = "RAPID_STATUS_CHANGES",
-    RIDER_SILENT_BAN = "RIDER_SILENT_BAN"
+    RIDER_SILENT_BAN = "RIDER_SILENT_BAN",
+    SECURITY_ALERT = "SECURITY_ALERT"
 }
 /**
  * Scope of a deliverySync query. Wire value = member string, matching the
@@ -508,4 +503,4 @@ declare function withRetry<T>(fn: (attempt: number) => Promise<T>, options?: Wit
  */
 declare function isTransientHttpError(error: unknown): boolean;
 
-export { SecurityEventType as $, ALL_DAYS as A, JwtTokenType as B, type CACEvidenceStatus as C, DayOfWeek as D, EntityType as E, FcmNotificationType as F, LedgerAdjustmentType as G, LlmRole as H, IdType as I, JobType as J, LogLevel as K, LEAD_CATEGORIES as L, MESSAGE_STATUS_RANK as M, MessageStatus as N, MetricDomain as O, MetricGranularity as P, NOTIFICATION_PRIORITY as Q, NodeEnv as R, type NotificationPriority as S, PaymentMethod as T, PaymentProvider as U, PaymentStatus as V, ProviderCapability as W, ProviderRole as X, RETRYABLE_NETWORK_ERROR_CODES as Y, RETRYABLE_SQLSTATE_CODES as Z, RiderStatus as _, AdminDeliveryAction as a, SecuritySeverity as a0, SenderType as a1, SseEventType as a2, SubscriptionEventType as a3, SubscriptionHealth as a4, SubscriptionStatus as a5, SubscriptionTier as a6, SystemStatus as a7, TransactionStatus as a8, TransactionType as a9, UserAuditAction as aa, UserRole as ab, VehicleType as ac, type WithRetryOptions as ad, isTransientHttpError as ae, safeEnumValue as af, sleep as ag, withRetry as ah, AdminEscalationAction as b, AdminRole as c, ApiTag as d, ApprovalStatus as e, AuditActorType as f, CAC_EVIDENCE_STATUS as g, ChannelPlatform as h, ChannelType as i, ChannelsUpdateType as j, CompanyAccessLevel as k, CompanyChannelStatus as l, ContactCategory as m, ConversationHandlerType as n, ConversationScope as o, DeliveryExpiryReason as p, DeliveryStatus as q, DeliverySyncScope as r, DevicePlatform as s, DispatcherRole as t, ErrorCode as u, EscalatedTo as v, EscalationStatus as w, EventType as x, ExportDataType as y, ExportReason as z };
+export { SecuritySeverity as $, ALL_DAYS as A, LedgerAdjustmentType as B, type CACEvidenceStatus as C, DayOfWeek as D, EntityType as E, FcmNotificationType as F, LlmRole as G, LogLevel as H, IdType as I, JobType as J, MessageStatus as K, LEAD_CATEGORIES as L, MESSAGE_STATUS_RANK as M, MetricDomain as N, MetricGranularity as O, NOTIFICATION_PRIORITY as P, NodeEnv as Q, type NotificationPriority as R, PaymentMethod as S, PaymentProvider as T, PaymentStatus as U, ProviderCapability as V, ProviderRole as W, RETRYABLE_NETWORK_ERROR_CODES as X, RETRYABLE_SQLSTATE_CODES as Y, RiderStatus as Z, SecurityEventType as _, AdminDeliveryAction as a, SenderType as a0, SseEventType as a1, SubscriptionEventType as a2, SubscriptionHealth as a3, SubscriptionStatus as a4, SubscriptionTier as a5, SystemStatus as a6, TransactionStatus as a7, TransactionType as a8, UserAuditAction as a9, UserRole as aa, VehicleType as ab, type WithRetryOptions as ac, isTransientHttpError as ad, safeEnumValue as ae, sleep as af, withRetry as ag, AdminEscalationAction as b, AdminRole as c, ApiTag as d, ApprovalStatus as e, AuditActorType as f, CAC_EVIDENCE_STATUS as g, ChannelPlatform as h, ChannelType as i, CompanyAccessLevel as j, CompanyChannelStatus as k, ContactCategory as l, ConversationHandlerType as m, ConversationScope as n, DeliveryExpiryReason as o, DeliveryStatus as p, DeliverySyncScope as q, DevicePlatform as r, DispatcherRole as s, ErrorCode as t, EscalatedTo as u, EscalationStatus as v, EventType as w, ExportDataType as x, ExportReason as y, JwtTokenType as z };

@@ -184,6 +184,7 @@ var EventType = /* @__PURE__ */ ((EventType2) => {
   EventType2["DOWNGRADE"] = "DOWNGRADE";
   EventType2["MESSAGE_DELETED"] = "MESSAGE_DELETED";
   EventType2["LEDGER_ADJUSTED"] = "LEDGER_ADJUSTED";
+  EventType2["PAYMENT_UNMAPPED"] = "PAYMENT_UNMAPPED";
   return EventType2;
 })(EventType || {});
 var SubscriptionEventType = /* @__PURE__ */ ((SubscriptionEventType2) => {
@@ -201,14 +202,6 @@ var UserAuditAction = {
   PROFILE_UPDATE: "PROFILE_UPDATE",
   DEACTIVATED: "DEACTIVATED"
 };
-var ChannelsUpdateType = /* @__PURE__ */ ((ChannelsUpdateType2) => {
-  ChannelsUpdateType2["MESSAGE"] = "MESSAGE";
-  ChannelsUpdateType2["OWNERSHIP"] = "OWNERSHIP";
-  ChannelsUpdateType2["CONVERSATION"] = "CONVERSATION";
-  ChannelsUpdateType2["CHANNEL"] = "CHANNEL";
-  ChannelsUpdateType2["AI_THINKING"] = "AI_THINKING";
-  return ChannelsUpdateType2;
-})(ChannelsUpdateType || {});
 var MessageStatus = /* @__PURE__ */ ((MessageStatus2) => {
   MessageStatus2["SENT"] = "SENT";
   MessageStatus2["DELIVERED"] = "DELIVERED";
@@ -400,6 +393,7 @@ var FcmNotificationType = /* @__PURE__ */ ((FcmNotificationType2) => {
   FcmNotificationType2["DELIVERY_ANOMALY"] = "DELIVERY_ANOMALY";
   FcmNotificationType2["RAPID_STATUS_CHANGES"] = "RAPID_STATUS_CHANGES";
   FcmNotificationType2["RIDER_SILENT_BAN"] = "RIDER_SILENT_BAN";
+  FcmNotificationType2["SECURITY_ALERT"] = "SECURITY_ALERT";
   return FcmNotificationType2;
 })(FcmNotificationType || {});
 var DeliverySyncScope = /* @__PURE__ */ ((DeliverySyncScope2) => {
@@ -1485,7 +1479,6 @@ export {
   CLIENT_CONFIG,
   ChannelPlatform,
   ChannelType,
-  ChannelsUpdateType,
   CompanyAccessLevel,
   CompanyChannelStatus,
   ContactCategory,

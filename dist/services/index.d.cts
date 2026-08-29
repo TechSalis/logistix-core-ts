@@ -1,7 +1,7 @@
 import * as drizzle_orm from 'drizzle-orm';
 import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import { PgDatabase } from 'drizzle-orm/pg-core';
-import { n as ConversationHandlerType, h as ChannelPlatform, a0 as SecuritySeverity, J as JobType, ad as WithRetryOptions } from '../retry-Dqe-nMO5.cjs';
+import { m as ConversationHandlerType, h as ChannelPlatform, $ as SecuritySeverity, J as JobType, ac as WithRetryOptions } from '../retry-CckCWR0s.cjs';
 
 declare const deliveryStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const ledgerAdjustmentType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -3872,6 +3872,88 @@ declare const eventOutbox: drizzle_orm_pg_core.PgTableWithColumns<{
     dialect: "pg";
 }>;
 /**
+ * Durable idempotency store. Backs cross-instance/restart-safe idempotency claims:
+ * the `key` text PK is the atomic claim arbiter (INSERT ... ON CONFLICT DO NOTHING
+ * wins one claim), `response` is NULL while a claim is in-flight and holds the
+ * serialized result once execution completes, and `expires_at` implements the TTL
+ * (expired rows are reclaimable). See backend src/core/services/idempotency.service.ts.
+ */
+declare const idempotencyKeys: drizzle_orm_pg_core.PgTableWithColumns<{
+    name: "idempotency_keys";
+    schema: undefined;
+    columns: {
+        key: drizzle_orm_pg_core.PgColumn<{
+            name: "key";
+            tableName: "idempotency_keys";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: true;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        response: drizzle_orm_pg_core.PgColumn<{
+            name: "response";
+            tableName: "idempotency_keys";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: unknown;
+            driverParam: unknown;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        expiresAt: drizzle_orm_pg_core.PgColumn<{
+            name: "expires_at";
+            tableName: "idempotency_keys";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+        createdAt: drizzle_orm_pg_core.PgColumn<{
+            name: "created_at";
+            tableName: "idempotency_keys";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+/**
  * Unified metrics table. Single write target keyed by domain + granularity,
  * superseding the legacy company_daily_metrics / company_lifetime_metrics
  * tables (dropped after the one-time backfill into this table).
@@ -4492,4 +4574,4 @@ declare class SquadClient {
     chargeCard(params: ChargeCardParams): Promise<ChargeCardResult>;
 }
 
-export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users };
+export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, idempotencyKeys, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users };

@@ -72,6 +72,7 @@ __export(services_exports, {
   eventOutbox: () => eventOutbox,
   eventType: () => eventType,
   getTotalPaidForDeliveries: () => getTotalPaidForDeliveries,
+  idempotencyKeys: () => idempotencyKeys,
   ledgerAdjustmentType: () => ledgerAdjustmentType,
   ledgerTransactions: () => ledgerTransactions,
   ledgerTransactionsRelations: () => ledgerTransactionsRelations,
@@ -267,6 +268,7 @@ var EventType = /* @__PURE__ */ ((EventType2) => {
   EventType2["DOWNGRADE"] = "DOWNGRADE";
   EventType2["MESSAGE_DELETED"] = "MESSAGE_DELETED";
   EventType2["LEDGER_ADJUSTED"] = "LEDGER_ADJUSTED";
+  EventType2["PAYMENT_UNMAPPED"] = "PAYMENT_UNMAPPED";
   return EventType2;
 })(EventType || {});
 var MessageStatus = /* @__PURE__ */ ((MessageStatus2) => {
@@ -1139,6 +1141,21 @@ var eventOutbox = (0, import_pg_core.pgTable)(
     (0, import_pg_core.index)("event_outbox_created_at_idx").using(
       "btree",
       table.createdAt.asc().nullsLast().op("timestamp_ops")
+    )
+  ]
+);
+var idempotencyKeys = (0, import_pg_core.pgTable)(
+  "idempotency_keys",
+  {
+    key: (0, import_pg_core.text)().primaryKey().notNull(),
+    response: (0, import_pg_core.jsonb)(),
+    expiresAt: (0, import_pg_core.timestamp)("expires_at", { precision: 3, mode: "date" }).notNull(),
+    createdAt: (0, import_pg_core.timestamp)("created_at", { precision: 3, mode: "date" }).default(import_drizzle_orm.sql`CURRENT_TIMESTAMP`).notNull()
+  },
+  (table) => [
+    (0, import_pg_core.index)("idempotency_keys_expires_at_idx").using(
+      "btree",
+      table.expiresAt.asc().nullsLast().op("timestamp_ops")
     )
   ]
 );
@@ -2713,6 +2730,7 @@ var SquadClient = class {
   eventOutbox,
   eventType,
   getTotalPaidForDeliveries,
+  idempotencyKeys,
   ledgerAdjustmentType,
   ledgerTransactions,
   ledgerTransactionsRelations,

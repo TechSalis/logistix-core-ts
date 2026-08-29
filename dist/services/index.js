@@ -176,6 +176,7 @@ var EventType = /* @__PURE__ */ ((EventType2) => {
   EventType2["DOWNGRADE"] = "DOWNGRADE";
   EventType2["MESSAGE_DELETED"] = "MESSAGE_DELETED";
   EventType2["LEDGER_ADJUSTED"] = "LEDGER_ADJUSTED";
+  EventType2["PAYMENT_UNMAPPED"] = "PAYMENT_UNMAPPED";
   return EventType2;
 })(EventType || {});
 var MessageStatus = /* @__PURE__ */ ((MessageStatus2) => {
@@ -1048,6 +1049,21 @@ var eventOutbox = pgTable(
     index("event_outbox_created_at_idx").using(
       "btree",
       table.createdAt.asc().nullsLast().op("timestamp_ops")
+    )
+  ]
+);
+var idempotencyKeys = pgTable(
+  "idempotency_keys",
+  {
+    key: text().primaryKey().notNull(),
+    response: jsonb(),
+    expiresAt: timestamp("expires_at", { precision: 3, mode: "date" }).notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull()
+  },
+  (table) => [
+    index("idempotency_keys_expires_at_idx").using(
+      "btree",
+      table.expiresAt.asc().nullsLast().op("timestamp_ops")
     )
   ]
 );
@@ -2621,6 +2637,7 @@ export {
   eventOutbox,
   eventType,
   getTotalPaidForDeliveries,
+  idempotencyKeys,
   ledgerAdjustmentType,
   ledgerTransactions,
   ledgerTransactionsRelations,
