@@ -420,6 +420,12 @@ describe('buildMetadata', () => {
     expect(out).toEqual({ batteryLevel: 80, currentState: 'LAGOS' });
   });
 
+  it('accepts silentBanUntil as a RIDER metadata key', () => {
+    const out = buildMetadata('RIDER', { silentBanUntil: 1_750_000_000_000 });
+    expect(out).toEqual({ silentBanUntil: 1_750_000_000_000 });
+    expect(() => validateMetadata('RIDER', { silentBanUntil: 'soon' })).toThrow();
+  });
+
   it('round-trips a valid DELIVERY metadata payload', () => {
     const out = buildMetadata('DELIVERY', {
       pickupPlaceId: 'place-1',

@@ -89,6 +89,8 @@ export interface RiderMetadata {
   riderCardNumber?: string;
   currentState?: string;
   batteryLevel?: number;
+  /** Epoch ms until which a silently-unresponsive rider is banned from reassignment. Written by the delivery-liveness job. */
+  silentBanUntil?: number;
   verificationNote?: string;
 }
 
@@ -388,6 +390,7 @@ export const METADATA_KEYS = {
   riderCardNumber: { scope: 'RIDER', shape: strNullish, required: false },
   currentState: { scope: 'RIDER', shape: strNullish, required: false },
   batteryLevel: { scope: 'RIDER', shape: numNullish, required: false },
+  silentBanUntil: { scope: 'RIDER', shape: numNullish, required: false },
 
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: 'LEDGER', shape: strNullish, required: false },
