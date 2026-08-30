@@ -34,19 +34,28 @@ export async function deleteSupabaseUser(
   try {
     await withRetry(
       async () => {
-        const result = await Promise.race([
-          supabase.auth.admin.deleteUser(userId),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () => reject(new Error('Supabase auth deleteUser timeout')),
-              LIMITS_CONFIG.externalApiTimeoutMs,
-            ),
-          ),
-        ]);
-        if (!result.error) return;
-        const msg = result.error.message?.toLowerCase() ?? '';
-        if (msg.includes('not found') || msg.includes("doesn't exist")) return;
-        throw new Error(`Supabase auth error: ${result.error.message}`);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          const result = await Promise.race([
+            supabase.auth.admin.deleteUser(userId),
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error('Supabase auth deleteUser timeout')),
+                LIMITS_CONFIG.externalApiTimeoutMs,
+              );
+            }),
+          ]);
+          if (!result.error) return;
+          const msg = result.error.message?.toLowerCase() ?? '';
+          if (msg.includes('not found') || msg.includes("doesn't exist")) return;
+          // Carry the API status onto the thrown error so `withRetry`'s transient
+          // classifier (read `err.status`) actually retries on infra 5xx/429.
+          throw Object.assign(new Error(`Supabase auth error: ${result.error.message}`), {
+            status: result.error.status,
+          });
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
       },
       { maxRetries: SUPABASE_AUTH_RETRIES },
     );
