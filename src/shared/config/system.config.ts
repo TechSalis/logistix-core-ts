@@ -55,29 +55,3 @@ export function buildSystemConfig(overrides: Partial<SystemConfig> = {}): System
     brandName: overrides.brandName ?? getBrandConfig().brandName,
   };
 }
-
-/** Shared instance built from env (used by contact/email modules). */
-let _systemConfig: SystemConfig | null = null;
-
-/** Lazy singleton — defers process.env reads until first access. */
-export function getSystemConfig(): SystemConfig {
-  if (!_systemConfig) {
-    _systemConfig = buildSystemConfig({
-      ...(process.env.EMAIL_DOMAIN ? { emailDomain: process.env.EMAIL_DOMAIN } : {}),
-    });
-  }
-  return _systemConfig;
-}
-
-/**
- * Lazy convenience accessor for the brand name — single source is
- * `BrandConfig` (via `getBrandConfig`), kept here so existing `BRAND_NAME`
- * consumers resolve the same authoritative value.
- */
-let _brandName: string | null = null;
-export function getBrandName(): string {
-  if (_brandName === null) _brandName = getBrandConfig().brandName;
-  return _brandName;
-}
-
-export const BRAND_NAME = getBrandName();

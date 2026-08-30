@@ -1,32 +1,36 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { buildBrandConfig } from '../src/shared/config/brand.config';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 
-describe('buildBrandConfig', () => {
-  const originalEnv = process.env;
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
-  beforeEach(() => {
-    process.env = { ...originalEnv };
-    delete process.env.BRAND_NAME;
-    delete process.env.BRAND_TRACKING_PREFIX;
+describe('getBrandConfig', () => {
+  it('returns committed defaults when env is unset', async () => {
+    vi.resetModules();
+    const { getBrandConfig } = await import('../src/shared/config/brand.config');
+    expect(getBrandConfig().brandName).toBe('Logistix');
+    expect(getBrandConfig().trackingPrefix).toBe('LGX-');
   });
 
-  it('returns defaults when no env vars or overrides', () => {
-    const config = buildBrandConfig();
-    expect(config.brandName).toBe('Logistix');
-    expect(config.trackingPrefix).toBe('LGX-');
+  it('reads brand name from env', async () => {
+    vi.stubEnv('BRAND_NAME', 'Beta');
+    vi.resetModules();
+    const { getBrandConfig } = await import('../src/shared/config/brand.config');
+    expect(getBrandConfig().brandName).toBe('Beta');
   });
 
-  it('reads from env vars', () => {
-    process.env.BRAND_NAME = 'Acme';
-    process.env.BRAND_TRACKING_PREFIX = 'ACM-';
-    const config = buildBrandConfig();
-    expect(config.brandName).toBe('Acme');
-    expect(config.trackingPrefix).toBe('ACM-');
+  it('reads tracking prefix from env', async () => {
+    vi.stubEnv('BRAND_TRACKING_PREFIX', 'BT-');
+    vi.resetModules();
+    const { getBrandConfig } = await import('../src/shared/config/brand.config');
+    expect(getBrandConfig().trackingPrefix).toBe('BT-');
   });
 
-  it('overrides take precedence over env vars', () => {
-    process.env.BRAND_NAME = 'Acme';
-    const config = buildBrandConfig({ brandName: 'Beta' });
-    expect(config.brandName).toBe('Beta');
+  it('memoizes (lazy once)', async () => {
+    vi.resetModules();
+    const mod = await import('../src/shared/config/brand.config');
+    const first = mod.getBrandConfig();
+    vi.stubEnv('BRAND_NAME', 'Changed');
+    expect(mod.getBrandConfig()).toBe(first);
   });
 });

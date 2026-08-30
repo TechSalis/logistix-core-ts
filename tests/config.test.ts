@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  buildSystemConfig,
-  BRAND_NAME,
-  DEFAULT_WORKING_HOURS,
-} from '../src/shared/config/system.config.js';
+import { buildSystemConfig, DEFAULT_WORKING_HOURS } from '../src/shared/config/system.config.js';
 import { DayOfWeek } from '../src/shared/enums/enums.js';
 
 describe('buildSystemConfig', () => {
@@ -47,9 +43,13 @@ describe('buildSystemConfig', () => {
   });
 });
 
-describe('BRAND_NAME constant', () => {
-  it('is Logistix', () => {
-    expect(BRAND_NAME).toBe('Logistix');
+describe('buildSystemConfig brandName forward', () => {
+  it('resolves to the committed Logistix default', () => {
+    expect(buildSystemConfig().brandName).toBe('Logistix');
+  });
+
+  it('explicit brandName overrides win', () => {
+    expect(buildSystemConfig({ brandName: 'Beta' }).brandName).toBe('Beta');
   });
 });
 

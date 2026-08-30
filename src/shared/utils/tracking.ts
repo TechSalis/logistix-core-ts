@@ -1,11 +1,11 @@
-import { BRAND } from '../config/brand.config.js';
+import { getBrandConfig } from '../config/brand.config.js';
 
 /**
  * Tracking ID prefix for brand recognition and easy pattern matching.
  * Makes IDs trivially identifiable (e.g. LGX-A2B3C4), reducing AI
  * hallucination risk and false-positive guardrail matches.
  */
-export const TRACKING_ID_PREFIX = BRAND.trackingPrefix;
+export const TRACKING_ID_PREFIX = getBrandConfig().trackingPrefix;
 
 /**
  * Length of the random suffix portion of a tracking ID (after the prefix).

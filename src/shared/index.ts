@@ -32,7 +32,6 @@ export {
   EventType,
   SubscriptionEventType,
   UserAuditAction,
-  ChannelsUpdateType,
   MessageStatus,
   MESSAGE_STATUS_RANK,
   EscalationStatus,
@@ -100,7 +99,6 @@ export type { MetadataScope, MetadataKey, MetadataKeySpec } from './types/metada
 // ─── Config ───────────────────────────────────────────────────────────────────
 export {
   buildSystemConfig,
-  BRAND_NAME,
   DELETED_USER_SENTINEL,
   SYSTEM_ACTOR_ID,
   ADMIN_ACTOR_ID,
@@ -108,7 +106,7 @@ export {
 } from './config/system.config.js';
 export type { SystemConfig, BankDetails, WorkingHoursEntry } from './config/system.config.js';
 
-export { BRAND, buildBrandConfig } from './config/brand.config.js';
+export { getBrandConfig } from './config/brand.config.js';
 export type { BrandConfig } from './config/brand.config.js';
 
 export { REGIONAL_CONFIG, REGIONAL_LOCALE, HQ_LOCATION } from './config/regional.config.js';
