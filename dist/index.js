@@ -332,6 +332,7 @@ var SseEventType = /* @__PURE__ */ ((SseEventType2) => {
   SseEventType2["COMPANY"] = "company";
   SseEventType2["RIDER_LOCATION"] = "rider-location";
   SseEventType2["TYPING"] = "typing";
+  SseEventType2["SYNC_REQUIRED"] = "sync-required";
   return SseEventType2;
 })(SseEventType || {});
 var JwtTokenType = /* @__PURE__ */ ((JwtTokenType2) => {
@@ -653,6 +654,7 @@ var METADATA_KEYS = {
   riderCardNumber: { scope: "RIDER", shape: strNullish, required: false },
   currentState: { scope: "RIDER", shape: strNullish, required: false },
   batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
+  silentBanUntil: { scope: "RIDER", shape: numNullish, required: false },
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: "LEDGER", shape: strNullish, required: false },
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
@@ -711,22 +713,16 @@ var BRAND_DEFAULTS = {
   brandName: "Logistix",
   trackingPrefix: "LGX-"
 };
-function buildBrandConfig(overrides) {
-  return {
-    brandName: overrides?.brandName ?? process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
-    trackingPrefix: overrides?.trackingPrefix ?? process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
-  };
-}
 var _brand = null;
 function getBrandConfig() {
-  if (!_brand) _brand = buildBrandConfig();
+  if (!_brand) {
+    _brand = {
+      brandName: process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
+      trackingPrefix: process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
+    };
+  }
   return _brand;
 }
-var BRAND = new Proxy({}, {
-  get(_, prop) {
-    return getBrandConfig()[prop];
-  }
-});
 
 // src/shared/config/system.config.ts
 var DELETED_USER_SENTINEL = "DELETED_USER";
@@ -754,12 +750,6 @@ function buildSystemConfig(overrides = {}) {
     brandName: overrides.brandName ?? getBrandConfig().brandName
   };
 }
-var _brandName = null;
-function getBrandName() {
-  if (_brandName === null) _brandName = getBrandConfig().brandName;
-  return _brandName;
-}
-var BRAND_NAME = getBrandName();
 
 // src/shared/config/regional.config.ts
 var rawRegionalConfig = {
@@ -1386,7 +1376,7 @@ function isTransientHttpError(error) {
 }
 
 // src/shared/utils/tracking.ts
-var TRACKING_ID_PREFIX = BRAND.trackingPrefix;
+var TRACKING_ID_PREFIX = getBrandConfig().trackingPrefix;
 var TRACKING_ID_SUFFIX_LENGTH = 6;
 var TRACKING_ID_LENGTH = TRACKING_ID_PREFIX.length + TRACKING_ID_SUFFIX_LENGTH;
 var TRACKING_ID_CHARS = "2-9A-HJ-NP-Z";
@@ -1893,6 +1883,7 @@ var deliveries = pgTable(
     dropOffPhone: text("drop_off_phone"),
     paymentMethod: paymentMethod("payment_method").notNull(),
     scheduledAt: timestamp("scheduled_at", { precision: 3, mode: "date" }),
+    scheduledAtEnd: timestamp("scheduled_at_end", { precision: 3, mode: "date" }),
     assignedAt: timestamp("assigned_at", { precision: 3, mode: "date" }),
     deliveredAt: timestamp("delivered_at", { precision: 3, mode: "date" }),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -2428,16 +2419,16 @@ var recentAlerts = /* @__PURE__ */ new Map();
 function getDiscordWebhookUrl() {
   return process.env.DISCORD_WEBHOOK_URL;
 }
-async function sendAlert(level, title, details) {
-  const webhookUrl = getDiscordWebhookUrl();
-  if (!webhookUrl) return;
+async function sendAlert(level, title, details, webhookUrl) {
+  const resolvedUrl = webhookUrl ?? getDiscordWebhookUrl();
+  if (!resolvedUrl) return;
   const key = `${title}:${level}`;
   const lastSent = recentAlerts.get(key) ?? 0;
   if (Date.now() - lastSent < ALERT_COOLDOWN_MS) return;
   recentAlerts.set(key, Date.now());
   const emoji = level === "critical" ? "\u{1F6A8}" : level === "warning" ? "\u26A0\uFE0F" : "\u2139\uFE0F";
   try {
-    await fetch(webhookUrl, {
+    await fetch(resolvedUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -2450,7 +2441,7 @@ async function sendAlert(level, title, details) {
           }
         ]
       }),
-      signal: AbortSignal.timeout(5e3)
+      signal: AbortSignal.timeout(LIMITS_CONFIG.externalApiTimeoutMs)
     });
   } catch {
   }
@@ -2461,13 +2452,18 @@ function resetAlertCooldownsForTest() {
 
 // src/services/email.ts
 var DEFAULT_SMTP_PORT = 1025;
+function buildSmtpConfig(env) {
+  if (!env.SMTP_HOST) return null;
+  const port = env.SMTP_PORT ? parseInt(env.SMTP_PORT, 10) : DEFAULT_SMTP_PORT;
+  return {
+    host: env.SMTP_HOST,
+    port,
+    user: env.SMTP_USER || void 0,
+    pass: env.SMTP_PASS || void 0
+  };
+}
 function getSmtpConfig() {
-  const host = typeof process !== "undefined" && process.env?.SMTP_HOST;
-  if (!host) return null;
-  const port = typeof process !== "undefined" && process.env?.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : DEFAULT_SMTP_PORT;
-  const user = typeof process !== "undefined" && process.env?.SMTP_USER || void 0;
-  const pass = typeof process !== "undefined" && process.env?.SMTP_PASS || void 0;
-  return { host, port, user, pass };
+  return typeof process !== "undefined" ? buildSmtpConfig(process.env) : null;
 }
 async function sendViaSmtp(smtp, options) {
   const nodemailer = await import("nodemailer");
@@ -2501,8 +2497,12 @@ function isRetryableEmailError(error) {
   return false;
 }
 var EmailService = class {
+  constructor(smtp) {
+    this.smtp = smtp;
+  }
+  smtp;
   async sendEmail(options) {
-    const smtp = getSmtpConfig();
+    const smtp = this.smtp !== void 0 ? this.smtp : getSmtpConfig();
     if (!smtp) throw new Error("EmailService: no SMTP configured \u2014 email not sent");
     return withRetry(() => sendViaSmtp(smtp, options), {
       maxRetries: 2,
@@ -3326,8 +3326,6 @@ export {
   ApprovalStatus,
   AuditActorType,
   BILLING_CONFIG,
-  BRAND,
-  BRAND_NAME,
   CAC_EVIDENCE_STATUS,
   CHANNEL_FEES,
   CLIENT_CONFIG,
@@ -3431,8 +3429,8 @@ export {
   applyPaymentStatusUpdate,
   approvalStatus,
   blockedIps,
-  buildBrandConfig,
   buildMetadata,
+  buildSmtpConfig,
   buildSystemConfig,
   channelPlatform,
   channelType,
@@ -3473,6 +3471,7 @@ export {
   formatAmount,
   formatDeliveryStatus,
   formatEnumToTitleCase,
+  getBrandConfig,
   getDateStringInTimezone,
   getDayBoundsInTimezone,
   getMonthStartInTimezone,

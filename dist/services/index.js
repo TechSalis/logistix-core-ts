@@ -238,28 +238,6 @@ var MetricGranularity = /* @__PURE__ */ ((MetricGranularity2) => {
 })(MetricGranularity || {});
 var ALL_DAYS = Object.values(DayOfWeek);
 
-// src/shared/config/brand.config.ts
-var BRAND_DEFAULTS = {
-  brandName: "Logistix",
-  trackingPrefix: "LGX-"
-};
-function buildBrandConfig(overrides) {
-  return {
-    brandName: overrides?.brandName ?? process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
-    trackingPrefix: overrides?.trackingPrefix ?? process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
-  };
-}
-var _brand = null;
-function getBrandConfig() {
-  if (!_brand) _brand = buildBrandConfig();
-  return _brand;
-}
-var BRAND = new Proxy({}, {
-  get(_, prop) {
-    return getBrandConfig()[prop];
-  }
-});
-
 // src/shared/config/system.config.ts
 var DEFAULT_WORKING_HOURS = {
   ["Monday" /* MONDAY */]: { start: "07:00", close: "19:00" },
@@ -269,12 +247,6 @@ var DEFAULT_WORKING_HOURS = {
   ["Friday" /* FRIDAY */]: { start: "07:00", close: "19:00" },
   ["Saturday" /* SATURDAY */]: { start: "07:00", close: "19:00" }
 };
-var _brandName = null;
-function getBrandName() {
-  if (_brandName === null) _brandName = getBrandConfig().brandName;
-  return _brandName;
-}
-var BRAND_NAME = getBrandName();
 
 // src/services/drizzle/schema.ts
 var createId = () => randomUUID();
@@ -687,6 +659,7 @@ var deliveries = pgTable(
     dropOffPhone: text("drop_off_phone"),
     paymentMethod: paymentMethod("payment_method").notNull(),
     scheduledAt: timestamp("scheduled_at", { precision: 3, mode: "date" }),
+    scheduledAtEnd: timestamp("scheduled_at_end", { precision: 3, mode: "date" }),
     assignedAt: timestamp("assigned_at", { precision: 3, mode: "date" }),
     deliveredAt: timestamp("delivered_at", { precision: 3, mode: "date" }),
     createdAt: timestamp("created_at", { precision: 3, mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -1216,256 +1189,6 @@ var ledgerTransactionsRelations = relations(ledgerTransactions, ({ one }) => ({
   })
 }));
 
-// src/services/alerts.ts
-var ALERT_COOLDOWN_MS = 5 * 60 * 1e3;
-var recentAlerts = /* @__PURE__ */ new Map();
-function getDiscordWebhookUrl() {
-  return process.env.DISCORD_WEBHOOK_URL;
-}
-async function sendAlert(level, title, details) {
-  const webhookUrl = getDiscordWebhookUrl();
-  if (!webhookUrl) return;
-  const key = `${title}:${level}`;
-  const lastSent = recentAlerts.get(key) ?? 0;
-  if (Date.now() - lastSent < ALERT_COOLDOWN_MS) return;
-  recentAlerts.set(key, Date.now());
-  const emoji = level === "critical" ? "\u{1F6A8}" : level === "warning" ? "\u26A0\uFE0F" : "\u2139\uFE0F";
-  try {
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        embeds: [
-          {
-            title: `${emoji} ${title}`,
-            description: details,
-            color: level === "critical" ? 16711680 : level === "warning" ? 16755200 : 43775,
-            timestamp: (/* @__PURE__ */ new Date()).toISOString()
-          }
-        ]
-      }),
-      signal: AbortSignal.timeout(5e3)
-    });
-  } catch {
-  }
-}
-function resetAlertCooldownsForTest() {
-  recentAlerts.clear();
-}
-
-// src/shared/utils/retry.ts
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-var RETRYABLE_NETWORK_ERROR_CODES = /* @__PURE__ */ new Set([
-  "ECONNRESET",
-  "ETIMEDOUT",
-  "EPIPE",
-  "ECONNREFUSED",
-  "ECONNABORTED",
-  "EAI_AGAIN"
-]);
-async function withRetry(fn, options) {
-  const maxRetries = options?.maxRetries ?? 2;
-  const baseMs = options?.baseMs ?? 200;
-  const maxDelayMs = options?.maxDelayMs ?? 5e3;
-  const isRetryable = options?.isRetryable ?? isTransientHttpError;
-  let lastError;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn(attempt);
-    } catch (error) {
-      lastError = error;
-      if (attempt >= maxRetries) break;
-      if (!isRetryable(error)) break;
-      const jitter = Math.random() * 200;
-      const delayMs = Math.min(baseMs * Math.pow(2, attempt - 1) + jitter, maxDelayMs);
-      options?.onRetry?.({ attempt, maxRetries, error, delayMs });
-      await sleep(delayMs);
-    }
-  }
-  throw lastError;
-}
-function classifyTransientError(err) {
-  const status = err.status ?? err.response?.status ?? 0;
-  const msg = (err.message ?? "").toLowerCase();
-  const code = (err.code ?? "").toUpperCase();
-  if (status >= 500 && status <= 599) return true;
-  if (status === 429) return true;
-  if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
-  if (code === "UND_ERR_CONNECT_TIMEOUT" || code === "UND_ERR_HEADERS_TIMEOUT") return true;
-  if (msg.includes("etimedout") || msg.includes("econnrefused") || msg.includes("econnreset") || msg.includes("econnaborted") || msg.includes("eai_again") || msg.includes("timeout of"))
-    return true;
-  return false;
-}
-function hasTransientSignature(error, seen) {
-  if (typeof error !== "object" || error === null) return false;
-  if (seen.has(error)) return false;
-  seen.add(error);
-  const err = error;
-  if (classifyTransientError(err)) return true;
-  if (typeof err.cause === "object" && err.cause !== null) {
-    return hasTransientSignature(err.cause, seen);
-  }
-  return false;
-}
-function isTransientHttpError(error) {
-  return hasTransientSignature(error, /* @__PURE__ */ new Set());
-}
-
-// src/services/email.ts
-var DEFAULT_SMTP_PORT = 1025;
-function getSmtpConfig() {
-  const host = typeof process !== "undefined" && process.env?.SMTP_HOST;
-  if (!host) return null;
-  const port = typeof process !== "undefined" && process.env?.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : DEFAULT_SMTP_PORT;
-  const user = typeof process !== "undefined" && process.env?.SMTP_USER || void 0;
-  const pass = typeof process !== "undefined" && process.env?.SMTP_PASS || void 0;
-  return { host, port, user, pass };
-}
-async function sendViaSmtp(smtp, options) {
-  const nodemailer = await import("nodemailer");
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.port === 465,
-    auth: smtp.user ? { user: smtp.user, pass: smtp.pass } : void 0
-  });
-  const info = await transporter.sendMail({
-    from: options.from,
-    to: Array.isArray(options.to) ? options.to.join(", ") : options.to,
-    subject: options.subject,
-    html: options.html,
-    text: options.text,
-    attachments: options.attachments?.map((a) => ({
-      filename: a.filename,
-      content: Buffer.from(a.content, "base64")
-    }))
-  });
-  return { id: info.messageId };
-}
-function isRetryableEmailError(error) {
-  if (error && typeof error === "object") {
-    const err = error;
-    const code = err.code ?? "";
-    const msg = (err.message ?? "").toLowerCase();
-    if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
-    if (msg.includes("timeout") || msg.includes("network")) return true;
-  }
-  return false;
-}
-var EmailService = class {
-  async sendEmail(options) {
-    const smtp = getSmtpConfig();
-    if (!smtp) throw new Error("EmailService: no SMTP configured \u2014 email not sent");
-    return withRetry(() => sendViaSmtp(smtp, options), {
-      maxRetries: 2,
-      baseMs: 1e3,
-      isRetryable: isRetryableEmailError,
-      label: "email.sendEmail"
-    });
-  }
-};
-
-// src/services/encryption.ts
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
-var ALGORITHM = "aes-256-gcm";
-var IV_LENGTH = 16;
-var INVALID_ENCRYPTED_FORMAT = "Invalid encrypted format";
-function parseKey(raw) {
-  const dotIndex = raw.lastIndexOf(".");
-  const version = dotIndex >= 0 ? raw.slice(dotIndex + 1) : "v0";
-  const keyHex = dotIndex >= 0 ? raw.slice(0, dotIndex) : raw;
-  return { key: Buffer.from(keyHex, "hex"), version };
-}
-function createEncryptor(currentKey, previousKey) {
-  const current = parseKey(currentKey);
-  const previous = previousKey ? parseKey(previousKey) : void 0;
-  function encrypt(plaintext) {
-    const { key, version } = current;
-    const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, key, iv);
-    let ciphertext = cipher.update(plaintext, "utf8", "hex");
-    ciphertext += cipher.final("hex");
-    const authTag = cipher.getAuthTag().toString("hex");
-    return JSON.stringify({
-      v: version,
-      iv: iv.toString("hex"),
-      c: ciphertext,
-      t: authTag
-    });
-  }
-  function parsePayload(payload) {
-    let parsed;
-    try {
-      const value = JSON.parse(payload);
-      if (value === null || typeof value !== "object") {
-        throw new Error(INVALID_ENCRYPTED_FORMAT);
-      }
-      parsed = value;
-    } catch {
-      throw new Error(INVALID_ENCRYPTED_FORMAT);
-    }
-    const { v, iv, c, t } = parsed;
-    if (!iv || !c || !t) {
-      throw new Error(INVALID_ENCRYPTED_FORMAT);
-    }
-    return { v: v ?? "", ivHex: iv, ciphertext: c, authTagHex: t };
-  }
-  function tryDecryptWith(key, { ivHex, ciphertext, authTagHex }) {
-    const iv = Buffer.from(ivHex, "hex");
-    const authTag = Buffer.from(authTagHex, "hex");
-    const decipher = createDecipheriv(ALGORITHM, key, iv);
-    decipher.setAuthTag(authTag);
-    let plaintext = decipher.update(ciphertext, "hex", "utf8");
-    plaintext += decipher.final("utf8");
-    return plaintext;
-  }
-  function decryptWithKeyVersion(payload) {
-    const parsed = parsePayload(payload);
-    try {
-      return { plaintext: tryDecryptWith(current.key, parsed), version: current.version };
-    } catch {
-      if (previous && parsed.v !== current.version) {
-        try {
-          return { plaintext: tryDecryptWith(previous.key, parsed), version: previous.version };
-        } catch {
-          throw new Error(INVALID_ENCRYPTED_FORMAT);
-        }
-      }
-      throw new Error(INVALID_ENCRYPTED_FORMAT);
-    }
-  }
-  function decrypt(payload) {
-    return decryptWithKeyVersion(payload).plaintext;
-  }
-  function reencryptIfNeeded(payload) {
-    const { plaintext, version } = decryptWithKeyVersion(payload);
-    if (version === current.version) {
-      return payload;
-    }
-    return encrypt(plaintext);
-  }
-  return { encrypt, decrypt, decryptWithKeyVersion, reencryptIfNeeded };
-}
-
-// src/shared/utils/error-utils.ts
-function extractErrorMessage(error) {
-  if (error instanceof Error) {
-    const parts = [error.message];
-    let cause = error.cause;
-    let depth = 0;
-    while (cause instanceof Error && depth < 3) {
-      parts.push(`cause: ${cause.message}`);
-      cause = cause.cause;
-      depth++;
-    }
-    return parts.join(" | ");
-  }
-  if (typeof error === "string") return error;
-  return String(error);
-}
-
 // src/shared/config/retention.config.ts
 import { z } from "zod";
 var retentionConfigSchema = z.object({
@@ -1628,6 +1351,265 @@ var TIER_LIMITS = {
     maxExportsPerMonth: 30
   }
 };
+
+// src/services/alerts.ts
+var ALERT_COOLDOWN_MS = 5 * 60 * 1e3;
+var recentAlerts = /* @__PURE__ */ new Map();
+function getDiscordWebhookUrl() {
+  return process.env.DISCORD_WEBHOOK_URL;
+}
+async function sendAlert(level, title, details, webhookUrl) {
+  const resolvedUrl = webhookUrl ?? getDiscordWebhookUrl();
+  if (!resolvedUrl) return;
+  const key = `${title}:${level}`;
+  const lastSent = recentAlerts.get(key) ?? 0;
+  if (Date.now() - lastSent < ALERT_COOLDOWN_MS) return;
+  recentAlerts.set(key, Date.now());
+  const emoji = level === "critical" ? "\u{1F6A8}" : level === "warning" ? "\u26A0\uFE0F" : "\u2139\uFE0F";
+  try {
+    await fetch(resolvedUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `${emoji} ${title}`,
+            description: details,
+            color: level === "critical" ? 16711680 : level === "warning" ? 16755200 : 43775,
+            timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          }
+        ]
+      }),
+      signal: AbortSignal.timeout(LIMITS_CONFIG.externalApiTimeoutMs)
+    });
+  } catch {
+  }
+}
+function resetAlertCooldownsForTest() {
+  recentAlerts.clear();
+}
+
+// src/shared/utils/retry.ts
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+var RETRYABLE_NETWORK_ERROR_CODES = /* @__PURE__ */ new Set([
+  "ECONNRESET",
+  "ETIMEDOUT",
+  "EPIPE",
+  "ECONNREFUSED",
+  "ECONNABORTED",
+  "EAI_AGAIN"
+]);
+async function withRetry(fn, options) {
+  const maxRetries = options?.maxRetries ?? 2;
+  const baseMs = options?.baseMs ?? 200;
+  const maxDelayMs = options?.maxDelayMs ?? 5e3;
+  const isRetryable = options?.isRetryable ?? isTransientHttpError;
+  let lastError;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn(attempt);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= maxRetries) break;
+      if (!isRetryable(error)) break;
+      const jitter = Math.random() * 200;
+      const delayMs = Math.min(baseMs * Math.pow(2, attempt - 1) + jitter, maxDelayMs);
+      options?.onRetry?.({ attempt, maxRetries, error, delayMs });
+      await sleep(delayMs);
+    }
+  }
+  throw lastError;
+}
+function classifyTransientError(err) {
+  const status = err.status ?? err.response?.status ?? 0;
+  const msg = (err.message ?? "").toLowerCase();
+  const code = (err.code ?? "").toUpperCase();
+  if (status >= 500 && status <= 599) return true;
+  if (status === 429) return true;
+  if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
+  if (code === "UND_ERR_CONNECT_TIMEOUT" || code === "UND_ERR_HEADERS_TIMEOUT") return true;
+  if (msg.includes("etimedout") || msg.includes("econnrefused") || msg.includes("econnreset") || msg.includes("econnaborted") || msg.includes("eai_again") || msg.includes("timeout of"))
+    return true;
+  return false;
+}
+function hasTransientSignature(error, seen) {
+  if (typeof error !== "object" || error === null) return false;
+  if (seen.has(error)) return false;
+  seen.add(error);
+  const err = error;
+  if (classifyTransientError(err)) return true;
+  if (typeof err.cause === "object" && err.cause !== null) {
+    return hasTransientSignature(err.cause, seen);
+  }
+  return false;
+}
+function isTransientHttpError(error) {
+  return hasTransientSignature(error, /* @__PURE__ */ new Set());
+}
+
+// src/services/email.ts
+var DEFAULT_SMTP_PORT = 1025;
+function buildSmtpConfig(env) {
+  if (!env.SMTP_HOST) return null;
+  const port = env.SMTP_PORT ? parseInt(env.SMTP_PORT, 10) : DEFAULT_SMTP_PORT;
+  return {
+    host: env.SMTP_HOST,
+    port,
+    user: env.SMTP_USER || void 0,
+    pass: env.SMTP_PASS || void 0
+  };
+}
+function getSmtpConfig() {
+  return typeof process !== "undefined" ? buildSmtpConfig(process.env) : null;
+}
+async function sendViaSmtp(smtp, options) {
+  const nodemailer = await import("nodemailer");
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.port === 465,
+    auth: smtp.user ? { user: smtp.user, pass: smtp.pass } : void 0
+  });
+  const info = await transporter.sendMail({
+    from: options.from,
+    to: Array.isArray(options.to) ? options.to.join(", ") : options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text,
+    attachments: options.attachments?.map((a) => ({
+      filename: a.filename,
+      content: Buffer.from(a.content, "base64")
+    }))
+  });
+  return { id: info.messageId };
+}
+function isRetryableEmailError(error) {
+  if (error && typeof error === "object") {
+    const err = error;
+    const code = err.code ?? "";
+    const msg = (err.message ?? "").toLowerCase();
+    if (RETRYABLE_NETWORK_ERROR_CODES.has(code)) return true;
+    if (msg.includes("timeout") || msg.includes("network")) return true;
+  }
+  return false;
+}
+var EmailService = class {
+  constructor(smtp) {
+    this.smtp = smtp;
+  }
+  smtp;
+  async sendEmail(options) {
+    const smtp = this.smtp !== void 0 ? this.smtp : getSmtpConfig();
+    if (!smtp) throw new Error("EmailService: no SMTP configured \u2014 email not sent");
+    return withRetry(() => sendViaSmtp(smtp, options), {
+      maxRetries: 2,
+      baseMs: 1e3,
+      isRetryable: isRetryableEmailError,
+      label: "email.sendEmail"
+    });
+  }
+};
+
+// src/services/encryption.ts
+import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+var ALGORITHM = "aes-256-gcm";
+var IV_LENGTH = 16;
+var INVALID_ENCRYPTED_FORMAT = "Invalid encrypted format";
+function parseKey(raw) {
+  const dotIndex = raw.lastIndexOf(".");
+  const version = dotIndex >= 0 ? raw.slice(dotIndex + 1) : "v0";
+  const keyHex = dotIndex >= 0 ? raw.slice(0, dotIndex) : raw;
+  return { key: Buffer.from(keyHex, "hex"), version };
+}
+function createEncryptor(currentKey, previousKey) {
+  const current = parseKey(currentKey);
+  const previous = previousKey ? parseKey(previousKey) : void 0;
+  function encrypt(plaintext) {
+    const { key, version } = current;
+    const iv = randomBytes(IV_LENGTH);
+    const cipher = createCipheriv(ALGORITHM, key, iv);
+    let ciphertext = cipher.update(plaintext, "utf8", "hex");
+    ciphertext += cipher.final("hex");
+    const authTag = cipher.getAuthTag().toString("hex");
+    return JSON.stringify({
+      v: version,
+      iv: iv.toString("hex"),
+      c: ciphertext,
+      t: authTag
+    });
+  }
+  function parsePayload(payload) {
+    let parsed;
+    try {
+      const value = JSON.parse(payload);
+      if (value === null || typeof value !== "object") {
+        throw new Error(INVALID_ENCRYPTED_FORMAT);
+      }
+      parsed = value;
+    } catch {
+      throw new Error(INVALID_ENCRYPTED_FORMAT);
+    }
+    const { v, iv, c, t } = parsed;
+    if (!iv || !c || !t) {
+      throw new Error(INVALID_ENCRYPTED_FORMAT);
+    }
+    return { v: v ?? "", ivHex: iv, ciphertext: c, authTagHex: t };
+  }
+  function tryDecryptWith(key, { ivHex, ciphertext, authTagHex }) {
+    const iv = Buffer.from(ivHex, "hex");
+    const authTag = Buffer.from(authTagHex, "hex");
+    const decipher = createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(authTag);
+    let plaintext = decipher.update(ciphertext, "hex", "utf8");
+    plaintext += decipher.final("utf8");
+    return plaintext;
+  }
+  function decryptWithKeyVersion(payload) {
+    const parsed = parsePayload(payload);
+    try {
+      return { plaintext: tryDecryptWith(current.key, parsed), version: current.version };
+    } catch {
+      if (previous && parsed.v !== current.version) {
+        try {
+          return { plaintext: tryDecryptWith(previous.key, parsed), version: previous.version };
+        } catch {
+          throw new Error(INVALID_ENCRYPTED_FORMAT);
+        }
+      }
+      throw new Error(INVALID_ENCRYPTED_FORMAT);
+    }
+  }
+  function decrypt(payload) {
+    return decryptWithKeyVersion(payload).plaintext;
+  }
+  function reencryptIfNeeded(payload) {
+    const { plaintext, version } = decryptWithKeyVersion(payload);
+    if (version === current.version) {
+      return payload;
+    }
+    return encrypt(plaintext);
+  }
+  return { encrypt, decrypt, decryptWithKeyVersion, reencryptIfNeeded };
+}
+
+// src/shared/utils/error-utils.ts
+function extractErrorMessage(error) {
+  if (error instanceof Error) {
+    const parts = [error.message];
+    let cause = error.cause;
+    let depth = 0;
+    while (cause instanceof Error && depth < 3) {
+      parts.push(`cause: ${cause.message}`);
+      cause = cause.cause;
+      depth++;
+    }
+    return parts.join(" | ");
+  }
+  if (typeof error === "string") return error;
+  return String(error);
+}
 
 // src/shared/utils/fetch-with-timeout.ts
 var DEFAULT_TIMEOUT_MS = LIMITS_CONFIG.externalApiTimeoutMs;
@@ -1989,6 +1971,7 @@ var METADATA_KEYS = {
   riderCardNumber: { scope: "RIDER", shape: strNullish, required: false },
   currentState: { scope: "RIDER", shape: strNullish, required: false },
   batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
+  silentBanUntil: { scope: "RIDER", shape: numNullish, required: false },
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: "LEDGER", shape: strNullish, required: false },
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
@@ -2605,6 +2588,7 @@ export {
   applyPaymentStatusUpdate,
   approvalStatus,
   blockedIps,
+  buildSmtpConfig,
   channelPlatform,
   channelType,
   companies,

@@ -303,6 +303,7 @@ export const baseTypeDefs = `
     description: String
     paymentMethod: PaymentMethod!
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     trackingId: String!
     pin: String
     proofImageReadUrl: String
@@ -720,6 +721,7 @@ export const baseTypeDefs = `
     dropOffPhone: String
     riderId: ID
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     pool: Boolean
     pickupState: String
     dropOffState: String
@@ -741,6 +743,7 @@ export const baseTypeDefs = `
     dropOffPhone: String
     paymentMethod: PaymentMethod
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     proofImageUrl: String
   }
 

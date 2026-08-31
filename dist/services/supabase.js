@@ -271,19 +271,26 @@ async function deleteSupabaseUser(supabase, userId, log) {
   try {
     await withRetry(
       async () => {
-        const result = await Promise.race([
-          supabase.auth.admin.deleteUser(userId),
-          new Promise(
-            (_, reject) => setTimeout(
-              () => reject(new Error("Supabase auth deleteUser timeout")),
-              LIMITS_CONFIG.externalApiTimeoutMs
-            )
-          )
-        ]);
-        if (!result.error) return;
-        const msg = result.error.message?.toLowerCase() ?? "";
-        if (msg.includes("not found") || msg.includes("doesn't exist")) return;
-        throw new Error(`Supabase auth error: ${result.error.message}`);
+        let timer;
+        try {
+          const result = await Promise.race([
+            supabase.auth.admin.deleteUser(userId),
+            new Promise((_, reject) => {
+              timer = setTimeout(
+                () => reject(new Error("Supabase auth deleteUser timeout")),
+                LIMITS_CONFIG.externalApiTimeoutMs
+              );
+            })
+          ]);
+          if (!result.error) return;
+          const msg = result.error.message?.toLowerCase() ?? "";
+          if (msg.includes("not found") || msg.includes("doesn't exist")) return;
+          throw Object.assign(new Error(`Supabase auth error: ${result.error.message}`), {
+            status: result.error.status
+          });
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
       },
       { maxRetries: SUPABASE_AUTH_RETRIES }
     );

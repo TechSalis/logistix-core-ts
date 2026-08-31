@@ -1,7 +1,7 @@
 import * as drizzle_orm from 'drizzle-orm';
 import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import { PgDatabase } from 'drizzle-orm/pg-core';
-import { m as ConversationHandlerType, h as ChannelPlatform, $ as SecuritySeverity, J as JobType, ac as WithRetryOptions } from '../retry-CckCWR0s.cjs';
+import { m as ConversationHandlerType, h as ChannelPlatform, $ as SecuritySeverity, J as JobType, ac as WithRetryOptions } from '../retry-CvzVXHWc.cjs';
 
 declare const deliveryStatus: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
 declare const ledgerAdjustmentType: drizzle_orm_pg_core.PgEnum<[string, ...string[]]>;
@@ -2421,6 +2421,23 @@ declare const deliveries: drizzle_orm_pg_core.PgTableWithColumns<{
             identity: undefined;
             generated: undefined;
         }, {}, {}>;
+        scheduledAtEnd: drizzle_orm_pg_core.PgColumn<{
+            name: "scheduled_at_end";
+            tableName: "deliveries";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            isPrimaryKey: false;
+            isAutoincrement: false;
+            hasRuntimeDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+            identity: undefined;
+            generated: undefined;
+        }, {}, {}>;
         assignedAt: drizzle_orm_pg_core.PgColumn<{
             name: "assigned_at";
             tableName: "deliveries";
@@ -4312,7 +4329,7 @@ declare const ledgerTransactionsRelations: drizzle_orm.Relations<"ledger_transac
 }>;
 
 type AlertLevel = 'info' | 'warning' | 'critical';
-declare function sendAlert(level: AlertLevel, title: string, details: string): Promise<void>;
+declare function sendAlert(level: AlertLevel, title: string, details: string, webhookUrl?: string): Promise<void>;
 declare function resetAlertCooldownsForTest(): void;
 
 interface EmailAttachment {
@@ -4330,7 +4347,22 @@ interface SendEmailOptions {
 interface SendEmailResult {
     id: string;
 }
+interface SmtpConfig {
+    host: string;
+    port: number;
+    user?: string;
+    pass?: string;
+}
+interface SmtpEnvVars {
+    SMTP_HOST?: string;
+    SMTP_PORT?: string;
+    SMTP_USER?: string;
+    SMTP_PASS?: string;
+}
+declare function buildSmtpConfig(env: SmtpEnvVars): SmtpConfig | null;
 declare class EmailService {
+    private readonly smtp?;
+    constructor(smtp?: (SmtpConfig | null) | undefined);
     sendEmail(options: SendEmailOptions): Promise<SendEmailResult>;
 }
 
@@ -4574,4 +4606,4 @@ declare class SquadClient {
     chargeCard(params: ChargeCardParams): Promise<ChargeCardResult>;
 }
 
-export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, idempotencyKeys, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users };
+export { type AlertLevel, type AllocationDeliveryInput, type AllocationTarget, type ChargeCardParams, type ChargeCardResult, type DrainOptions, type DrainResult, type DrizzleDB, type EmailAttachment, EmailService, type Encryptor, type EnqueueOptions, type EnqueueWithDedupeOptions, type FcmCredentials, type FcmMessage, type FcmResponse, FcmService, type JobRow, type PaymentAllocationResult, type PaymentAllocationTransaction, PermanentJobError, type QueueHandler, type SendEmailOptions, type SmtpConfig, type SmtpEnvVars, SquadClient, type SquadClientOptions, SquadRequestError, adminRoleEnum, admins, applyPaymentStatusUpdate, approvalStatus, blockedIps, buildSmtpConfig, channelPlatform, channelType, companies, companiesRelations, companyChannelStatus, companyChannels, companyChannelsRelations, companySettings, companySettingsRelations, computeAllocationTargets, computePoolSplit, conversations, conversationsRelations, createEncryptor, deliveries, deliveriesRelations, deliveryAllocations, deliveryAllocationsRelations, deliveryStatus, devicePlatform, deviceTokens, dispatcherRoleEnum, dispatchers, dispatchersRelations, entityType, escalatedTo, escalationStatus, eventLogs, eventLogsRelations, eventOutbox, eventType, getTotalPaidForDeliveries, idempotencyKeys, ledgerAdjustmentType, ledgerTransactions, ledgerTransactionsRelations, messageStatus, messages, messagesRelations, metricDomain, metricGranularity, metrics, metricsRelations, paymentMethod, paymentProvider, paymentTransactions, phoneVerifications, processPaymentAllocation, queueService, refreshSessions, resetAlertCooldownsForTest, riderStatus, riders, ridersRelations, sendAlert, senderType, subscriptionStatus, subscriptionTier, subscriptionTransactions, subscriptionTransactionsRelations, transactionStatus, transactionType, transactionsRelations, users };

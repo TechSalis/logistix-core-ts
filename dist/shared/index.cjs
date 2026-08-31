@@ -30,8 +30,6 @@ __export(shared_exports, {
   ApprovalStatus: () => ApprovalStatus,
   AuditActorType: () => AuditActorType,
   BILLING_CONFIG: () => BILLING_CONFIG,
-  BRAND: () => BRAND,
-  BRAND_NAME: () => BRAND_NAME,
   CAC_EVIDENCE_STATUS: () => CAC_EVIDENCE_STATUS,
   CHANNEL_FEES: () => CHANNEL_FEES,
   CLIENT_CONFIG: () => CLIENT_CONFIG,
@@ -125,7 +123,6 @@ __export(shared_exports, {
   VALID_DATA_TYPES: () => VALID_DATA_TYPES,
   VehicleType: () => VehicleType,
   addDays: () => addDays,
-  buildBrandConfig: () => buildBrandConfig,
   buildMetadata: () => buildMetadata,
   buildSystemConfig: () => buildSystemConfig,
   computeAccessLevel: () => computeAccessLevel,
@@ -136,6 +133,7 @@ __export(shared_exports, {
   formatAmount: () => formatAmount,
   formatDeliveryStatus: () => formatDeliveryStatus,
   formatEnumToTitleCase: () => formatEnumToTitleCase,
+  getBrandConfig: () => getBrandConfig,
   getDateStringInTimezone: () => getDateStringInTimezone,
   getDayBoundsInTimezone: () => getDayBoundsInTimezone,
   getMonthStartInTimezone: () => getMonthStartInTimezone,
@@ -493,6 +491,7 @@ var SseEventType = /* @__PURE__ */ ((SseEventType2) => {
   SseEventType2["COMPANY"] = "company";
   SseEventType2["RIDER_LOCATION"] = "rider-location";
   SseEventType2["TYPING"] = "typing";
+  SseEventType2["SYNC_REQUIRED"] = "sync-required";
   return SseEventType2;
 })(SseEventType || {});
 var JwtTokenType = /* @__PURE__ */ ((JwtTokenType2) => {
@@ -814,6 +813,7 @@ var METADATA_KEYS = {
   riderCardNumber: { scope: "RIDER", shape: strNullish, required: false },
   currentState: { scope: "RIDER", shape: strNullish, required: false },
   batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
+  silentBanUntil: { scope: "RIDER", shape: numNullish, required: false },
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: "LEDGER", shape: strNullish, required: false },
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
@@ -872,22 +872,16 @@ var BRAND_DEFAULTS = {
   brandName: "Logistix",
   trackingPrefix: "LGX-"
 };
-function buildBrandConfig(overrides) {
-  return {
-    brandName: overrides?.brandName ?? process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
-    trackingPrefix: overrides?.trackingPrefix ?? process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
-  };
-}
 var _brand = null;
 function getBrandConfig() {
-  if (!_brand) _brand = buildBrandConfig();
+  if (!_brand) {
+    _brand = {
+      brandName: process.env.BRAND_NAME ?? BRAND_DEFAULTS.brandName,
+      trackingPrefix: process.env.BRAND_TRACKING_PREFIX ?? BRAND_DEFAULTS.trackingPrefix
+    };
+  }
   return _brand;
 }
-var BRAND = new Proxy({}, {
-  get(_, prop) {
-    return getBrandConfig()[prop];
-  }
-});
 
 // src/shared/config/system.config.ts
 var DELETED_USER_SENTINEL = "DELETED_USER";
@@ -915,12 +909,6 @@ function buildSystemConfig(overrides = {}) {
     brandName: overrides.brandName ?? getBrandConfig().brandName
   };
 }
-var _brandName = null;
-function getBrandName() {
-  if (_brandName === null) _brandName = getBrandConfig().brandName;
-  return _brandName;
-}
-var BRAND_NAME = getBrandName();
 
 // src/shared/config/regional.config.ts
 var rawRegionalConfig = {
@@ -1547,7 +1535,7 @@ function isTransientHttpError(error) {
 }
 
 // src/shared/utils/tracking.ts
-var TRACKING_ID_PREFIX = BRAND.trackingPrefix;
+var TRACKING_ID_PREFIX = getBrandConfig().trackingPrefix;
 var TRACKING_ID_SUFFIX_LENGTH = 6;
 var TRACKING_ID_LENGTH = TRACKING_ID_PREFIX.length + TRACKING_ID_SUFFIX_LENGTH;
 var TRACKING_ID_CHARS = "2-9A-HJ-NP-Z";
@@ -1634,8 +1622,6 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   ApprovalStatus,
   AuditActorType,
   BILLING_CONFIG,
-  BRAND,
-  BRAND_NAME,
   CAC_EVIDENCE_STATUS,
   CHANNEL_FEES,
   CLIENT_CONFIG,
@@ -1729,7 +1715,6 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   VALID_DATA_TYPES,
   VehicleType,
   addDays,
-  buildBrandConfig,
   buildMetadata,
   buildSystemConfig,
   computeAccessLevel,
@@ -1740,6 +1725,7 @@ function getRetentionCutoff(retentionMonths, timezone = REGIONAL_CONFIG.timeZone
   formatAmount,
   formatDeliveryStatus,
   formatEnumToTitleCase,
+  getBrandConfig,
   getDateStringInTimezone,
   getDayBoundsInTimezone,
   getMonthStartInTimezone,

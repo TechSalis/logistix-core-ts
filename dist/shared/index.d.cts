@@ -1,5 +1,5 @@
-import { p as DeliveryStatus, e as ApprovalStatus, Z as RiderStatus, C as CACEvidenceStatus, u as EscalatedTo, v as EscalationStatus, T as PaymentProvider, U as PaymentStatus, D as DayOfWeek, a5 as SubscriptionTier, ab as VehicleType, x as ExportDataType, O as MetricGranularity, N as MetricDomain, i as ChannelType, a4 as SubscriptionStatus, j as CompanyAccessLevel } from '../retry-CckCWR0s.cjs';
-export { A as ALL_DAYS, a as AdminDeliveryAction, b as AdminEscalationAction, c as AdminRole, d as ApiTag, f as AuditActorType, g as CAC_EVIDENCE_STATUS, h as ChannelPlatform, k as CompanyChannelStatus, l as ContactCategory, m as ConversationHandlerType, n as ConversationScope, o as DeliveryExpiryReason, q as DeliverySyncScope, r as DevicePlatform, s as DispatcherRole, E as EntityType, t as ErrorCode, w as EventType, y as ExportReason, F as FcmNotificationType, I as IdType, J as JobType, z as JwtTokenType, L as LEAD_CATEGORIES, B as LedgerAdjustmentType, G as LlmRole, H as LogLevel, M as MESSAGE_STATUS_RANK, K as MessageStatus, P as NOTIFICATION_PRIORITY, Q as NodeEnv, R as NotificationPriority, S as PaymentMethod, V as ProviderCapability, W as ProviderRole, X as RETRYABLE_NETWORK_ERROR_CODES, Y as RETRYABLE_SQLSTATE_CODES, _ as SecurityEventType, $ as SecuritySeverity, a0 as SenderType, a1 as SseEventType, a2 as SubscriptionEventType, a3 as SubscriptionHealth, a6 as SystemStatus, a7 as TransactionStatus, a8 as TransactionType, a9 as UserAuditAction, aa as UserRole, ac as WithRetryOptions, ad as isTransientHttpError, ae as safeEnumValue, af as sleep, ag as withRetry } from '../retry-CckCWR0s.cjs';
+import { p as DeliveryStatus, e as ApprovalStatus, Z as RiderStatus, C as CACEvidenceStatus, u as EscalatedTo, v as EscalationStatus, T as PaymentProvider, U as PaymentStatus, D as DayOfWeek, a5 as SubscriptionTier, ab as VehicleType, x as ExportDataType, O as MetricGranularity, N as MetricDomain, i as ChannelType, a4 as SubscriptionStatus, j as CompanyAccessLevel } from '../retry-CvzVXHWc.cjs';
+export { A as ALL_DAYS, a as AdminDeliveryAction, b as AdminEscalationAction, c as AdminRole, d as ApiTag, f as AuditActorType, g as CAC_EVIDENCE_STATUS, h as ChannelPlatform, k as CompanyChannelStatus, l as ContactCategory, m as ConversationHandlerType, n as ConversationScope, o as DeliveryExpiryReason, q as DeliverySyncScope, r as DevicePlatform, s as DispatcherRole, E as EntityType, t as ErrorCode, w as EventType, y as ExportReason, F as FcmNotificationType, I as IdType, J as JobType, z as JwtTokenType, L as LEAD_CATEGORIES, B as LedgerAdjustmentType, G as LlmRole, H as LogLevel, M as MESSAGE_STATUS_RANK, K as MessageStatus, P as NOTIFICATION_PRIORITY, Q as NodeEnv, R as NotificationPriority, S as PaymentMethod, V as ProviderCapability, W as ProviderRole, X as RETRYABLE_NETWORK_ERROR_CODES, Y as RETRYABLE_SQLSTATE_CODES, _ as SecurityEventType, $ as SecuritySeverity, a0 as SenderType, a1 as SseEventType, a2 as SubscriptionEventType, a3 as SubscriptionHealth, a6 as SystemStatus, a7 as TransactionStatus, a8 as TransactionType, a9 as UserAuditAction, aa as UserRole, ac as WithRetryOptions, ad as isTransientHttpError, ae as safeEnumValue, af as sleep, ag as withRetry } from '../retry-CvzVXHWc.cjs';
 import { z } from 'zod';
 
 interface EnumValue {
@@ -34,6 +34,7 @@ interface DeliveryBase {
     price: number | null;
     description: string | null;
     scheduledAt: string | null;
+    scheduledAtEnd: string | null;
     createdAt: string;
     rider: {
         id: string;
@@ -132,6 +133,8 @@ interface RiderMetadata {
     riderCardNumber?: string;
     currentState?: string;
     batteryLevel?: number;
+    /** Epoch ms until which a silently-unresponsive rider is banned from reassignment. Written by the delivery-liveness job. */
+    silentBanUntil?: number;
     verificationNote?: string;
 }
 /**
@@ -779,6 +782,11 @@ declare const METADATA_KEYS: {
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
         readonly required: false;
     };
+    readonly silentBanUntil: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
     readonly type: {
         readonly scope: "LEDGER";
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
@@ -841,15 +849,13 @@ type WorkingHoursEntry = {
 };
 declare const DEFAULT_WORKING_HOURS: Partial<Record<DayOfWeek, WorkingHoursEntry>>;
 declare function buildSystemConfig(overrides?: Partial<SystemConfig>): SystemConfig;
-declare const BRAND_NAME: string;
 
 interface BrandConfig {
     brandName: string;
     trackingPrefix: string;
 }
-declare function buildBrandConfig(overrides?: Partial<BrandConfig>): BrandConfig;
-/** @deprecated Use getBrandConfig() instead. */
-declare const BRAND: BrandConfig;
+/** Lazy singleton — defers process.env reads until first access. */
+declare function getBrandConfig(): BrandConfig;
 
 interface RegionalConfig {
     readonly defaultCountryCode: string;
@@ -1399,4 +1405,4 @@ declare function getDateStringInTimezone(date: Date, timezone?: string): string;
  */
 declare function getRetentionCutoff(retentionMonths: number, timezone?: string): Date;
 
-export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ApprovalStatus, BILLING_CONFIG, BRAND, BRAND_NAME, type BankDetails, type BrandConfig, CACEvidenceStatus, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, type CompanyMetadata, type ConversationMetadata, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, type DeliveryMetadata, DeliveryStatus, type DispatcherBase, ENUM_CATALOG, type EnumCatalog, type EnumValue, EscalatedTo, EscalationStatus, ExportDataType, HQ_LOCATION, KOBO_PER_NAIRA, LIFETIME_BUCKET_START, LIMITS_CONFIG, type LedgerMetadata, METADATA_KEYS, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, type MetadataKey, type MetadataKeySpec, type MetadataScope, MetricDomain, MetricGranularity, PAGINATION_CONFIG, PaymentProvider, PaymentStatus, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SubscriptionStatus, SubscriptionTier, type SystemConfig, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildBrandConfig, buildMetadata, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, shouldBillNow, shouldRetryPayment, validateMetadata };
+export { ADMIN_ACTOR_ID, ALLOWED_STATUS_TRANSITIONS, ApprovalStatus, BILLING_CONFIG, type BankDetails, type BrandConfig, CACEvidenceStatus, CHANNEL_FEES, CLIENT_CONFIG, type CacVerificationEvidence, type ChannelCredentials, ChannelType, type ChatMessageMetadata, CompanyAccessLevel, type CompanyChannelMetadata, type CompanyMetadata, type ConversationMetadata, DATA_RETENTION, DEDICATED_TIERS, DEFAULT_MESSAGE_LIMIT, DEFAULT_PRICING_SCHEMES, DEFAULT_WORKING_HOURS, DELETED_USER_SENTINEL, type DataType, DayOfWeek, type DeliveryBase, type DeliveryMetadata, DeliveryStatus, type DispatcherBase, ENUM_CATALOG, type EnumCatalog, type EnumValue, EscalatedTo, EscalationStatus, ExportDataType, HQ_LOCATION, KOBO_PER_NAIRA, LIFETIME_BUCKET_START, LIMITS_CONFIG, type LedgerMetadata, METADATA_KEYS, METRICS_FOLD_CHAIN, METRICS_RETENTION, METRIC_DOMAIN_MAPPINGS, MONTH_REQUIRED_TYPES, MS_PER_DAY, type MetadataKey, type MetadataKeySpec, type MetadataScope, MetricDomain, MetricGranularity, PAGINATION_CONFIG, PaymentProvider, PaymentStatus, QUEUE_SERVICE_CONFIG, REGIONAL_CONFIG, REGIONAL_LOCALE, RETENTION_CONFIG, type RiderBase, type RiderMetadata, RiderStatus, SECURITY_CONFIG, SESSION_CONFIG, SUPPORT_SLA, SYSTEM_ACTOR_ID, SubscriptionStatus, SubscriptionTier, type SystemConfig, TIER_LIMITS, TRACKING_ID_ALPHABET, TRACKING_ID_CHARS, TRACKING_ID_LENGTH, TRACKING_ID_PREFIX, TRACKING_ID_SUFFIX_LENGTH, type TierLimits, type TransactionMetadata, VALID_DATA_TYPES, VehicleType, type WorkingHoursEntry, addDays, buildMetadata, buildSystemConfig, computeAccessLevel, computeExpiresAt, extractErrorContext, extractErrorMessage, fetchWithTimeout, formatAmount, formatDeliveryStatus, formatEnumToTitleCase, getBrandConfig, getDateStringInTimezone, getDayBoundsInTimezone, getMonthStartInTimezone, getRetentionCutoff, getStartOfDayInTimezone, getSubscriptionPrice, getTierLimits, granularityForWindowDays, haversineDistanceKm, haversineDistanceMeters, isBillableTier, mergeChannelCounts, parseGraphError, shouldBillNow, shouldRetryPayment, validateMetadata };

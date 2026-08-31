@@ -11,6 +11,7 @@ export interface DeliveryBase {
   price: number | null;
   description: string | null;
   scheduledAt: string | null;
+  scheduledAtEnd: string | null;
   createdAt: string;
   rider: { id: string; fullName: string } | null;
   pool: boolean;

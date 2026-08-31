@@ -562,6 +562,7 @@ export const deliveries = pgTable(
     dropOffPhone: text('drop_off_phone'),
     paymentMethod: paymentMethod('payment_method').notNull(),
     scheduledAt: timestamp('scheduled_at', { precision: 3, mode: 'date' }),
+    scheduledAtEnd: timestamp('scheduled_at_end', { precision: 3, mode: 'date' }),
     assignedAt: timestamp('assigned_at', { precision: 3, mode: 'date' }),
     deliveredAt: timestamp('delivered_at', { precision: 3, mode: 'date' }),
     createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
@@ -994,6 +995,31 @@ export const eventOutbox = pgTable(
     index('event_outbox_created_at_idx').using(
       'btree',
       table.createdAt.asc().nullsLast().op('timestamp_ops'),
+    ),
+  ],
+);
+
+/**
+ * Durable idempotency store. Backs cross-instance/restart-safe idempotency claims:
+ * the `key` text PK is the atomic claim arbiter (INSERT ... ON CONFLICT DO NOTHING
+ * wins one claim), `response` is NULL while a claim is in-flight and holds the
+ * serialized result once execution completes, and `expires_at` implements the TTL
+ * (expired rows are reclaimable). See backend src/core/services/idempotency.service.ts.
+ */
+export const idempotencyKeys = pgTable(
+  'idempotency_keys',
+  {
+    key: text().primaryKey().notNull(),
+    response: jsonb(),
+    expiresAt: timestamp('expires_at', { precision: 3, mode: 'date' }).notNull(),
+    createdAt: timestamp('created_at', { precision: 3, mode: 'date' })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    index('idempotency_keys_expires_at_idx').using(
+      'btree',
+      table.expiresAt.asc().nullsLast().op('timestamp_ops'),
     ),
   ],
 );

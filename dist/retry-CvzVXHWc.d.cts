@@ -301,7 +301,12 @@ declare enum SseEventType {
     MESSAGE = "message",
     COMPANY = "company",
     RIDER_LOCATION = "rider-location",
-    TYPING = "typing"
+    TYPING = "typing",
+    /** Control frame: the replay on reconnect was truncated (frame cap or
+     *  prune-window expired), so the client must run a delta sync to recover
+     *  the gap before resuming live delivery. Never emitted during a normal
+     *  connection; only on reconnect when the cursor can't cover the gap. */
+    SYNC_REQUIRED = "sync-required"
 }
 declare enum JwtTokenType {
     ACCESS = "access",

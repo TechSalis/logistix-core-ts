@@ -333,6 +333,7 @@ var baseTypeDefs = `
     description: String
     paymentMethod: PaymentMethod!
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     trackingId: String!
     pin: String
     proofImageReadUrl: String
@@ -750,6 +751,7 @@ var baseTypeDefs = `
     dropOffPhone: String
     riderId: ID
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     pool: Boolean
     pickupState: String
     dropOffState: String
@@ -771,6 +773,7 @@ var baseTypeDefs = `
     dropOffPhone: String
     paymentMethod: PaymentMethod
     scheduledAt: DateTime
+    scheduledAtEnd: DateTime
     proofImageUrl: String
   }
 
@@ -1057,7 +1060,6 @@ var publicTypeDefs = `
     # Riders (These update current logged-in rider)
     acceptRiders(riderIds: [ID!]!): BulkActionResult!
     rejectRiders(riderIds: [ID!]!): BulkActionResult!
-    updateRiderLocation(lat: Float!, lng: Float!, batteryLevel: Int, pingInterval: Int, currentState: String): Rider!
 
     # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
