@@ -71,11 +71,10 @@ export const publicTypeDefs = `
     generatePresignedTempUploadUrl(category: String!, entityId: String!, extension: String!): PresignedUrlResponse!
 
     # Riders (These update current logged-in rider)
-    acceptRiders(riderIds: [ID!]!): BulkActionResult!
-    rejectRiders(riderIds: [ID!]!): BulkActionResult!
-    updateRiderLocation(lat: Float!, lng: Float!, batteryLevel: Int, pingInterval: Int, currentState: String): Rider!
+acceptRiders(riderIds: [ID!]!): BulkActionResult!
+  rejectRiders(riderIds: [ID!]!): BulkActionResult!
 
-    # Billing & Wallet
+  # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
     fundWallet(amount: Float!): FundWalletResponse!
     subscribe(tier: SubscriptionTier!, email: String, callbackUrl: String): SubscribeResponse!
