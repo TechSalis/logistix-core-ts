@@ -363,8 +363,13 @@ export const baseTypeDefs = `
     allowedStatusTransitions: [DeliveryStatusTransitionRule!]!
     pollIntervals: PollIntervalsConfig!
     syncPageSize: Int!
-    defaultMessageLimit: Int!
+    platformMessageLimits: [PlatformMessageLimit!]!
     validation: ValidationLimits!
+  }
+
+  type PlatformMessageLimit {
+    platform: ChannelPlatform!
+    limit: Int!
   }
 
   type User {

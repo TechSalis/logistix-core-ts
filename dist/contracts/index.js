@@ -364,8 +364,13 @@ var baseTypeDefs = `
     allowedStatusTransitions: [DeliveryStatusTransitionRule!]!
     pollIntervals: PollIntervalsConfig!
     syncPageSize: Int!
-    defaultMessageLimit: Int!
+    platformMessageLimits: [PlatformMessageLimit!]!
     validation: ValidationLimits!
+  }
+
+  type PlatformMessageLimit {
+    platform: ChannelPlatform!
+    limit: Int!
   }
 
   type User {
@@ -1029,10 +1034,10 @@ var publicTypeDefs = `
     generatePresignedTempUploadUrl(category: String!, entityId: String!, extension: String!): PresignedUrlResponse!
 
     # Riders (These update current logged-in rider)
-    acceptRiders(riderIds: [ID!]!): BulkActionResult!
-    rejectRiders(riderIds: [ID!]!): BulkActionResult!
+acceptRiders(riderIds: [ID!]!): BulkActionResult!
+  rejectRiders(riderIds: [ID!]!): BulkActionResult!
 
-    # Billing & Wallet
+  # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
     fundWallet(amount: Float!): FundWalletResponse!
     subscribe(tier: SubscriptionTier!, email: String, callbackUrl: String): SubscribeResponse!
