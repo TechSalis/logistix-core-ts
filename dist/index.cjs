@@ -805,6 +805,7 @@ var METADATA_KEYS = {
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelReason: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelledAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  inTransitEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   proofPromotionFailed: { scope: "DELIVERY", shape: boolNullish, required: false },
   // ── CONVERSATION ──────────────────────────────────────────────────────────
   escalatedTo: { scope: "CONVERSATION", shape: strNullish, required: false },
@@ -1420,20 +1421,6 @@ var QUEUE_SERVICE_CONFIG = {
 
 // src/shared/config/security.config.ts
 var rawSecurityConfig = {
-  rateLimits: {
-    global: { max: 1e3, windowMs: 6e4 },
-    auth: { max: 15, windowMs: FIFTEEN_MINUTES_MS },
-    login: { max: 10, windowMs: FIVE_MINUTES_MS },
-    register: { max: 3, windowMs: 36e5 },
-    tiers: {
-      ["STARTER" /* STARTER */]: { max: 500, windowMs: FIFTEEN_MINUTES_MS },
-      ["PROFESSIONAL" /* PROFESSIONAL */]: { max: 2e3, windowMs: FIFTEEN_MINUTES_MS }
-    }
-  },
-  jwt: {
-    jwtExpiresIn: "1h",
-    jwtRefreshExpiresIn: "30d"
-  },
   blocks: {
     temporaryLadderMs: [36e5, 6 * 36e5, 24 * 36e5],
     escalateAfterBlocks: 3,
@@ -1441,19 +1428,6 @@ var rawSecurityConfig = {
     persistentEscalatedMs: 7 * MS_PER_DAY,
     maxPersistentMs: 90 * MS_PER_DAY
   },
-  headers: {
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "X-XSS-Protection": "0",
-    "Referrer-Policy": "strict-origin-when-cross-origin",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'",
-    "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)",
-    "X-DNS-Prefetch-Control": "off"
-  },
-  maliciousPatterns: [
-    /(?:wp-admin|wordpress|\.env|\.php$|phpmyadmin|admin\.php|config\.php|\.git|\.svn|\.\.|etc\/passwd|proc\/self|windows\/system32|union\s+select|drop\s+table|insert\s+into|delete\s+from|<script|javascript:|onload=|onerror=)/i
-  ],
   validation: {
     maxEmailLength: 254,
     maxPasswordLength: 128,

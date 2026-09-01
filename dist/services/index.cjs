@@ -1971,6 +1971,7 @@ var METADATA_KEYS = {
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelReason: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelledAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  inTransitEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   proofPromotionFailed: { scope: "DELIVERY", shape: boolNullish, required: false },
   // ── CONVERSATION ──────────────────────────────────────────────────────────
   escalatedTo: { scope: "CONVERSATION", shape: strNullish, required: false },

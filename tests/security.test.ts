@@ -1,32 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { SECURITY_CONFIG } from '../src/shared/config/security.config.js';
-import { SubscriptionTier } from '../src/shared/enums/enums.js';
 
 describe('SECURITY_CONFIG', () => {
-  it('has all rate limit tiers', () => {
-    expect(SECURITY_CONFIG.rateLimits.tiers).toHaveProperty(SubscriptionTier.STARTER);
-    expect(SECURITY_CONFIG.rateLimits.tiers).toHaveProperty(SubscriptionTier.PROFESSIONAL);
-  });
-
-  it('STARTER tier has lower limit than PROFESSIONAL', () => {
-    expect(SECURITY_CONFIG.rateLimits.tiers[SubscriptionTier.STARTER].max).toBeLessThan(
-      SECURITY_CONFIG.rateLimits.tiers[SubscriptionTier.PROFESSIONAL].max,
-    );
-  });
-
-  it('has JWT config', () => {
-    expect(SECURITY_CONFIG.jwt.jwtExpiresIn).toBe('1h');
-    expect(SECURITY_CONFIG.jwt.jwtRefreshExpiresIn).toBe('30d');
-  });
-
-  it('has security headers', () => {
-    expect(SECURITY_CONFIG.headers['X-Content-Type-Options']).toBe('nosniff');
-    expect(SECURITY_CONFIG.headers['X-Frame-Options']).toBe('DENY');
-  });
-
-  it('has malicious patterns', () => {
-    expect(SECURITY_CONFIG.maliciousPatterns.length).toBeGreaterThan(0);
-    expect(SECURITY_CONFIG.maliciousPatterns[0]).toBeInstanceOf(RegExp);
+  it('has the abuse-block escalation policy', () => {
+    expect(SECURITY_CONFIG.blocks.temporaryLadderMs.length).toBeGreaterThan(0);
+    expect(SECURITY_CONFIG.blocks.escalateAfterBlocks).toBeGreaterThan(0);
+    expect(SECURITY_CONFIG.blocks.maxPersistentMs).toBeGreaterThanOrEqual(SECURITY_CONFIG.blocks.persistentEscalatedMs);
   });
 
   it('has validation limits', () => {

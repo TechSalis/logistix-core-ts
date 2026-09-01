@@ -115,6 +115,10 @@ interface DeliveryMetadata {
     /** Set by the cancel/modify handler when a delivery is cancelled. */
     cancelReason?: string;
     cancelledAt?: string;
+    /** Set by the delivery-lifecycle escalation job when an IN_TRANSIT rider goes silent
+     *  past `inTransitEscalateMinutes`. Used to suppress duplicate escalation notifications
+     *  for the same continuous silent episode. Cleared when the rider regains liveness. */
+    inTransitEscalatedAt?: string;
     /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
     proofPromotionFailed?: boolean;
 }
@@ -335,6 +339,11 @@ declare const METADATA_KEYS: {
         readonly required: false;
     };
     readonly cancelledAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly inTransitEscalatedAt: {
         readonly scope: "DELIVERY";
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
         readonly required: false;
@@ -1221,32 +1230,6 @@ declare const QUEUE_SERVICE_CONFIG: {
 };
 
 interface SecurityConfig {
-    readonly rateLimits: {
-        readonly global: {
-            readonly max: number;
-            readonly windowMs: number;
-        };
-        readonly auth: {
-            readonly max: number;
-            readonly windowMs: number;
-        };
-        readonly login: {
-            readonly max: number;
-            readonly windowMs: number;
-        };
-        readonly register: {
-            readonly max: number;
-            readonly windowMs: number;
-        };
-        readonly tiers: Record<SubscriptionTier, {
-            readonly max: number;
-            readonly windowMs: number;
-        }>;
-    };
-    readonly jwt: {
-        readonly jwtExpiresIn: string;
-        readonly jwtRefreshExpiresIn: string;
-    };
     readonly blocks: {
         readonly temporaryLadderMs: readonly number[];
         readonly escalateAfterBlocks: number;
@@ -1254,10 +1237,6 @@ interface SecurityConfig {
         readonly persistentEscalatedMs: number;
         readonly maxPersistentMs: number;
     };
-    readonly headers: {
-        readonly [key: string]: string;
-    };
-    readonly maliciousPatterns: readonly RegExp[];
     readonly validation: {
         readonly maxEmailLength: number;
         readonly maxPasswordLength: number;
