@@ -14,6 +14,10 @@ export const publicTypeDefs = `
     # Client config (tier limits/retention) — standalone query, fired by clients after auth
     clientConfig: RemoteConfig!
 
+    # Volatile per-company state — dedicated company-scoped queries (never cached with clientConfig)
+    deliveryQuota: DeliveryQuota!
+    subscriptionStatus: SubscriptionStatusInfo!
+
     # Sync (delta sync with keyset pagination + viewport bounds for pool discovery)
     channelsSync(since: Float, limit: Int, cursor: ChannelsSyncCursorInput, channelType: ChannelType): ChannelsSyncResult!
 

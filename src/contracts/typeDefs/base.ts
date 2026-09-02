@@ -328,12 +328,19 @@ export const baseTypeDefs = `
     remaining: Int!
   }
 
+  # Stable client config (offline-cached). Volatile per-company state lives in
+  # dedicated queries: Query.deliveryQuota + Query.subscriptionStatus (see public.ts).
   type RemoteConfig {
     retentionMonths: Int!
     maxBulkDeliveries: Int!
     maxExportsPerMonth: Int!
-    deliveryQuota: DeliveryQuota
     rules: ClientRules!
+  }
+
+  type SubscriptionStatusInfo {
+    status: SubscriptionStatus!
+    tier: SubscriptionTier!
+    periodEnd: DateTime
     subscriptionHealth: SubscriptionHealth!
   }
 

@@ -329,12 +329,19 @@ var baseTypeDefs = `
     remaining: Int!
   }
 
+  # Stable client config (offline-cached). Volatile per-company state lives in
+  # dedicated queries: Query.deliveryQuota + Query.subscriptionStatus (see public.ts).
   type RemoteConfig {
     retentionMonths: Int!
     maxBulkDeliveries: Int!
     maxExportsPerMonth: Int!
-    deliveryQuota: DeliveryQuota
     rules: ClientRules!
+  }
+
+  type SubscriptionStatusInfo {
+    status: SubscriptionStatus!
+    tier: SubscriptionTier!
+    periodEnd: DateTime
     subscriptionHealth: SubscriptionHealth!
   }
 
@@ -976,6 +983,10 @@ var publicTypeDefs = `
 
     # Client config (tier limits/retention) \u2014 standalone query, fired by clients after auth
     clientConfig: RemoteConfig!
+
+    # Volatile per-company state \u2014 dedicated company-scoped queries (never cached with clientConfig)
+    deliveryQuota: DeliveryQuota!
+    subscriptionStatus: SubscriptionStatusInfo!
 
     # Sync (delta sync with keyset pagination + viewport bounds for pool discovery)
     channelsSync(since: Float, limit: Int, cursor: ChannelsSyncCursorInput, channelType: ChannelType): ChannelsSyncResult!
