@@ -424,6 +424,13 @@ var baseTypeDefs = `
     verificationStatus: ApprovalStatus
     dispatcherApprovalStatus: ApprovalStatus
     createdAt: DateTime!
+    riderHeartbeat: RiderHeartbeat
+  }
+
+  type RiderHeartbeat {
+    minIntervalSeconds: Int!
+    maxIntervalSeconds: Int!
+    distanceFilterMeters: Int!
   }
 
   type CompanyCount {
@@ -999,6 +1006,9 @@ var baseTypeDefs = `
 // src/contracts/typeDefs/public.ts
 var publicTypeDefs = `
   extend type Query {
+    # Current authenticated user (moved from REST /v1/auth/me)
+    me: User
+
     # Riders
     meRider: Rider
 

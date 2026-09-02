@@ -1,5 +1,8 @@
 export const publicTypeDefs = `
   extend type Query {
+    # Current authenticated user (moved from REST /v1/auth/me)
+    me: User
+
     # Riders
     meRider: Rider
 

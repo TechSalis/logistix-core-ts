@@ -394,6 +394,13 @@ export const baseTypeDefs = `
     verificationStatus: ApprovalStatus
     dispatcherApprovalStatus: ApprovalStatus
     createdAt: DateTime!
+    riderHeartbeat: RiderHeartbeat
+  }
+
+  type RiderHeartbeat {
+    minIntervalSeconds: Int!
+    maxIntervalSeconds: Int!
+    distanceFilterMeters: Int!
   }
 
   type CompanyCount {
