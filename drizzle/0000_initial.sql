@@ -591,335 +591,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Daily metrics computation: compute DAY buckets for all 4 domains
-CREATE OR REPLACE FUNCTION pg_cron_daily_metrics_computation() RETURNS void AS $$
-DECLARE
-  yesterday date := CURRENT_DATE - INTERVAL '1 day';
-  tz text := 'Africa/Lagos';
-BEGIN
-  -- DELIVERIES domain: per-company rows
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, delivered_count, cancelled_count, failed_count,
-    total_revenue_kobo, avg_delivery_time_minutes,
-    channel_breakdown, extra_metrics, peak_hour, unique_riders_active, updated_at
-  )
-  SELECT
-    d.company_id,
-    'DELIVERIES'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    COUNT(*) FILTER (WHERE d.status = 'DELIVERED')::int,
-    COUNT(*) FILTER (WHERE d.status = 'CANCELLED')::int,
-    COUNT(*) FILTER (WHERE d.status = 'FAILED')::int,
-    COALESCE(SUM(d.price) FILTER (WHERE d.status = 'DELIVERED'), 0)::int,
-    AVG(EXTRACT(EPOCH FROM (d.delivered_at - d.created_at)) / 60)
-      FILTER (WHERE d.status = 'DELIVERED' AND d.delivered_at IS NOT NULL),
-    jsonb_build_object(
-      'whatsapp', COUNT(*) FILTER (WHERE d.creator_platform = 'WHATSAPP')::int,
-      'instagram', COUNT(*) FILTER (WHERE d.creator_platform = 'INSTAGRAM')::int,
-      'facebook', COUNT(*) FILTER (WHERE d.creator_platform = 'FACEBOOK')::int,
-      'tiktok', COUNT(*) FILTER (WHERE d.creator_platform = 'TIKTOK')::int,
-      'manual', COUNT(*) FILTER (WHERE d.creator_platform IS NULL)::int
-    ),
-    jsonb_build_object(
-      'prepaidCount', COUNT(*) FILTER (WHERE d.payment_method = 'PREPAID')::int,
-      'payOnDeliveryCount', COUNT(*) FILTER (WHERE d.payment_method = 'PAY_ON_DELIVERY')::int
-    ),
-    mode() WITHIN GROUP (ORDER BY EXTRACT(HOUR FROM d.created_at))::int,
-    COUNT(DISTINCT d.rider_id)::int,
-    CURRENT_TIMESTAMP
-  FROM deliveries d
-  WHERE d.company_id IS NOT NULL
-    AND d.created_at >= (yesterday AT TIME ZONE tz)
-    AND d.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  GROUP BY d.company_id
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    delivered_count = EXCLUDED.delivered_count,
-    cancelled_count = EXCLUDED.cancelled_count,
-    failed_count = EXCLUDED.failed_count,
-    total_revenue_kobo = EXCLUDED.total_revenue_kobo,
-    avg_delivery_time_minutes = EXCLUDED.avg_delivery_time_minutes,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    peak_hour = EXCLUDED.peak_hour,
-    unique_riders_active = EXCLUDED.unique_riders_active,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- DELIVERIES domain: system row (company_id NULL)
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, delivered_count, cancelled_count, failed_count,
-    total_revenue_kobo, avg_delivery_time_minutes,
-    channel_breakdown, extra_metrics, peak_hour, unique_riders_active, updated_at
-  )
-  SELECT
-    NULL::text,
-    'DELIVERIES'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    COUNT(*) FILTER (WHERE d.status = 'DELIVERED')::int,
-    COUNT(*) FILTER (WHERE d.status = 'CANCELLED')::int,
-    COUNT(*) FILTER (WHERE d.status = 'FAILED')::int,
-    COALESCE(SUM(d.price) FILTER (WHERE d.status = 'DELIVERED'), 0)::int,
-    AVG(EXTRACT(EPOCH FROM (d.delivered_at - d.created_at)) / 60)
-      FILTER (WHERE d.status = 'DELIVERED' AND d.delivered_at IS NOT NULL),
-    jsonb_build_object(
-      'whatsapp', COUNT(*) FILTER (WHERE d.creator_platform = 'WHATSAPP')::int,
-      'instagram', COUNT(*) FILTER (WHERE d.creator_platform = 'INSTAGRAM')::int,
-      'facebook', COUNT(*) FILTER (WHERE d.creator_platform = 'FACEBOOK')::int,
-      'tiktok', COUNT(*) FILTER (WHERE d.creator_platform = 'TIKTOK')::int,
-      'manual', COUNT(*) FILTER (WHERE d.creator_platform IS NULL)::int
-    ),
-    jsonb_build_object(
-      'prepaidCount', COUNT(*) FILTER (WHERE d.payment_method = 'PREPAID')::int,
-      'payOnDeliveryCount', COUNT(*) FILTER (WHERE d.payment_method = 'PAY_ON_DELIVERY')::int
-    ),
-    mode() WITHIN GROUP (ORDER BY EXTRACT(HOUR FROM d.created_at))::int,
-    COUNT(DISTINCT d.rider_id)::int,
-    CURRENT_TIMESTAMP
-  FROM deliveries d
-  WHERE d.created_at >= (yesterday AT TIME ZONE tz)
-    AND d.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    delivered_count = EXCLUDED.delivered_count,
-    cancelled_count = EXCLUDED.cancelled_count,
-    failed_count = EXCLUDED.failed_count,
-    total_revenue_kobo = EXCLUDED.total_revenue_kobo,
-    avg_delivery_time_minutes = EXCLUDED.avg_delivery_time_minutes,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    peak_hour = EXCLUDED.peak_hour,
-    unique_riders_active = EXCLUDED.unique_riders_active,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- CONVERSATIONS domain: per-company rows
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, channel_breakdown, extra_metrics, updated_at
-  )
-  SELECT
-    c.company_id,
-    'CONVERSATIONS'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    jsonb_build_object(
-      'whatsapp', COUNT(*) FILTER (WHERE c.platform = 'WHATSAPP')::int,
-      'instagram', COUNT(*) FILTER (WHERE c.platform = 'INSTAGRAM')::int,
-      'facebook', COUNT(*) FILTER (WHERE c.platform = 'FACEBOOK')::int,
-      'tiktok', COUNT(*) FILTER (WHERE c.platform = 'TIKTOK')::int
-    ),
-    jsonb_build_object(
-      'activeCount', COUNT(*) FILTER (
-        WHERE c.last_message_at >= (yesterday AT TIME ZONE tz)
-          AND c.last_message_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )::int,
-      'escalatedCount', COUNT(*) FILTER (
-        WHERE c.escalated_at >= (yesterday AT TIME ZONE tz)
-          AND c.escalated_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM conversations c
-  WHERE c.company_id IS NOT NULL
-    AND c.created_at >= (yesterday AT TIME ZONE tz)
-    AND c.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  GROUP BY c.company_id
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- CONVERSATIONS domain: system row
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, channel_breakdown, extra_metrics, updated_at
-  )
-  SELECT
-    NULL::text,
-    'CONVERSATIONS'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    jsonb_build_object(
-      'whatsapp', COUNT(*) FILTER (WHERE c.platform = 'WHATSAPP')::int,
-      'instagram', COUNT(*) FILTER (WHERE c.platform = 'INSTAGRAM')::int,
-      'facebook', COUNT(*) FILTER (WHERE c.platform = 'FACEBOOK')::int,
-      'tiktok', COUNT(*) FILTER (WHERE c.platform = 'TIKTOK')::int
-    ),
-    jsonb_build_object(
-      'activeCount', COUNT(*) FILTER (
-        WHERE c.last_message_at >= (yesterday AT TIME ZONE tz)
-          AND c.last_message_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )::int,
-      'escalatedCount', COUNT(*) FILTER (
-        WHERE c.escalated_at >= (yesterday AT TIME ZONE tz)
-          AND c.escalated_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM conversations c
-  WHERE c.created_at >= (yesterday AT TIME ZONE tz)
-    AND c.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- RIDERS domain: per-company rows
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, delivered_count, unique_riders_active, extra_metrics, updated_at
-  )
-  SELECT
-    r.company_id,
-    'RIDERS'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    COUNT(*) FILTER (
-      WHERE EXISTS (
-        SELECT 1 FROM deliveries dd
-        WHERE dd.rider_id = r.id
-          AND dd.status = 'DELIVERED'
-          AND dd.delivered_at >= (yesterday AT TIME ZONE tz)
-          AND dd.delivered_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )
-    )::int,
-    COUNT(*) FILTER (WHERE r.status = 'ONLINE' OR r.status = 'BUSY')::int,
-    jsonb_build_object(
-      'approvedCount', COUNT(*) FILTER (WHERE r.approval_status = 'APPROVED')::int,
-      'pendingCount', COUNT(*) FILTER (WHERE r.approval_status = 'PENDING')::int,
-      'suspendedCount', COUNT(*) FILTER (WHERE r.approval_status = 'SUSPENDED')::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM riders r
-  WHERE r.company_id IS NOT NULL
-    AND r.created_at >= (yesterday AT TIME ZONE tz)
-    AND r.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  GROUP BY r.company_id
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    delivered_count = EXCLUDED.delivered_count,
-    unique_riders_active = EXCLUDED.unique_riders_active,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- RIDERS domain: system row
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, delivered_count, unique_riders_active, extra_metrics, updated_at
-  )
-  SELECT
-    NULL::text,
-    'RIDERS'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*)::int,
-    COUNT(*) FILTER (
-      WHERE EXISTS (
-        SELECT 1 FROM deliveries dd
-        WHERE dd.rider_id = r.id
-          AND dd.status = 'DELIVERED'
-          AND dd.delivered_at >= (yesterday AT TIME ZONE tz)
-          AND dd.delivered_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-      )
-    )::int,
-    COUNT(*) FILTER (WHERE r.status = 'ONLINE' OR r.status = 'BUSY')::int,
-    jsonb_build_object(
-      'approvedCount', COUNT(*) FILTER (WHERE r.approval_status = 'APPROVED')::int,
-      'pendingCount', COUNT(*) FILTER (WHERE r.approval_status = 'PENDING')::int,
-      'suspendedCount', COUNT(*) FILTER (WHERE r.approval_status = 'SUSPENDED')::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM riders r
-  WHERE r.created_at >= (yesterday AT TIME ZONE tz)
-    AND r.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    delivered_count = EXCLUDED.delivered_count,
-    unique_riders_active = EXCLUDED.unique_riders_active,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- REVENUE domain: per-company rows
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, total_revenue_kobo, channel_breakdown, extra_metrics, updated_at
-  )
-  SELECT
-    t.company_id,
-    'REVENUE'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*) FILTER (WHERE t.status = 'SUCCESS')::int,
-    COALESCE(SUM(t.amount) FILTER (WHERE t.status = 'SUCCESS'), 0)::int,
-    jsonb_build_object(
-      'squad', COUNT(*) FILTER (WHERE t.provider = 'SQUAD')::int,
-      'system', COUNT(*) FILTER (WHERE t.provider = 'SYSTEM')::int
-    ),
-    jsonb_build_object(
-      'refundedKobo', COALESCE(-SUM(t.amount) FILTER (
-        WHERE t.status = 'SUCCESS' AND t.type = 'REFUND'
-      ), 0)::int,
-      'avgTransactionValueKobo', AVG(t.amount) FILTER (WHERE t.status = 'SUCCESS')::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM payment_transactions t
-  WHERE t.company_id IS NOT NULL
-    AND t.created_at >= (yesterday AT TIME ZONE tz)
-    AND t.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  GROUP BY t.company_id
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    total_revenue_kobo = EXCLUDED.total_revenue_kobo,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  -- REVENUE domain: system row
-  INSERT INTO metrics (
-    company_id, domain, granularity, bucket_start,
-    total_count, total_revenue_kobo, channel_breakdown, extra_metrics, updated_at
-  )
-  SELECT
-    NULL::text,
-    'REVENUE'::"MetricDomain",
-    'DAY'::"MetricGranularity",
-    yesterday,
-    COUNT(*) FILTER (WHERE t.status = 'SUCCESS')::int,
-    COALESCE(SUM(t.amount) FILTER (WHERE t.status = 'SUCCESS'), 0)::int,
-    jsonb_build_object(
-      'squad', COUNT(*) FILTER (WHERE t.provider = 'SQUAD')::int,
-      'system', COUNT(*) FILTER (WHERE t.provider = 'SYSTEM')::int
-    ),
-    jsonb_build_object(
-      'refundedKobo', COALESCE(-SUM(t.amount) FILTER (
-        WHERE t.status = 'SUCCESS' AND t.type = 'REFUND'
-      ), 0)::int,
-      'avgTransactionValueKobo', AVG(t.amount) FILTER (WHERE t.status = 'SUCCESS')::int
-    ),
-    CURRENT_TIMESTAMP
-  FROM payment_transactions t
-  WHERE t.created_at >= (yesterday AT TIME ZONE tz)
-    AND t.created_at < ((yesterday + INTERVAL '1 day') AT TIME ZONE tz)
-  ON CONFLICT (company_id, domain, granularity, bucket_start) DO UPDATE SET
-    total_count = EXCLUDED.total_count,
-    total_revenue_kobo = EXCLUDED.total_revenue_kobo,
-    channel_breakdown = EXCLUDED.channel_breakdown,
-    extra_metrics = EXCLUDED.extra_metrics,
-    updated_at = CURRENT_TIMESTAMP;
-
-  RAISE NOTICE 'Daily metrics computed for %', yesterday;
-END;
-$$ LANGUAGE plpgsql;
-
 -- Metrics compression: fold expired daily buckets into lifetime totals
 CREATE OR REPLACE FUNCTION pg_cron_metrics_compression() RETURNS void AS $$
 DECLARE
@@ -1015,15 +686,27 @@ $$ LANGUAGE plpgsql;
 -- 4. Backend NOTIFY functions (pg_cron → TypeScript handlers)
 -- -------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION pg_cron_notify_daily_metrics() RETURNS void AS $$
-BEGIN
-  PERFORM pg_notify('pg_cron_sweeper', 'daily_metrics_rollup');
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION pg_cron_notify_delivery_expiry() RETURNS void AS $$
 BEGIN
   PERFORM pg_notify('pg_cron_sweeper', 'delivery_expiry_lifecycle');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION pg_cron_notify_delivery_liveness() RETURNS void AS $$
+BEGIN
+  PERFORM pg_notify('pg_cron_sweeper', 'delivery_liveness');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION pg_cron_notify_conversation_ownership() RETURNS void AS $$
+BEGIN
+  PERFORM pg_notify('pg_cron_sweeper', 'conversation_ownership');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION pg_cron_notify_stale_assignment() RETURNS void AS $$
+BEGIN
+  PERFORM pg_notify('pg_cron_sweeper', 'stale_assignment');
 END;
 $$ LANGUAGE plpgsql;
 
@@ -1035,7 +718,6 @@ $$ LANGUAGE plpgsql;
 SELECT cron.schedule('draft-expiration', '0 2 * * *', 'SELECT pg_cron_draft_expiration()');
 SELECT cron.schedule('session-device-cleanup', '0 2 * * *', 'SELECT pg_cron_session_device_cleanup()');
 SELECT cron.schedule('payment-timeout-cancellation', '*/5 * * * *', 'SELECT pg_cron_payment_timeout_cancellation()');
-SELECT cron.schedule('daily-metrics-computation', '0 1 * * *', 'SELECT pg_cron_daily_metrics_computation()');
 SELECT cron.schedule('metrics-compression', '0 1 * * *', 'SELECT pg_cron_metrics_compression()');
 
 -- Backend sweepers (pure SQL, no backend involvement)
@@ -1043,5 +725,7 @@ SELECT cron.schedule('outbox-prune', '*/5 * * * *', 'SELECT pg_cron_outbox_prune
 SELECT cron.schedule('typing-marker-sweep', '* * * * *', 'SELECT pg_cron_typing_marker_sweep()');
 
 -- Backend NOTIFY triggers (pg_cron fires → backend LISTENs → TypeScript handler)
-SELECT cron.schedule('daily-metrics-rollup', '0 * * * *', 'SELECT pg_cron_notify_daily_metrics()');
 SELECT cron.schedule('delivery-expiry-lifecycle', '*/15 * * * *', 'SELECT pg_cron_notify_delivery_expiry()');
+SELECT cron.schedule('delivery-liveness', '*/15 * * * *', 'SELECT pg_cron_notify_delivery_liveness()');
+SELECT cron.schedule('conversation-ownership', '*/15 * * * *', 'SELECT pg_cron_notify_conversation_ownership()');
+SELECT cron.schedule('stale-assignment', '*/15 * * * *', 'SELECT pg_cron_notify_stale_assignment()');
