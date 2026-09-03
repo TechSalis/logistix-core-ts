@@ -18,6 +18,7 @@ enum RiderStatus {
   OFFLINE
   ONLINE
   BUSY
+  SUSPENDED
 }
 
 enum ApprovalStatus {

@@ -70,6 +70,14 @@ export interface DeliveryMetadata {
   /** Set by the cancel/modify handler when a delivery is cancelled. */
   cancelReason?: string;
   cancelledAt?: string;
+  /** Set by the delivery-lifecycle escalation job when an IN_TRANSIT rider goes silent
+   *  past `inTransitEscalateMinutes`. Distinct marker from `pickedUpEscalatedAt` since
+   *  IN_TRANSIT (en route, no custody) and PICKED_UP (custody) are separate states with
+   *  separate escalation paths. Cleared when the rider regains liveness. */
+  inTransitEscalatedAt?: string;
+  /** DELIVERY-scope custody-trail record written when an expiry sweep fails a delivery
+   *  (or sets the machine custody suspension). `{ reason, riderId?, at }`. */
+  lifecycleFailure?: { reason: string; riderId?: string; at: string };
   /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
   proofPromotionFailed?: boolean;
 }
@@ -91,6 +99,21 @@ export interface RiderMetadata {
   batteryLevel?: number;
   /** Epoch ms until which a silently-unresponsive rider is banned from reassignment. Written by the delivery-liveness job. */
   silentBanUntil?: number;
+  /** Who set the shared `RiderStatus.SUSPENDED` flag:
+   *  `'system:<offenseN>'` | `'dispatcher:<id>'` | `'admin:<id>'`. */
+  suspendedBy?: string;
+  /** "3 within clean window" machine-offense counter + review aggregate. */
+  suspensionCount?: number;
+  /** Bounded (newest-first) suspension ledger for ops review. */
+  suspensionHistory?: Array<{
+    at: string;
+    by: string;
+    reason: string;
+    escalatedFrom?: string;
+    offenseCount?: number;
+  }>;
+  /** Timestamp of the most recent silent-offense (PICKED_UP_SILENT) event. */
+  lastSilentOffenseAt?: string;
   verificationNote?: string;
 }
 
@@ -259,6 +282,25 @@ const executedActionsShape = z.array(
   ]),
 );
 
+/** One entry in the RIDER custody-suspension ledger (bounded, newest-first). */
+const suspensionHistoryEntryShape = z.object({
+  at: z.string(),
+  by: z.string(),
+  reason: z.string(),
+  escalatedFrom: z.string().nullish(),
+  offenseCount: z.number().nullish(),
+});
+
+/** Zod shape for the RIDER `suspensionHistory` ledger array. */
+const suspensionHistoryShape = z.array(suspensionHistoryEntryShape);
+
+/** Zod shape for the DELIVERY `lifecycleFailure` custody-trail object. */
+const lifecycleFailureShape = z.object({
+  reason: z.string(),
+  riderId: z.string().nullish(),
+  at: z.string(),
+});
+
 export const METADATA_KEYS = {
   // ── DELIVERY ──────────────────────────────────────────────────────────────
   pickupPlaceId: { scope: 'DELIVERY', shape: strNullish, required: false },
@@ -291,6 +333,8 @@ export const METADATA_KEYS = {
   paymentSessionId: { scope: 'DELIVERY', shape: strNullish, required: false },
   cancelReason: { scope: 'DELIVERY', shape: strNullish, required: false },
   cancelledAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  inTransitEscalatedAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  lifecycleFailure: { scope: 'DELIVERY', shape: lifecycleFailureShape.nullish(), required: false },
   proofPromotionFailed: { scope: 'DELIVERY', shape: boolNullish, required: false },
 
   // ── CONVERSATION ──────────────────────────────────────────────────────────
@@ -391,6 +435,10 @@ export const METADATA_KEYS = {
   currentState: { scope: 'RIDER', shape: strNullish, required: false },
   batteryLevel: { scope: 'RIDER', shape: numNullish, required: false },
   silentBanUntil: { scope: 'RIDER', shape: numNullish, required: false },
+  suspendedBy: { scope: 'RIDER', shape: strNullish, required: false },
+  suspensionCount: { scope: 'RIDER', shape: numNullish, required: false },
+  suspensionHistory: { scope: 'RIDER', shape: suspensionHistoryShape.nullish(), required: false },
+  lastSilentOffenseAt: { scope: 'RIDER', shape: strNullish, required: false },
 
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: 'LEDGER', shape: strNullish, required: false },

@@ -39,6 +39,7 @@ export enum RiderStatus {
   ONLINE = 'ONLINE',
   OFFLINE = 'OFFLINE',
   BUSY = 'BUSY',
+  SUSPENDED = 'SUSPENDED',
 }
 
 export enum ApprovalStatus {

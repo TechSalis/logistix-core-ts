@@ -16,6 +16,7 @@ export const baseTypeDefs = `
     OFFLINE
     ONLINE
     BUSY
+    SUSPENDED
   }
 
   enum ApprovalStatus {

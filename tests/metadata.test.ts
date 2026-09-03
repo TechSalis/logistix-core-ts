@@ -5,6 +5,7 @@ import {
   PaymentStatus,
   EscalatedTo,
   EscalationStatus,
+  RiderStatus,
 } from '../src/shared/enums/enums.js';
 import type {
   ConversationMetadata,
@@ -75,6 +76,8 @@ const METADATA_FIELD_NAMES = {
     'paymentSessionId',
     'cancelReason',
     'cancelledAt',
+    'inTransitEscalatedAt',
+    'lifecycleFailure',
     'proofPromotionFailed',
   ],
   RiderMetadata: [
@@ -92,6 +95,10 @@ const METADATA_FIELD_NAMES = {
     'riderCardNumber',
     'currentState',
     'batteryLevel',
+    'suspendedBy',
+    'suspensionCount',
+    'suspensionHistory',
+    'lastSilentOffenseAt',
     'verificationNote',
   ],
   CompanyMetadata: [
@@ -213,6 +220,12 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
     paymentSessionId: 'session-1',
     cancelReason: 'Customer changed mind',
     cancelledAt: '2026-01-01T00:00:00.000Z',
+    inTransitEscalatedAt: '2026-01-01T00:00:00.000Z',
+    lifecycleFailure: {
+      reason: 'IN_TRANSIT_SILENT',
+      riderId: 'rider-1',
+      at: '2026-01-01T00:00:00.000Z',
+    },
     proofPromotionFailed: true,
   },
   RiderMetadata: {
@@ -230,6 +243,18 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
     riderCardNumber: 'card-1',
     currentState: 'LAGOS',
     batteryLevel: 80,
+    suspendedBy: 'system:3',
+    suspensionCount: 3,
+    suspensionHistory: [
+      {
+        at: '2026-09-01T00:00:00.000Z',
+        by: 'system:3',
+        reason: 'PICKED_UP_SILENT',
+        escalatedFrom: 'PICKED_UP',
+        offenseCount: 3,
+      },
+    ],
+    lastSilentOffenseAt: '2026-09-01T00:00:00.000Z',
     verificationNote: 'verified',
   },
   CompanyMetadata: {
@@ -497,5 +522,67 @@ describe('validateMetadata', () => {
 
   it('rejects a non-object payload', () => {
     expect(() => validateMetadata('DELIVERY', 'nope' as unknown)).toThrow();
+  });
+});
+
+// ─── custody-suspension metadata + shared SUSPENDED flag ────────────────────
+
+describe('custody-suspension metadata + shared SUSPENDED flag', () => {
+  it('registers the custody-suspension RIDER keys', () => {
+    expect(METADATA_KEYS.suspendedBy).toBeDefined();
+    expect(METADATA_KEYS.suspensionCount).toBeDefined();
+    expect(METADATA_KEYS.suspensionHistory).toBeDefined();
+    expect(METADATA_KEYS.lastSilentOffenseAt).toBeDefined();
+    expect(METADATA_KEYS.inTransitEscalatedAt).toBeDefined();
+    expect(METADATA_KEYS.lifecycleFailure).toBeDefined();
+  });
+
+  it('exposes the new RiderMetadata fields', () => {
+    expectTypeOf<RiderMetadata>().toHaveProperty('suspendedBy');
+    expectTypeOf<RiderMetadata>().toHaveProperty('suspensionCount');
+    expectTypeOf<RiderMetadata>().toHaveProperty('suspensionHistory');
+    expectTypeOf<RiderMetadata>().toHaveProperty('lastSilentOffenseAt');
+  });
+
+  it('exposes DeliveryMetadata custody-trail fields', () => {
+    expectTypeOf<DeliveryMetadata>().toHaveProperty('inTransitEscalatedAt');
+    expectTypeOf<DeliveryMetadata>().toHaveProperty('lifecycleFailure');
+  });
+
+  it('RiderStatus has SUSPENDED (shared ban flag)', () => {
+    expect(RiderStatus.SUSPENDED).toBe('SUSPENDED');
+  });
+
+  it('round-trips the suspension ledger keys through buildMetadata', () => {
+    const out = buildMetadata('RIDER', {
+      suspendedBy: 'system:3',
+      suspensionCount: 3,
+      suspensionHistory: [
+        {
+          at: '2026-09-01T00:00:00.000Z',
+          by: 'system:3',
+          reason: 'PICKED_UP_SILENT',
+          escalatedFrom: 'PICKED_UP',
+          offenseCount: 3,
+        },
+      ],
+      lastSilentOffenseAt: '2026-09-01T00:00:00.000Z',
+    });
+    expect(out.suspensionCount).toBe(3);
+    expect(out.suspendedBy).toBe('system:3');
+    expect(Array.isArray(out.suspensionHistory)).toBe(true);
+  });
+
+  it('round-trips the DELIVERY custody-trail keys through buildMetadata', () => {
+    const out = buildMetadata('DELIVERY', {
+      inTransitEscalatedAt: '2026-09-01T00:00:00.000Z',
+      lifecycleFailure: {
+        reason: 'PICKED_UP_SILENT',
+        riderId: 'rider-1',
+        at: '2026-09-01T00:00:00.000Z',
+      },
+    });
+    expect(out.inTransitEscalatedAt).toBe('2026-09-01T00:00:00.000Z');
+    expect((out.lifecycleFailure as { reason: string }).reason).toBe('PICKED_UP_SILENT');
   });
 });
