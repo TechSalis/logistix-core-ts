@@ -12,9 +12,12 @@ describe('contracts schema (generated artifact)', () => {
     expect(remoteConfig).not.toContain('deliveryQuota');
     expect(remoteConfig).not.toContain('subscriptionHealth');
     expect(remoteConfig).toContain('retentionMonths: Int!');
-    expect(remoteConfig).toContain('maxBulkDeliveries: Int!');
-    expect(remoteConfig).toContain('maxExportsPerMonth: Int!');
-    expect(remoteConfig).toContain('rules: ClientRules!');
+    // Persona-scoped fields are nullable: maxBulkDeliveries/maxExportsPerMonth
+    // are dispatcher/owner tier caps, rules is dispatcher-only, riderHeartbeat
+    // is rider-only — the resolver returns only the caller's meaningful set.
+    expect(remoteConfig).toContain('maxBulkDeliveries: Int');
+    expect(remoteConfig).toContain('maxExportsPerMonth: Int');
+    expect(remoteConfig).toContain('rules: ClientRules');
   });
 
   it('exposes the volatile subscription surface via dedicated company-scoped queries', () => {

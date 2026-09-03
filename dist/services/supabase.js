@@ -226,7 +226,7 @@ var rawLimitsConfig = {
   // Fallback query limit for non-tier-aware services
   syncPageSize: 100,
   // Client sync page size served via remoteConfig
-  locationDeduplicationRadiusMeters: 200,
+  locationDeduplicationRadiusMeters: 100,
   // Drop duplicate location results within this range
   externalApiTimeoutMs: 1e4,
   // Default timeout for external requests (e.g. Maps API)

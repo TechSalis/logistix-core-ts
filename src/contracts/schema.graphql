@@ -332,13 +332,25 @@ type DeliveryQuota {
   remaining: Int!
 }
 
-# Stable client config (offline-cached). Volatile per-company state lives in
-# dedicated queries: Query.deliveryQuota + Query.subscriptionStatus (see public.ts).
+# Stable client config (offline-cached), delivered role-scoped: each caller
+# receives only the fields its persona consumes. Volatile per-company state
+# lives in dedicated queries: Query.deliveryQuota + Query.subscriptionStatus
+# (see public.ts).
+#
+# pollIntervals + syncPageSize are role-shared (dispatchers use `normalMs`,
+# riders `degradedMs`; both page through sync upfront) so they live at the
+# top level. maxBulkDeliveries/maxExportsPerMonth (dispatcher/owner tier
+# caps), rules (dispatcher-only business rules) and riderHeartbeat (rider
+# liveness cadence) are persona-scoped and nullable — the resolver returns
+# only the caller's meaningful set.
 type RemoteConfig {
   retentionMonths: Int!
-  maxBulkDeliveries: Int!
-  maxExportsPerMonth: Int!
-  rules: ClientRules!
+  pollIntervals: PollIntervalsConfig!
+  syncPageSize: Int!
+  maxBulkDeliveries: Int
+  maxExportsPerMonth: Int
+  rules: ClientRules
+  riderHeartbeat: RiderHeartbeat
 }
 
 type SubscriptionStatusInfo {
@@ -372,8 +384,6 @@ type ValidationLimits {
 
 type ClientRules {
   allowedStatusTransitions: [DeliveryStatusTransitionRule!]!
-  pollIntervals: PollIntervalsConfig!
-  syncPageSize: Int!
   platformMessageLimits: [PlatformMessageLimit!]!
   validation: ValidationLimits!
 }
@@ -398,12 +408,11 @@ type User {
   verificationStatus: ApprovalStatus
   dispatcherApprovalStatus: ApprovalStatus
   createdAt: DateTime!
-  riderHeartbeat: RiderHeartbeat
 }
 
 type RiderHeartbeat {
-  minIntervalSeconds: Int!
-  maxIntervalSeconds: Int!
+  minIntervalMs: Int!
+  maxIntervalMs: Int!
   distanceFilterMeters: Int!
 }
 

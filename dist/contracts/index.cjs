@@ -360,13 +360,25 @@ var baseTypeDefs = `
     remaining: Int!
   }
 
-  # Stable client config (offline-cached). Volatile per-company state lives in
-  # dedicated queries: Query.deliveryQuota + Query.subscriptionStatus (see public.ts).
+  # Stable client config (offline-cached), delivered role-scoped: each caller
+  # receives only the fields its persona consumes. Volatile per-company state
+  # lives in dedicated queries: Query.deliveryQuota + Query.subscriptionStatus
+  # (see public.ts).
+  #
+  # pollIntervals + syncPageSize are role-shared (dispatchers use normalMs,
+  # riders degradedMs; both page through sync upfront) so they live at the
+  # top level. maxBulkDeliveries/maxExportsPerMonth (dispatcher/owner tier
+  # caps), rules (dispatcher-only business rules) and riderHeartbeat (rider
+  # liveness cadence) are persona-scoped and nullable - the resolver returns
+  # only the caller's meaningful set.
   type RemoteConfig {
     retentionMonths: Int!
-    maxBulkDeliveries: Int!
-    maxExportsPerMonth: Int!
-    rules: ClientRules!
+    pollIntervals: PollIntervalsConfig!
+    syncPageSize: Int!
+    maxBulkDeliveries: Int
+    maxExportsPerMonth: Int
+    rules: ClientRules
+    riderHeartbeat: RiderHeartbeat
   }
 
   type SubscriptionStatusInfo {
@@ -377,11 +389,6 @@ var baseTypeDefs = `
   }
 
   enum SubscriptionHealth { HEALTHY IN_TRIAL PAST_DUE EXPIRING_SOON CANCELLED }
-
-  type DeliveryStatusTransitionRule {
-    from: DeliveryStatus!
-    to: [DeliveryStatus!]!
-  }
 
   type PollIntervalsConfig {
     normalMs: Int!
@@ -399,16 +406,18 @@ var baseTypeDefs = `
   }
 
   type ClientRules {
-    allowedStatusTransitions: [DeliveryStatusTransitionRule!]!
-    pollIntervals: PollIntervalsConfig!
-    syncPageSize: Int!
-    platformMessageLimits: [PlatformMessageLimit!]!
+    # The full status-transition map, a Record of DeliveryStatus to its legal
+    # next DeliveryStatus values. Served whole as JSON (not a list or a
+    # per-status arg) because clients intersect transitions across
+    # multi-selected deliveries.
+    allowedStatusTransitions: JSON!
+    # The full per-platform message-length map, keyed by ChannelPlatform. Served
+    # whole as JSON so clients get every limit in a single fetch (no N+1, no
+    # loose per-platform aliases).
+    messageLimits: JSON!
+    # The O(1) per-key read of messageLimits for a single platform.
+    messageLimit(platform: ChannelPlatform!): Int!
     validation: ValidationLimits!
-  }
-
-  type PlatformMessageLimit {
-    platform: ChannelPlatform!
-    limit: Int!
   }
 
   type User {
@@ -426,12 +435,11 @@ var baseTypeDefs = `
     verificationStatus: ApprovalStatus
     dispatcherApprovalStatus: ApprovalStatus
     createdAt: DateTime!
-    riderHeartbeat: RiderHeartbeat
   }
 
   type RiderHeartbeat {
-    minIntervalSeconds: Int!
-    maxIntervalSeconds: Int!
+    minIntervalMs: Int!
+    maxIntervalMs: Int!
     distanceFilterMeters: Int!
   }
 
