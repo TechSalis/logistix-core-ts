@@ -42,7 +42,7 @@ const rawLimitsConfig = {
   externalApiConcurrency: 10, // Capped concurrency for external APIs like Google Maps to avoid rate limits
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
   syncPageSize: 100, // Client sync page size served via remoteConfig
-  locationDeduplicationRadiusMeters: 200, // Drop duplicate location results within this range
+  locationDeduplicationRadiusMeters: 100, // Drop duplicate location results within this range
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   maxRiderActiveDeliveries: 5,
   maxSearchQueryLength: 100,
