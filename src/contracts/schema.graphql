@@ -799,6 +799,20 @@ type BulkActionResult {
   results: [BulkActionResultItem!]!
 }
 
+# Company dispatcher rider lifecycle (own-company only; backend enforces scope)
+type BulkVirtualRiderResult {
+  riderId: ID!
+  success: Boolean!
+  error: String
+}
+
+type RiderSuspendResult {
+  riderId: ID!
+  success: Boolean!
+  status: RiderStatus!
+  error: String
+}
+
 input ManualMessageInput {
   conversationId: ID!
   body: String!
@@ -1057,8 +1071,12 @@ extend type Mutation {
   generatePresignedTempUploadUrl(category: String!, entityId: String!, extension: String!): PresignedUrlResponse!
 
   # Riders (These update current logged-in rider)
-acceptRiders(riderIds: [ID!]!): BulkActionResult!
-rejectRiders(riderIds: [ID!]!): BulkActionResult!
+  acceptRiders(riderIds: [ID!]!): BulkActionResult!
+  rejectRiders(riderIds: [ID!]!): BulkActionResult!
+  # Rider lifecycle (company dispatcher, own-company only)
+  deleteRider(riderId: ID!): BulkVirtualRiderResult!
+  suspendRider(riderId: ID!): RiderSuspendResult!
+  unsuspendRider(riderId: ID!): RiderSuspendResult!
 
 # Billing & Wallet
   requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
@@ -1352,4 +1370,9 @@ extend type Mutation {
   a bulk-style result. The escalation, if any, is left OPEN for the admin to
   resolve explicitly."""
   adminSendMessage(input: AdminSendMessageInput!): BulkMessageResult
+
+  # Independent-rider lifecycle (companyId === null only; backend enforces)
+  adminDeleteRider(riderId: ID!): BulkVirtualRiderResult!
+  adminSuspendRider(riderId: ID!): RiderSuspendResult!
+  adminUnsuspendRider(riderId: ID!): RiderSuspendResult!
 }

@@ -80,6 +80,10 @@ export const publicTypeDefs = `
     # Riders (These update current logged-in rider)
 acceptRiders(riderIds: [ID!]!): BulkActionResult!
   rejectRiders(riderIds: [ID!]!): BulkActionResult!
+    # Rider lifecycle (company dispatcher, own-company only)
+    deleteRider(riderId: ID!): BulkVirtualRiderResult!
+    suspendRider(riderId: ID!): RiderSuspendResult!
+    unsuspendRider(riderId: ID!): RiderSuspendResult!
 
   # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!

@@ -258,5 +258,10 @@ export const adminTypeDefs = `
     a bulk-style result. The escalation, if any, is left OPEN for the admin to
     resolve explicitly."""
     adminSendMessage(input: AdminSendMessageInput!): BulkMessageResult
+
+    # Independent-rider lifecycle (companyId === null only; backend enforces)
+    adminDeleteRider(riderId: ID!): BulkVirtualRiderResult!
+    adminSuspendRider(riderId: ID!): RiderSuspendResult!
+    adminUnsuspendRider(riderId: ID!): RiderSuspendResult!
   }
 `;

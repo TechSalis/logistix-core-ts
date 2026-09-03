@@ -797,6 +797,20 @@ export const baseTypeDefs = `
     results: [BulkActionResultItem!]!
   }
 
+  # Company dispatcher rider lifecycle (own-company only; backend enforces scope)
+  type BulkVirtualRiderResult {
+    riderId: ID!
+    success: Boolean!
+    error: String
+  }
+
+  type RiderSuspendResult {
+    riderId: ID!
+    success: Boolean!
+    status: RiderStatus!
+    error: String
+  }
+
   input ManualMessageInput {
     conversationId: ID!
     body: String!
