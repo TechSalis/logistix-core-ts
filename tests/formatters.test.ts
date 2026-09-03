@@ -7,8 +7,8 @@ describe('formatDeliveryStatus', () => {
     expect(formatDeliveryStatus(DeliveryStatus.ASSIGNED)).toBe('Assigned');
   });
 
-  it('formats IN_TRANSIT', () => {
-    expect(formatDeliveryStatus(DeliveryStatus.IN_TRANSIT)).toBe('In Transit');
+  it('formats PICKED_UP', () => {
+    expect(formatDeliveryStatus(DeliveryStatus.PICKED_UP)).toBe('Picked Up');
   });
 
   it('returns Unknown for null', () => {

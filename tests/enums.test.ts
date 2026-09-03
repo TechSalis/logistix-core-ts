@@ -19,7 +19,6 @@ import {
   MESSAGE_STATUS_RANK,
   SubscriptionHealth,
   SseEventType,
-  ChannelsUpdateType,
   ConversationHandlerType,
   UserAuditAction,
   FcmNotificationType,
@@ -46,7 +45,7 @@ describe('Enums', () => {
     it('includes all lifecycle states', () => {
       expect(DeliveryStatus.PENDING).toBe('PENDING');
       expect(DeliveryStatus.ASSIGNED).toBe('ASSIGNED');
-      expect(DeliveryStatus.IN_TRANSIT).toBe('IN_TRANSIT');
+      expect(DeliveryStatus.PICKED_UP).toBe('PICKED_UP');
       expect(DeliveryStatus.DELIVERED).toBe('DELIVERED');
       expect(DeliveryStatus.CANCELLED).toBe('CANCELLED');
       expect(DeliveryStatus.FAILED).toBe('FAILED');
@@ -160,6 +159,7 @@ describe('Enums', () => {
         'DOWNGRADE',
         'MESSAGE_DELETED',
         'LEDGER_ADJUSTED',
+        'PAYMENT_UNMAPPED',
       ]);
     });
   });
@@ -320,16 +320,7 @@ describe('Enums', () => {
       expect(DeliveryExpiryReason.STALE_PENDING_DELIVERY).toBe('STALE_PENDING_DELIVERY');
       expect(DeliveryExpiryReason.SCHEDULED_WINDOW_MISSED).toBe('SCHEDULED_WINDOW_MISSED');
       expect(DeliveryExpiryReason.RIDER_SILENT).toBe('RIDER_SILENT');
-      expect(DeliveryExpiryReason.IN_TRANSIT_STALL).toBe('IN_TRANSIT_STALL');
-    });
-  });
-
-  describe('ChannelsUpdateType', () => {
-    it('exposes canonical wire values', () => {
-      expect(ChannelsUpdateType.MESSAGE).toBe('MESSAGE');
-      expect(ChannelsUpdateType.OWNERSHIP).toBe('OWNERSHIP');
-      expect(ChannelsUpdateType.CONVERSATION).toBe('CONVERSATION');
-      expect(ChannelsUpdateType.CHANNEL).toBe('CHANNEL');
+      expect(DeliveryExpiryReason.PICKED_UP_SILENT).toBe('PICKED_UP_SILENT');
     });
   });
 

@@ -1,6 +1,6 @@
 /**
  * Client-facing configuration served to business web + Flutter via the
- * `clientConfig` GraphQL query and the SSE `companyUpdated` payload.
+ * `remoteConfig` GraphQL query and the SSE `companyUpdated` payload.
  *
  * Values here are the SSOT; the backend `client-rules.service.ts` reads from
  * this module (and other core-ts configs) to build the served payload.

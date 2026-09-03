@@ -76,9 +76,11 @@ const METADATA_FIELD_NAMES = {
     'paymentSessionId',
     'cancelReason',
     'cancelledAt',
+    'proofPromotionFailed',
+    'pickedUpEscalatedAt',
     'inTransitEscalatedAt',
     'lifecycleFailure',
-    'proofPromotionFailed',
+    'reassignedAt',
   ],
   RiderMetadata: [
     'idType',
@@ -95,11 +97,14 @@ const METADATA_FIELD_NAMES = {
     'riderCardNumber',
     'currentState',
     'batteryLevel',
+    'verificationNote',
+    'silentBanUntil',
     'suspendedBy',
+    'suspendedFrom',
+    'suspensionReason',
     'suspensionCount',
     'suspensionHistory',
     'lastSilentOffenseAt',
-    'verificationNote',
   ],
   CompanyMetadata: [
     'logoUrl',
@@ -220,13 +225,11 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
     paymentSessionId: 'session-1',
     cancelReason: 'Customer changed mind',
     cancelledAt: '2026-01-01T00:00:00.000Z',
-    inTransitEscalatedAt: '2026-01-01T00:00:00.000Z',
-    lifecycleFailure: {
-      reason: 'IN_TRANSIT_SILENT',
-      riderId: 'rider-1',
-      at: '2026-01-01T00:00:00.000Z',
-    },
     proofPromotionFailed: true,
+    pickedUpEscalatedAt: '2026-01-01T00:00:00.000Z',
+    inTransitEscalatedAt: '2026-01-01T00:00:00.000Z',
+    lifecycleFailure: { reason: 'PICKED_UP_SILENT', riderId: 'rider-1', at: '2026-01-01T00:00:00.000Z' },
+    reassignedAt: '2026-01-01T00:00:00.000Z',
   },
   RiderMetadata: {
     idType: 'NIN',
@@ -243,19 +246,16 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
     riderCardNumber: 'card-1',
     currentState: 'LAGOS',
     batteryLevel: 80,
+    verificationNote: 'verified',
+    silentBanUntil: 1750000000000,
     suspendedBy: 'system:3',
+    suspendedFrom: 'OFFLINE',
+    suspensionReason: 'PICKED_UP_SILENT',
     suspensionCount: 3,
     suspensionHistory: [
-      {
-        at: '2026-09-01T00:00:00.000Z',
-        by: 'system:3',
-        reason: 'PICKED_UP_SILENT',
-        escalatedFrom: 'PICKED_UP',
-        offenseCount: 3,
-      },
+      { at: '2026-01-01T00:00:00.000Z', by: 'system:3', reason: 'PICKED_UP_SILENT', escalatedFrom: 'PICKED_UP', offenseCount: 3 },
     ],
-    lastSilentOffenseAt: '2026-09-01T00:00:00.000Z',
-    verificationNote: 'verified',
+    lastSilentOffenseAt: '2026-01-01T00:00:00.000Z',
   },
   CompanyMetadata: {
     logoUrl: 'logos/1.png',
@@ -525,11 +525,10 @@ describe('validateMetadata', () => {
   });
 });
 
-// ─── custody-suspension metadata + shared SUSPENDED flag ────────────────────
-
 describe('custody-suspension metadata + shared SUSPENDED flag', () => {
   it('registers the custody-suspension RIDER keys', () => {
     expect(METADATA_KEYS.suspendedBy).toBeDefined();
+    expect(METADATA_KEYS.suspendedFrom).toBeDefined();
     expect(METADATA_KEYS.suspensionCount).toBeDefined();
     expect(METADATA_KEYS.suspensionHistory).toBeDefined();
     expect(METADATA_KEYS.lastSilentOffenseAt).toBeDefined();
@@ -539,6 +538,7 @@ describe('custody-suspension metadata + shared SUSPENDED flag', () => {
 
   it('exposes the new RiderMetadata fields', () => {
     expectTypeOf<RiderMetadata>().toHaveProperty('suspendedBy');
+    expectTypeOf<RiderMetadata>().toHaveProperty('suspendedFrom');
     expectTypeOf<RiderMetadata>().toHaveProperty('suspensionCount');
     expectTypeOf<RiderMetadata>().toHaveProperty('suspensionHistory');
     expectTypeOf<RiderMetadata>().toHaveProperty('lastSilentOffenseAt');
@@ -576,11 +576,7 @@ describe('custody-suspension metadata + shared SUSPENDED flag', () => {
   it('round-trips the DELIVERY custody-trail keys through buildMetadata', () => {
     const out = buildMetadata('DELIVERY', {
       inTransitEscalatedAt: '2026-09-01T00:00:00.000Z',
-      lifecycleFailure: {
-        reason: 'PICKED_UP_SILENT',
-        riderId: 'rider-1',
-        at: '2026-09-01T00:00:00.000Z',
-      },
+      lifecycleFailure: { reason: 'PICKED_UP_SILENT', riderId: 'rider-1', at: '2026-09-01T00:00:00.000Z' },
     });
     expect(out.inTransitEscalatedAt).toBe('2026-09-01T00:00:00.000Z');
     expect((out.lifecycleFailure as { reason: string }).reason).toBe('PICKED_UP_SILENT');

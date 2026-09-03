@@ -20,23 +20,33 @@ interface SendEmailResult {
   id: string;
 }
 
-interface SmtpConfig {
+export interface SmtpConfig {
   host: string;
   port: number;
   user?: string;
   pass?: string;
 }
 
+export interface SmtpEnvVars {
+  SMTP_HOST?: string;
+  SMTP_PORT?: string;
+  SMTP_USER?: string;
+  SMTP_PASS?: string;
+}
+
+export function buildSmtpConfig(env: SmtpEnvVars): SmtpConfig | null {
+  if (!env.SMTP_HOST) return null;
+  const port = env.SMTP_PORT ? parseInt(env.SMTP_PORT, 10) : DEFAULT_SMTP_PORT;
+  return {
+    host: env.SMTP_HOST,
+    port,
+    user: env.SMTP_USER || undefined,
+    pass: env.SMTP_PASS || undefined,
+  };
+}
+
 function getSmtpConfig(): SmtpConfig | null {
-  const host = typeof process !== 'undefined' && process.env?.SMTP_HOST;
-  if (!host) return null;
-  const port =
-    typeof process !== 'undefined' && process.env?.SMTP_PORT
-      ? parseInt(process.env.SMTP_PORT, 10)
-      : DEFAULT_SMTP_PORT;
-  const user = (typeof process !== 'undefined' && process.env?.SMTP_USER) || undefined;
-  const pass = (typeof process !== 'undefined' && process.env?.SMTP_PASS) || undefined;
-  return { host, port, user, pass };
+  return typeof process !== 'undefined' ? buildSmtpConfig(process.env) : null;
 }
 
 async function sendViaSmtp(smtp: SmtpConfig, options: SendEmailOptions): Promise<SendEmailResult> {
@@ -75,8 +85,10 @@ function isRetryableEmailError(error: unknown): boolean {
 }
 
 export class EmailService {
+  constructor(private readonly smtp?: SmtpConfig | null) {}
+
   async sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
-    const smtp = getSmtpConfig();
+    const smtp = this.smtp !== undefined ? this.smtp : getSmtpConfig();
     if (!smtp) throw new Error('EmailService: no SMTP configured — email not sent');
 
     return withRetry(() => sendViaSmtp(smtp, options), {

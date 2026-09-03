@@ -1,3 +1,5 @@
+import { LIMITS_CONFIG } from '../shared/config/limits.config.js';
+
 const ALERT_COOLDOWN_MS = 5 * 60 * 1000;
 const recentAlerts = new Map<string, number>();
 
@@ -7,9 +9,14 @@ function getDiscordWebhookUrl(): string | undefined {
 
 export type AlertLevel = 'info' | 'warning' | 'critical';
 
-export async function sendAlert(level: AlertLevel, title: string, details: string): Promise<void> {
-  const webhookUrl = getDiscordWebhookUrl();
-  if (!webhookUrl) return;
+export async function sendAlert(
+  level: AlertLevel,
+  title: string,
+  details: string,
+  webhookUrl?: string,
+): Promise<void> {
+  const resolvedUrl = webhookUrl ?? getDiscordWebhookUrl();
+  if (!resolvedUrl) return;
   const key = `${title}:${level}`;
   const lastSent = recentAlerts.get(key) ?? 0;
   if (Date.now() - lastSent < ALERT_COOLDOWN_MS) return;
@@ -22,7 +29,7 @@ export async function sendAlert(level: AlertLevel, title: string, details: strin
         ? '\u{26A0}\u{FE0F}'
         : '\u{2139}\u{FE0F}';
   try {
-    await fetch(webhookUrl, {
+    await fetch(resolvedUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -35,7 +42,7 @@ export async function sendAlert(level: AlertLevel, title: string, details: strin
           },
         ],
       }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(LIMITS_CONFIG.externalApiTimeoutMs),
     });
   } catch {
     // Alert delivery failure is non-critical — never throw

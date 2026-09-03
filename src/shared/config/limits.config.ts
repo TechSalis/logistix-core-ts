@@ -21,7 +21,7 @@ export interface LimitsConfig {
   readonly userActionConcurrency: number;
   readonly externalApiConcurrency: number;
   readonly maxQueryLimit: number; // Fallback for non-tier-aware services
-  readonly syncPageSize: number; // Client sync page size served via clientConfig
+  readonly syncPageSize: number; // Client sync page size served via remoteConfig
   readonly locationDeduplicationRadiusMeters: number;
   readonly externalApiTimeoutMs: number;
   readonly maxRiderActiveDeliveries: number;
@@ -41,7 +41,7 @@ const rawLimitsConfig = {
   userActionConcurrency: 10, // Chunk size for user-flow operations (chunkedPromiseAll) to avoid spiking DB connections
   externalApiConcurrency: 10, // Capped concurrency for external APIs like Google Maps to avoid rate limits
   maxQueryLimit: 100, // Fallback query limit for non-tier-aware services
-  syncPageSize: 100, // Client sync page size served via clientConfig
+  syncPageSize: 100, // Client sync page size served via remoteConfig
   locationDeduplicationRadiusMeters: 200, // Drop duplicate location results within this range
   externalApiTimeoutMs: 10000, // Default timeout for external requests (e.g. Maps API)
   maxRiderActiveDeliveries: 5,

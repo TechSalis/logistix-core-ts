@@ -194,6 +194,7 @@ export enum EventType {
   DOWNGRADE = 'DOWNGRADE',
   MESSAGE_DELETED = 'MESSAGE_DELETED',
   LEDGER_ADJUSTED = 'LEDGER_ADJUSTED',
+  PAYMENT_UNMAPPED = 'PAYMENT_UNMAPPED',
 }
 
 export enum SubscriptionEventType {
@@ -212,14 +213,6 @@ export const UserAuditAction = {
   PROFILE_UPDATE: 'PROFILE_UPDATE',
   DEACTIVATED: 'DEACTIVATED',
 } as const;
-
-export enum ChannelsUpdateType {
-  MESSAGE = 'MESSAGE',
-  OWNERSHIP = 'OWNERSHIP',
-  CONVERSATION = 'CONVERSATION',
-  CHANNEL = 'CHANNEL',
-  AI_THINKING = 'AI_THINKING',
-}
 
 export enum MessageStatus {
   SENT = 'SENT',
@@ -363,6 +356,11 @@ export enum SseEventType {
   COMPANY = 'company',
   RIDER_LOCATION = 'rider-location',
   TYPING = 'typing',
+  /** Control frame: the replay on reconnect was truncated (frame cap or
+   *  prune-window expired), so the client must run a delta sync to recover
+   *  the gap before resuming live delivery. Never emitted during a normal
+   *  connection; only on reconnect when the cursor can't cover the gap. */
+  SYNC_REQUIRED = 'sync-required',
 }
 
 export enum JwtTokenType {
@@ -424,6 +422,7 @@ export enum FcmNotificationType {
   DELIVERY_ANOMALY = 'DELIVERY_ANOMALY',
   RAPID_STATUS_CHANGES = 'RAPID_STATUS_CHANGES',
   RIDER_SILENT_BAN = 'RIDER_SILENT_BAN',
+  SECURITY_ALERT = 'SECURITY_ALERT',
 }
 
 /**
@@ -475,12 +474,12 @@ export type DeliveryExpiryReason =
   | 'STALE_PENDING_DELIVERY'
   | 'SCHEDULED_WINDOW_MISSED'
   | 'RIDER_SILENT'
-  | 'IN_TRANSIT_STALL';
+  | 'PICKED_UP_SILENT';
 export const DeliveryExpiryReason = {
   STALE_PENDING_DELIVERY: 'STALE_PENDING_DELIVERY',
   SCHEDULED_WINDOW_MISSED: 'SCHEDULED_WINDOW_MISSED',
   RIDER_SILENT: 'RIDER_SILENT',
-  IN_TRANSIT_STALL: 'IN_TRANSIT_STALL',
+  PICKED_UP_SILENT: 'PICKED_UP_SILENT',
 } as const;
 
 export enum DayOfWeek {
@@ -543,7 +542,7 @@ export type CACEvidenceStatus = (typeof CAC_EVIDENCE_STATUS)[keyof typeof CAC_EV
  * Returns `undefined` instead of crashing on unknown values.
  *
  * @example
- * safeEnumValue(DeliveryStatus, 'IN_TRANSIT') // DeliveryStatus.IN_TRANSIT
+ * safeEnumValue(DeliveryStatus, 'PICKED_UP') // DeliveryStatus.PICKED_UP
  * safeEnumValue(DeliveryStatus, 'UNKNOWN')   // undefined
  */
 export function safeEnumValue<T extends Record<string, string>>(

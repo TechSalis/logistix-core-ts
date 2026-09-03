@@ -3,7 +3,7 @@ import { DeliveryStatus } from '../enums/enums.js';
 /**
  * Canonical delivery status transition rules (SSOT).
  *
- * The backend exposes these to clients via `clientConfig.rules.allowedStatusTransitions`
+ * The backend exposes these to clients via `remoteConfig.rules.allowedStatusTransitions`
  * so every consumer (business web, Flutter) mirrors server business rules instead of
  * maintaining a drift-prone copy. Never define a second copy.
  */

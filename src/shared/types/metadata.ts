@@ -70,6 +70,10 @@ export interface DeliveryMetadata {
   /** Set by the cancel/modify handler when a delivery is cancelled. */
   cancelReason?: string;
   cancelledAt?: string;
+  /** Set by the delivery-lifecycle escalation job when a PICKED_UP rider goes silent
+   *  past `inTransitEscalateMinutes`. Used to suppress duplicate escalation notifications
+   *  for the same continuous silent episode. Cleared when the rider regains liveness. */
+  pickedUpEscalatedAt?: string;
   /** Set by the delivery-lifecycle escalation job when an IN_TRANSIT rider goes silent
    *  past `inTransitEscalateMinutes`. Distinct marker from `pickedUpEscalatedAt` since
    *  IN_TRANSIT (en route, no custody) and PICKED_UP (custody) are separate states with
@@ -78,6 +82,11 @@ export interface DeliveryMetadata {
   /** DELIVERY-scope custody-trail record written when an expiry sweep fails a delivery
    *  (or sets the machine custody suspension). `{ reason, riderId?, at }`. */
   lifecycleFailure?: { reason: string; riderId?: string; at: string };
+  /** Set by the stale-assignment reassigner on each machine re-assignment. An ASSIGNED
+   *  delivery whose `reassignedAt` falls within the stale-assignment cooldown window is
+   *  skipped, preventing the rider-FCM/BUSY-flip churn loop on genuinely-unserviceable
+   *  deliveries. Refreshed on every re-assignment. */
+  reassignedAt?: string;
   /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
   proofPromotionFailed?: boolean;
 }
@@ -102,6 +111,11 @@ export interface RiderMetadata {
   /** Who set the shared `RiderStatus.SUSPENDED` flag:
    *  `'system:<offenseN>'` | `'dispatcher:<id>'` | `'admin:<id>'`. */
   suspendedBy?: string;
+  /** Prior rider status captured at manual suspend time, restored by
+   *  `unsuspendRider` so a manually-suspended rider resumes where they left off. */
+  suspendedFrom?: string;
+  /** Human-readable reason a manual (`dispatcher:`/`admin:`) suspension was applied. */
+  suspensionReason?: string;
   /** "3 within clean window" machine-offense counter + review aggregate. */
   suspensionCount?: number;
   /** Bounded (newest-first) suspension ledger for ops review. */
@@ -333,8 +347,10 @@ export const METADATA_KEYS = {
   paymentSessionId: { scope: 'DELIVERY', shape: strNullish, required: false },
   cancelReason: { scope: 'DELIVERY', shape: strNullish, required: false },
   cancelledAt: { scope: 'DELIVERY', shape: strNullish, required: false },
+  pickedUpEscalatedAt: { scope: 'DELIVERY', shape: strNullish, required: false },
   inTransitEscalatedAt: { scope: 'DELIVERY', shape: strNullish, required: false },
   lifecycleFailure: { scope: 'DELIVERY', shape: lifecycleFailureShape.nullish(), required: false },
+  reassignedAt: { scope: 'DELIVERY', shape: strNullish, required: false },
   proofPromotionFailed: { scope: 'DELIVERY', shape: boolNullish, required: false },
 
   // ── CONVERSATION ──────────────────────────────────────────────────────────
@@ -436,6 +452,8 @@ export const METADATA_KEYS = {
   batteryLevel: { scope: 'RIDER', shape: numNullish, required: false },
   silentBanUntil: { scope: 'RIDER', shape: numNullish, required: false },
   suspendedBy: { scope: 'RIDER', shape: strNullish, required: false },
+  suspendedFrom: { scope: 'RIDER', shape: strNullish, required: false },
+  suspensionReason: { scope: 'RIDER', shape: strNullish, required: false },
   suspensionCount: { scope: 'RIDER', shape: numNullish, required: false },
   suspensionHistory: { scope: 'RIDER', shape: suspensionHistoryShape.nullish(), required: false },
   lastSilentOffenseAt: { scope: 'RIDER', shape: strNullish, required: false },

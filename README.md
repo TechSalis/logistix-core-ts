@@ -88,7 +88,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `UserRole`                 | ADMIN, DISPATCHER, RIDER                                    |
 | `AdminRole`                | ADMIN, SUPER_ADMIN                                          |
 | `DispatcherRole`           | OWNER, DISPATCHER                                           |
-| `DeliveryStatus`           | PENDING, ASSIGNED, IN_TRANSIT, DELIVERED, CANCELLED, FAILED |
+| `DeliveryStatus`           | PENDING, ASSIGNED, PICKED_UP, DELIVERED, CANCELLED, FAILED |
 | `PaymentMethod`            | PREPAID, PAY_ON_DELIVERY                                   |
 | `PaymentStatus`            | AWAITING, COMPLETED, FAILED                                 |
 | `RiderStatus`              | ONLINE, OFFLINE, BUSY                                       |
@@ -111,7 +111,6 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `EventType`                | All system event types (DB pgEnum)                          |
 | `SubscriptionEventType`    | CREATED, UPDATED, DELETED, ASSIGNED, STATUS_CHANGED         |
 | `UserAuditAction`          | LOGIN, LOGOUT, PROFILE_UPDATE, DEACTIVATED                  |
-| `ChannelsUpdateType`       | MESSAGE, OWNERSHIP, CONVERSATION, CHANNEL                   |
 | `MessageStatus`            | SENT, DELIVERED, READ, FAILED                               |
 | `MESSAGE_STATUS_RANK`      | `Record<MessageStatus, number>` (SENT→1 … FAILED→4)         |
 | `EscalationStatus`         | OPEN, RESOLVED, TAKEN_OVER                                  |
@@ -138,7 +137,7 @@ The documented surface below mirrors `src/index.ts` exactly.
 | `SseEventType`             | connected, delivery, rider, message, initial, company, rider-location, typing |
 | `FcmNotificationType`      | SUBSCRIPTION_CANCELLED, DELIVERY_ASSIGNED, COMPANY_STATUS_CHANGED, SETTLEMENT_FAILED, SETTLEMENT_REVERSAL, HUMAN_REQUEST |
 | `NotificationPriority`     | URGENT                                                      |
-| `DeliveryExpiryReason`     | STALE_PENDING_DELIVERY, SCHEDULED_WINDOW_MISSED, RIDER_SILENT, IN_TRANSIT_STALL |
+| `DeliveryExpiryReason`     | STALE_PENDING_DELIVERY, SCHEDULED_WINDOW_MISSED, RIDER_SILENT, PICKED_UP_SILENT |
 | `JwtTokenType`             | access, refresh                                            |
 | `ContactCategory`          | 'Become a Partner', 'For Business', 'Support', 'Tracking Inquiry', 'Feedback' |
 | `LEAD_CATEGORIES`          | `ReadonlySet<ContactCategory>` (PARTNERSHIP, BUSINESS)      |
