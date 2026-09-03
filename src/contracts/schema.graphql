@@ -8,6 +8,7 @@ enum DeliveryStatus {
   PENDING
   ASSIGNED
   IN_TRANSIT
+  PICKED_UP
   DELIVERED
   CANCELLED
   FAILED
@@ -396,6 +397,13 @@ type User {
   verificationStatus: ApprovalStatus
   dispatcherApprovalStatus: ApprovalStatus
   createdAt: DateTime!
+  riderHeartbeat: RiderHeartbeat
+}
+
+type RiderHeartbeat {
+  minIntervalSeconds: Int!
+  maxIntervalSeconds: Int!
+  distanceFilterMeters: Int!
 }
 
 type CompanyCount {
@@ -970,6 +978,9 @@ type Mutation
 
 
 extend type Query {
+  # Current authenticated user (moved from REST /v1/auth/me)
+  me: User
+
   # Riders
   meRider: Rider
 
@@ -981,10 +992,10 @@ extend type Query {
   # System
   appConfig: AppConfig!
 
-  # Client config (tier limits/retention) — standalone query, fired by clients after auth
-  clientConfig: RemoteConfig!
+  # Remote config (tier limits/retention) — standalone query, fired by clients after auth
+  remoteConfig: RemoteConfig!
 
-  # Volatile per-company state — dedicated company-scoped queries (never cached with clientConfig)
+  # Volatile per-company state — dedicated company-scoped queries (never cached with remoteConfig)
   deliveryQuota: DeliveryQuota!
   subscriptionStatus: SubscriptionStatusInfo!
 

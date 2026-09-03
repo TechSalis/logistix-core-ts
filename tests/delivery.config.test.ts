@@ -16,16 +16,22 @@ describe('ALLOWED_STATUS_TRANSITIONS', () => {
     ]);
   });
 
-  it('ASSIGNED can move to IN_TRANSIT, PENDING, or CANCELLED', () => {
-    expect(ALLOWED_STATUS_TRANSITIONS[DeliveryStatus.ASSIGNED]).toEqual([
-      DeliveryStatus.IN_TRANSIT,
-      DeliveryStatus.PENDING,
+  it('ASSIGNED moves to IN_TRANSIT (en-route-to-pickup), never directly to PICKED_UP', () => {
+    const fromAssigned = ALLOWED_STATUS_TRANSITIONS[DeliveryStatus.ASSIGNED];
+    expect(fromAssigned).toContain(DeliveryStatus.IN_TRANSIT);
+    expect(fromAssigned).not.toContain(DeliveryStatus.PICKED_UP);
+  });
+
+  it('IN_TRANSIT is en-route with PICKED_UP advance + ASSIGNED correction + CANCELLED', () => {
+    expect(ALLOWED_STATUS_TRANSITIONS[DeliveryStatus.IN_TRANSIT]).toEqual([
+      DeliveryStatus.PICKED_UP,
+      DeliveryStatus.ASSIGNED,
       DeliveryStatus.CANCELLED,
     ]);
   });
 
-  it('IN_TRANSIT can move to DELIVERED or CANCELLED', () => {
-    expect(ALLOWED_STATUS_TRANSITIONS[DeliveryStatus.IN_TRANSIT]).toEqual([
+  it('PICKED_UP (has custody) only advances to DELIVERED or CANCELLED, no backward', () => {
+    expect(ALLOWED_STATUS_TRANSITIONS[DeliveryStatus.PICKED_UP]).toEqual([
       DeliveryStatus.DELIVERED,
       DeliveryStatus.CANCELLED,
     ]);

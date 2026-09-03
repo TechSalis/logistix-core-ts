@@ -16,7 +16,12 @@ export const ALLOWED_STATUS_TRANSITIONS: Readonly<
     DeliveryStatus.PENDING,
     DeliveryStatus.CANCELLED,
   ],
-  [DeliveryStatus.IN_TRANSIT]: [DeliveryStatus.DELIVERED, DeliveryStatus.CANCELLED],
+  [DeliveryStatus.IN_TRANSIT]: [
+    DeliveryStatus.PICKED_UP,
+    DeliveryStatus.ASSIGNED,
+    DeliveryStatus.CANCELLED,
+  ],
+  [DeliveryStatus.PICKED_UP]: [DeliveryStatus.DELIVERED, DeliveryStatus.CANCELLED],
   [DeliveryStatus.DELIVERED]: [],
   [DeliveryStatus.FAILED]: [],
   [DeliveryStatus.CANCELLED]: [],

@@ -6,6 +6,7 @@ export const baseTypeDefs = `
     PENDING
     ASSIGNED
     IN_TRANSIT
+    PICKED_UP
     DELIVERED
     CANCELLED
     FAILED
