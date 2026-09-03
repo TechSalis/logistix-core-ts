@@ -799,17 +799,17 @@ type BulkActionResult {
   results: [BulkActionResultItem!]!
 }
 
-# Company dispatcher rider lifecycle (own-company only; backend enforces scope)
-type BulkVirtualRiderResult {
-  riderId: ID!
-  success: Boolean!
-  error: String
+# Company dispatcher rider lifecycle (own-company only; backend enforces scope).
+# Set-based bulk: one mutation covers N rider ids; each item reports its outcome.
+type BulkRiderActionResult {
+  results: [BulkRiderActionResultItem!]!
 }
 
-type RiderSuspendResult {
+type BulkRiderActionResultItem {
   riderId: ID!
   success: Boolean!
-  status: RiderStatus!
+  # Present for suspend/unsuspend (the resulting RiderStatus); null for delete.
+  status: RiderStatus
   error: String
 }
 
@@ -1073,10 +1073,10 @@ extend type Mutation {
   # Riders (These update current logged-in rider)
   acceptRiders(riderIds: [ID!]!): BulkActionResult!
   rejectRiders(riderIds: [ID!]!): BulkActionResult!
-  # Rider lifecycle (company dispatcher, own-company only)
-  deleteRider(riderId: ID!): BulkVirtualRiderResult!
-  suspendRider(riderId: ID!): RiderSuspendResult!
-  unsuspendRider(riderId: ID!): RiderSuspendResult!
+  # Rider lifecycle (company dispatcher, own-company only; set-based bulk)
+  deleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+  suspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+  unsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
 
 # Billing & Wallet
   requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
@@ -1372,7 +1372,7 @@ extend type Mutation {
   adminSendMessage(input: AdminSendMessageInput!): BulkMessageResult
 
   # Independent-rider lifecycle (companyId === null only; backend enforces)
-  adminDeleteRider(riderId: ID!): BulkVirtualRiderResult!
-  adminSuspendRider(riderId: ID!): RiderSuspendResult!
-  adminUnsuspendRider(riderId: ID!): RiderSuspendResult!
+  adminDeleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+  adminSuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+  adminUnsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
 }

@@ -1,5 +1,5 @@
-import { p as DeliveryStatus, e as ApprovalStatus, Z as RiderStatus, C as CACEvidenceStatus, u as EscalatedTo, v as EscalationStatus, T as PaymentProvider, U as PaymentStatus, D as DayOfWeek, a5 as SubscriptionTier, ab as VehicleType, x as ExportDataType, O as MetricGranularity, N as MetricDomain, i as ChannelType, a4 as SubscriptionStatus, j as CompanyAccessLevel } from '../retry-CvzVXHWc.cjs';
-export { A as ALL_DAYS, a as AdminDeliveryAction, b as AdminEscalationAction, c as AdminRole, d as ApiTag, f as AuditActorType, g as CAC_EVIDENCE_STATUS, h as ChannelPlatform, k as CompanyChannelStatus, l as ContactCategory, m as ConversationHandlerType, n as ConversationScope, o as DeliveryExpiryReason, q as DeliverySyncScope, r as DevicePlatform, s as DispatcherRole, E as EntityType, t as ErrorCode, w as EventType, y as ExportReason, F as FcmNotificationType, I as IdType, J as JobType, z as JwtTokenType, L as LEAD_CATEGORIES, B as LedgerAdjustmentType, G as LlmRole, H as LogLevel, M as MESSAGE_STATUS_RANK, K as MessageStatus, P as NOTIFICATION_PRIORITY, Q as NodeEnv, R as NotificationPriority, S as PaymentMethod, V as ProviderCapability, W as ProviderRole, X as RETRYABLE_NETWORK_ERROR_CODES, Y as RETRYABLE_SQLSTATE_CODES, _ as SecurityEventType, $ as SecuritySeverity, a0 as SenderType, a1 as SseEventType, a2 as SubscriptionEventType, a3 as SubscriptionHealth, a6 as SystemStatus, a7 as TransactionStatus, a8 as TransactionType, a9 as UserAuditAction, aa as UserRole, ac as WithRetryOptions, ad as isTransientHttpError, ae as safeEnumValue, af as sleep, ag as withRetry } from '../retry-CvzVXHWc.cjs';
+import { p as DeliveryStatus, e as ApprovalStatus, Z as RiderStatus, C as CACEvidenceStatus, u as EscalatedTo, v as EscalationStatus, T as PaymentProvider, U as PaymentStatus, D as DayOfWeek, a5 as SubscriptionTier, ab as VehicleType, x as ExportDataType, O as MetricGranularity, N as MetricDomain, i as ChannelType, a4 as SubscriptionStatus, j as CompanyAccessLevel } from '../retry-D_9M_olp.cjs';
+export { A as ALL_DAYS, a as AdminDeliveryAction, b as AdminEscalationAction, c as AdminRole, d as ApiTag, f as AuditActorType, g as CAC_EVIDENCE_STATUS, h as ChannelPlatform, k as CompanyChannelStatus, l as ContactCategory, m as ConversationHandlerType, n as ConversationScope, o as DeliveryExpiryReason, q as DeliverySyncScope, r as DevicePlatform, s as DispatcherRole, E as EntityType, t as ErrorCode, w as EventType, y as ExportReason, F as FcmNotificationType, I as IdType, J as JobType, z as JwtTokenType, L as LEAD_CATEGORIES, B as LedgerAdjustmentType, G as LlmRole, H as LogLevel, M as MESSAGE_STATUS_RANK, K as MessageStatus, P as NOTIFICATION_PRIORITY, Q as NodeEnv, R as NotificationPriority, S as PaymentMethod, V as ProviderCapability, W as ProviderRole, X as RETRYABLE_NETWORK_ERROR_CODES, Y as RETRYABLE_SQLSTATE_CODES, _ as SecurityEventType, $ as SecuritySeverity, a0 as SenderType, a1 as SseEventType, a2 as SubscriptionEventType, a3 as SubscriptionHealth, a6 as SystemStatus, a7 as TransactionStatus, a8 as TransactionType, a9 as UserAuditAction, aa as UserRole, ac as WithRetryOptions, ad as isTransientHttpError, ae as safeEnumValue, af as sleep, ag as withRetry } from '../retry-D_9M_olp.cjs';
 import { z } from 'zod';
 
 interface EnumValue {
@@ -115,10 +115,27 @@ interface DeliveryMetadata {
     /** Set by the cancel/modify handler when a delivery is cancelled. */
     cancelReason?: string;
     cancelledAt?: string;
-    /** Set by the delivery-lifecycle escalation job when an IN_TRANSIT rider goes silent
+    /** Set by the delivery-lifecycle escalation job when a PICKED_UP rider goes silent
      *  past `inTransitEscalateMinutes`. Used to suppress duplicate escalation notifications
      *  for the same continuous silent episode. Cleared when the rider regains liveness. */
+    pickedUpEscalatedAt?: string;
+    /** Set by the delivery-lifecycle escalation job when an IN_TRANSIT rider goes silent
+     *  past `inTransitEscalateMinutes`. Distinct marker from `pickedUpEscalatedAt` since
+     *  IN_TRANSIT (en route, no custody) and PICKED_UP (custody) are separate states with
+     *  separate escalation paths. Cleared when the rider regains liveness. */
     inTransitEscalatedAt?: string;
+    /** DELIVERY-scope custody-trail record written when an expiry sweep fails a delivery
+     *  (or sets the machine custody suspension). `{ reason, riderId?, at }`. */
+    lifecycleFailure?: {
+        reason: string;
+        riderId?: string;
+        at: string;
+    };
+    /** Set by the stale-assignment reassigner on each machine re-assignment. An ASSIGNED
+     *  delivery whose `reassignedAt` falls within the stale-assignment cooldown window is
+     *  skipped, preventing the rider-FCM/BUSY-flip churn loop on genuinely-unserviceable
+     *  deliveries. Refreshed on every re-assignment. */
+    reassignedAt?: string;
     /** Write-only: set when proof-of-delivery object promotion fails (no reader today). */
     proofPromotionFailed?: boolean;
 }
@@ -139,6 +156,26 @@ interface RiderMetadata {
     batteryLevel?: number;
     /** Epoch ms until which a silently-unresponsive rider is banned from reassignment. Written by the delivery-liveness job. */
     silentBanUntil?: number;
+    /** Who set the shared `RiderStatus.SUSPENDED` flag:
+     *  `'system:<offenseN>'` | `'dispatcher:<id>'` | `'admin:<id>'`. */
+    suspendedBy?: string;
+    /** Prior rider status captured at manual suspend time, restored by
+     *  `unsuspendRider` so a manually-suspended rider resumes where they left off. */
+    suspendedFrom?: string;
+    /** Human-readable reason a manual (`dispatcher:`/`admin:`) suspension was applied. */
+    suspensionReason?: string;
+    /** "3 within clean window" machine-offense counter + review aggregate. */
+    suspensionCount?: number;
+    /** Bounded (newest-first) suspension ledger for ops review. */
+    suspensionHistory?: Array<{
+        at: string;
+        by: string;
+        reason: string;
+        escalatedFrom?: string;
+        offenseCount?: number;
+    }>;
+    /** Timestamp of the most recent silent-offense (PICKED_UP_SILENT) event. */
+    lastSilentOffenseAt?: string;
     verificationNote?: string;
 }
 /**
@@ -343,7 +380,26 @@ declare const METADATA_KEYS: {
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
         readonly required: false;
     };
+    readonly pickedUpEscalatedAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
     readonly inTransitEscalatedAt: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly lifecycleFailure: {
+        readonly scope: "DELIVERY";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodObject<{
+            reason: z.ZodString;
+            riderId: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            at: z.ZodString;
+        }, z.core.$strip>>>;
+        readonly required: false;
+    };
+    readonly reassignedAt: {
         readonly scope: "DELIVERY";
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
         readonly required: false;
@@ -796,6 +852,42 @@ declare const METADATA_KEYS: {
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
         readonly required: false;
     };
+    readonly suspendedBy: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly suspendedFrom: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly suspensionReason: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
+    readonly suspensionCount: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        readonly required: false;
+    };
+    readonly suspensionHistory: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodArray<z.ZodObject<{
+            at: z.ZodString;
+            by: z.ZodString;
+            reason: z.ZodString;
+            escalatedFrom: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+            offenseCount: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+        }, z.core.$strip>>>>;
+        readonly required: false;
+    };
+    readonly lastSilentOffenseAt: {
+        readonly scope: "RIDER";
+        readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+        readonly required: false;
+    };
     readonly type: {
         readonly scope: "LEDGER";
         readonly shape: z.ZodOptional<z.ZodNullable<z.ZodString>>;
@@ -929,7 +1021,7 @@ declare function getTierLimits(tier: SubscriptionTier): TierLimits;
 /**
  * Canonical delivery status transition rules (SSOT).
  *
- * The backend exposes these to clients via `clientConfig.rules.allowedStatusTransitions`
+ * The backend exposes these to clients via `remoteConfig.rules.allowedStatusTransitions`
  * so every consumer (business web, Flutter) mirrors server business rules instead of
  * maintaining a drift-prone copy. Never define a second copy.
  */
@@ -948,7 +1040,7 @@ declare const DEFAULT_PRICING_SCHEMES: readonly PricingScheme[];
 
 /**
  * Client-facing configuration served to business web + Flutter via the
- * `clientConfig` GraphQL query and the SSE `companyUpdated` payload.
+ * `remoteConfig` GraphQL query and the SSE `companyUpdated` payload.
  *
  * Values here are the SSOT; the backend `client-rules.service.ts` reads from
  * this module (and other core-ts configs) to build the served payload.

@@ -263,6 +263,7 @@ var DeliveryStatus = /* @__PURE__ */ ((DeliveryStatus2) => {
   DeliveryStatus2["PENDING"] = "PENDING";
   DeliveryStatus2["ASSIGNED"] = "ASSIGNED";
   DeliveryStatus2["IN_TRANSIT"] = "IN_TRANSIT";
+  DeliveryStatus2["PICKED_UP"] = "PICKED_UP";
   DeliveryStatus2["DELIVERED"] = "DELIVERED";
   DeliveryStatus2["CANCELLED"] = "CANCELLED";
   DeliveryStatus2["FAILED"] = "FAILED";
@@ -283,6 +284,7 @@ var RiderStatus = /* @__PURE__ */ ((RiderStatus2) => {
   RiderStatus2["ONLINE"] = "ONLINE";
   RiderStatus2["OFFLINE"] = "OFFLINE";
   RiderStatus2["BUSY"] = "BUSY";
+  RiderStatus2["SUSPENDED"] = "SUSPENDED";
   return RiderStatus2;
 })(RiderStatus || {});
 var ApprovalStatus = /* @__PURE__ */ ((ApprovalStatus2) => {
@@ -668,7 +670,7 @@ var DeliveryExpiryReason = {
   STALE_PENDING_DELIVERY: "STALE_PENDING_DELIVERY",
   SCHEDULED_WINDOW_MISSED: "SCHEDULED_WINDOW_MISSED",
   RIDER_SILENT: "RIDER_SILENT",
-  IN_TRANSIT_STALL: "IN_TRANSIT_STALL"
+  PICKED_UP_SILENT: "PICKED_UP_SILENT"
 };
 var DayOfWeek = /* @__PURE__ */ ((DayOfWeek2) => {
   DayOfWeek2["MONDAY"] = "Monday";
@@ -775,6 +777,19 @@ var executedActionsShape = import_zod.z.array(
     import_zod.z.object({ type: import_zod.z.string(), success: import_zod.z.boolean().nullish(), message: import_zod.z.string().nullish() })
   ])
 );
+var suspensionHistoryEntryShape = import_zod.z.object({
+  at: import_zod.z.string(),
+  by: import_zod.z.string(),
+  reason: import_zod.z.string(),
+  escalatedFrom: import_zod.z.string().nullish(),
+  offenseCount: import_zod.z.number().nullish()
+});
+var suspensionHistoryShape = import_zod.z.array(suspensionHistoryEntryShape);
+var lifecycleFailureShape = import_zod.z.object({
+  reason: import_zod.z.string(),
+  riderId: import_zod.z.string().nullish(),
+  at: import_zod.z.string()
+});
 var METADATA_KEYS = {
   // ── DELIVERY ──────────────────────────────────────────────────────────────
   pickupPlaceId: { scope: "DELIVERY", shape: strNullish, required: false },
@@ -805,7 +820,10 @@ var METADATA_KEYS = {
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelReason: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelledAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  pickedUpEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   inTransitEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  lifecycleFailure: { scope: "DELIVERY", shape: lifecycleFailureShape.nullish(), required: false },
+  reassignedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   proofPromotionFailed: { scope: "DELIVERY", shape: boolNullish, required: false },
   // ── CONVERSATION ──────────────────────────────────────────────────────────
   escalatedTo: { scope: "CONVERSATION", shape: strNullish, required: false },
@@ -900,6 +918,12 @@ var METADATA_KEYS = {
   currentState: { scope: "RIDER", shape: strNullish, required: false },
   batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
   silentBanUntil: { scope: "RIDER", shape: numNullish, required: false },
+  suspendedBy: { scope: "RIDER", shape: strNullish, required: false },
+  suspendedFrom: { scope: "RIDER", shape: strNullish, required: false },
+  suspensionReason: { scope: "RIDER", shape: strNullish, required: false },
+  suspensionCount: { scope: "RIDER", shape: numNullish, required: false },
+  suspensionHistory: { scope: "RIDER", shape: suspensionHistoryShape.nullish(), required: false },
+  lastSilentOffenseAt: { scope: "RIDER", shape: strNullish, required: false },
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: "LEDGER", shape: strNullish, required: false },
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },
@@ -1230,7 +1254,7 @@ var rawLimitsConfig = {
   maxQueryLimit: 100,
   // Fallback query limit for non-tier-aware services
   syncPageSize: 100,
-  // Client sync page size served via clientConfig
+  // Client sync page size served via remoteConfig
   locationDeduplicationRadiusMeters: 200,
   // Drop duplicate location results within this range
   externalApiTimeoutMs: 1e4,
@@ -1284,7 +1308,12 @@ var ALLOWED_STATUS_TRANSITIONS = {
     "PENDING" /* PENDING */,
     "CANCELLED" /* CANCELLED */
   ],
-  ["IN_TRANSIT" /* IN_TRANSIT */]: ["DELIVERED" /* DELIVERED */, "CANCELLED" /* CANCELLED */],
+  ["IN_TRANSIT" /* IN_TRANSIT */]: [
+    "PICKED_UP" /* PICKED_UP */,
+    "ASSIGNED" /* ASSIGNED */,
+    "CANCELLED" /* CANCELLED */
+  ],
+  ["PICKED_UP" /* PICKED_UP */]: ["DELIVERED" /* DELIVERED */, "CANCELLED" /* CANCELLED */],
   ["DELIVERED" /* DELIVERED */]: [],
   ["FAILED" /* FAILED */]: [],
   ["CANCELLED" /* CANCELLED */]: []

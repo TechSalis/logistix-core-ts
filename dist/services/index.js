@@ -35,6 +35,7 @@ var DeliveryStatus = /* @__PURE__ */ ((DeliveryStatus2) => {
   DeliveryStatus2["PENDING"] = "PENDING";
   DeliveryStatus2["ASSIGNED"] = "ASSIGNED";
   DeliveryStatus2["IN_TRANSIT"] = "IN_TRANSIT";
+  DeliveryStatus2["PICKED_UP"] = "PICKED_UP";
   DeliveryStatus2["DELIVERED"] = "DELIVERED";
   DeliveryStatus2["CANCELLED"] = "CANCELLED";
   DeliveryStatus2["FAILED"] = "FAILED";
@@ -55,6 +56,7 @@ var RiderStatus = /* @__PURE__ */ ((RiderStatus2) => {
   RiderStatus2["ONLINE"] = "ONLINE";
   RiderStatus2["OFFLINE"] = "OFFLINE";
   RiderStatus2["BUSY"] = "BUSY";
+  RiderStatus2["SUSPENDED"] = "SUSPENDED";
   return RiderStatus2;
 })(RiderStatus || {});
 var ApprovalStatus = /* @__PURE__ */ ((ApprovalStatus2) => {
@@ -1317,7 +1319,7 @@ var rawLimitsConfig = {
   maxQueryLimit: 100,
   // Fallback query limit for non-tier-aware services
   syncPageSize: 100,
-  // Client sync page size served via clientConfig
+  // Client sync page size served via remoteConfig
   locationDeduplicationRadiusMeters: 200,
   // Drop duplicate location results within this range
   externalApiTimeoutMs: 1e4,
@@ -1848,6 +1850,19 @@ var executedActionsShape = z2.array(
     z2.object({ type: z2.string(), success: z2.boolean().nullish(), message: z2.string().nullish() })
   ])
 );
+var suspensionHistoryEntryShape = z2.object({
+  at: z2.string(),
+  by: z2.string(),
+  reason: z2.string(),
+  escalatedFrom: z2.string().nullish(),
+  offenseCount: z2.number().nullish()
+});
+var suspensionHistoryShape = z2.array(suspensionHistoryEntryShape);
+var lifecycleFailureShape = z2.object({
+  reason: z2.string(),
+  riderId: z2.string().nullish(),
+  at: z2.string()
+});
 var METADATA_KEYS = {
   // ── DELIVERY ──────────────────────────────────────────────────────────────
   pickupPlaceId: { scope: "DELIVERY", shape: strNullish, required: false },
@@ -1878,7 +1893,10 @@ var METADATA_KEYS = {
   paymentSessionId: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelReason: { scope: "DELIVERY", shape: strNullish, required: false },
   cancelledAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  pickedUpEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   inTransitEscalatedAt: { scope: "DELIVERY", shape: strNullish, required: false },
+  lifecycleFailure: { scope: "DELIVERY", shape: lifecycleFailureShape.nullish(), required: false },
+  reassignedAt: { scope: "DELIVERY", shape: strNullish, required: false },
   proofPromotionFailed: { scope: "DELIVERY", shape: boolNullish, required: false },
   // ── CONVERSATION ──────────────────────────────────────────────────────────
   escalatedTo: { scope: "CONVERSATION", shape: strNullish, required: false },
@@ -1973,6 +1991,12 @@ var METADATA_KEYS = {
   currentState: { scope: "RIDER", shape: strNullish, required: false },
   batteryLevel: { scope: "RIDER", shape: numNullish, required: false },
   silentBanUntil: { scope: "RIDER", shape: numNullish, required: false },
+  suspendedBy: { scope: "RIDER", shape: strNullish, required: false },
+  suspendedFrom: { scope: "RIDER", shape: strNullish, required: false },
+  suspensionReason: { scope: "RIDER", shape: strNullish, required: false },
+  suspensionCount: { scope: "RIDER", shape: numNullish, required: false },
+  suspensionHistory: { scope: "RIDER", shape: suspensionHistoryShape.nullish(), required: false },
+  lastSilentOffenseAt: { scope: "RIDER", shape: strNullish, required: false },
   // ── LEDGER (ledger transaction metadata) ──────────────────────────────────
   type: { scope: "LEDGER", shape: strNullish, required: false },
   feePerDelivery: { scope: "LEDGER", shape: num, required: true },

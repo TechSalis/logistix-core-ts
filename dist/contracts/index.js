@@ -7,6 +7,7 @@ var baseTypeDefs = `
     PENDING
     ASSIGNED
     IN_TRANSIT
+    PICKED_UP
     DELIVERED
     CANCELLED
     FAILED
@@ -16,6 +17,7 @@ var baseTypeDefs = `
     OFFLINE
     ONLINE
     BUSY
+    SUSPENDED
   }
 
   enum ApprovalStatus {
@@ -796,6 +798,20 @@ var baseTypeDefs = `
     results: [BulkActionResultItem!]!
   }
 
+  # Company dispatcher rider lifecycle (own-company only; backend enforces scope).
+  # Set-based bulk: one mutation covers N rider ids; each item reports its outcome.
+  type BulkRiderActionResult {
+    results: [BulkRiderActionResultItem!]!
+  }
+
+  type BulkRiderActionResultItem {
+    riderId: ID!
+    success: Boolean!
+    # Present for suspend/unsuspend (the resulting RiderStatus); null for delete.
+    status: RiderStatus
+    error: String
+  }
+
   input ManualMessageInput {
     conversationId: ID!
     body: String!
@@ -991,10 +1007,10 @@ var publicTypeDefs = `
     # System
     appConfig: AppConfig!
 
-    # Client config (tier limits/retention) \u2014 standalone query, fired by clients after auth
-    clientConfig: RemoteConfig!
+    # Remote config (tier limits/retention) \u2014 standalone query, fired by clients after auth
+    remoteConfig: RemoteConfig!
 
-    # Volatile per-company state \u2014 dedicated company-scoped queries (never cached with clientConfig)
+    # Volatile per-company state \u2014 dedicated company-scoped queries (never cached with remoteConfig)
     deliveryQuota: DeliveryQuota!
     subscriptionStatus: SubscriptionStatusInfo!
 
@@ -1055,8 +1071,12 @@ var publicTypeDefs = `
     generatePresignedTempUploadUrl(category: String!, entityId: String!, extension: String!): PresignedUrlResponse!
 
     # Riders (These update current logged-in rider)
-acceptRiders(riderIds: [ID!]!): BulkActionResult!
-  rejectRiders(riderIds: [ID!]!): BulkActionResult!
+    acceptRiders(riderIds: [ID!]!): BulkActionResult!
+    rejectRiders(riderIds: [ID!]!): BulkActionResult!
+    # Rider lifecycle (company dispatcher, own-company only; set-based bulk)
+    deleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    suspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    unsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
 
   # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!
@@ -1351,6 +1371,11 @@ var adminTypeDefs = `
     a bulk-style result. The escalation, if any, is left OPEN for the admin to
     resolve explicitly."""
     adminSendMessage(input: AdminSendMessageInput!): BulkMessageResult
+
+    # Independent-rider lifecycle (companyId === null only; backend enforces)
+    adminDeleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    adminSuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    adminUnsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
   }
 `;
 

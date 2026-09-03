@@ -15,6 +15,7 @@ declare enum DeliveryStatus {
     PENDING = "PENDING",
     ASSIGNED = "ASSIGNED",
     IN_TRANSIT = "IN_TRANSIT",
+    PICKED_UP = "PICKED_UP",
     DELIVERED = "DELIVERED",
     CANCELLED = "CANCELLED",
     FAILED = "FAILED"
@@ -31,7 +32,8 @@ declare enum PaymentStatus {
 declare enum RiderStatus {
     ONLINE = "ONLINE",
     OFFLINE = "OFFLINE",
-    BUSY = "BUSY"
+    BUSY = "BUSY",
+    SUSPENDED = "SUSPENDED"
 }
 declare enum ApprovalStatus {
     PENDING = "PENDING",
@@ -401,12 +403,12 @@ type NotificationPriority = typeof NOTIFICATION_PRIORITY;
  * Why an undelivered delivery was auto-expired by the expiry job.
  * Wire values match the delivery-expiry service's inline constants exactly.
  */
-type DeliveryExpiryReason = 'STALE_PENDING_DELIVERY' | 'SCHEDULED_WINDOW_MISSED' | 'RIDER_SILENT' | 'IN_TRANSIT_STALL';
+type DeliveryExpiryReason = 'STALE_PENDING_DELIVERY' | 'SCHEDULED_WINDOW_MISSED' | 'RIDER_SILENT' | 'PICKED_UP_SILENT';
 declare const DeliveryExpiryReason: {
     readonly STALE_PENDING_DELIVERY: "STALE_PENDING_DELIVERY";
     readonly SCHEDULED_WINDOW_MISSED: "SCHEDULED_WINDOW_MISSED";
     readonly RIDER_SILENT: "RIDER_SILENT";
-    readonly IN_TRANSIT_STALL: "IN_TRANSIT_STALL";
+    readonly PICKED_UP_SILENT: "PICKED_UP_SILENT";
 };
 declare enum DayOfWeek {
     MONDAY = "Monday",
@@ -456,7 +458,7 @@ type CACEvidenceStatus = (typeof CAC_EVIDENCE_STATUS)[keyof typeof CAC_EVIDENCE_
  * Returns `undefined` instead of crashing on unknown values.
  *
  * @example
- * safeEnumValue(DeliveryStatus, 'IN_TRANSIT') // DeliveryStatus.IN_TRANSIT
+ * safeEnumValue(DeliveryStatus, 'PICKED_UP') // DeliveryStatus.PICKED_UP
  * safeEnumValue(DeliveryStatus, 'UNKNOWN')   // undefined
  */
 declare function safeEnumValue<T extends Record<string, string>>(enumObj: T, value: string): T[keyof T] | undefined;

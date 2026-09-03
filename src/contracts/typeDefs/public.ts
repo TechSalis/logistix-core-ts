@@ -14,10 +14,10 @@ export const publicTypeDefs = `
     # System
     appConfig: AppConfig!
 
-    # Client config (tier limits/retention) — standalone query, fired by clients after auth
-    clientConfig: RemoteConfig!
+    # Remote config (tier limits/retention) — standalone query, fired by clients after auth
+    remoteConfig: RemoteConfig!
 
-    # Volatile per-company state — dedicated company-scoped queries (never cached with clientConfig)
+    # Volatile per-company state — dedicated company-scoped queries (never cached with remoteConfig)
     deliveryQuota: DeliveryQuota!
     subscriptionStatus: SubscriptionStatusInfo!
 
@@ -78,12 +78,12 @@ export const publicTypeDefs = `
     generatePresignedTempUploadUrl(category: String!, entityId: String!, extension: String!): PresignedUrlResponse!
 
     # Riders (These update current logged-in rider)
-acceptRiders(riderIds: [ID!]!): BulkActionResult!
-  rejectRiders(riderIds: [ID!]!): BulkActionResult!
-    # Rider lifecycle (company dispatcher, own-company only)
-    deleteRider(riderId: ID!): BulkVirtualRiderResult!
-    suspendRider(riderId: ID!): RiderSuspendResult!
-    unsuspendRider(riderId: ID!): RiderSuspendResult!
+    acceptRiders(riderIds: [ID!]!): BulkActionResult!
+    rejectRiders(riderIds: [ID!]!): BulkActionResult!
+    # Rider lifecycle (company dispatcher, own-company only; set-based bulk)
+    deleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    suspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    unsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
 
   # Billing & Wallet
     requestSettlement(amount: Float!, narration: String): RequestSettlementResponse!

@@ -260,8 +260,8 @@ export const adminTypeDefs = `
     adminSendMessage(input: AdminSendMessageInput!): BulkMessageResult
 
     # Independent-rider lifecycle (companyId === null only; backend enforces)
-    adminDeleteRider(riderId: ID!): BulkVirtualRiderResult!
-    adminSuspendRider(riderId: ID!): RiderSuspendResult!
-    adminUnsuspendRider(riderId: ID!): RiderSuspendResult!
+    adminDeleteRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    adminSuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
+    adminUnsuspendRiders(riderIds: [ID!]!): BulkRiderActionResult!
   }
 `;

@@ -797,17 +797,17 @@ export const baseTypeDefs = `
     results: [BulkActionResultItem!]!
   }
 
-  # Company dispatcher rider lifecycle (own-company only; backend enforces scope)
-  type BulkVirtualRiderResult {
-    riderId: ID!
-    success: Boolean!
-    error: String
+  # Company dispatcher rider lifecycle (own-company only; backend enforces scope).
+  # Set-based bulk: one mutation covers N rider ids; each item reports its outcome.
+  type BulkRiderActionResult {
+    results: [BulkRiderActionResultItem!]!
   }
 
-  type RiderSuspendResult {
+  type BulkRiderActionResultItem {
     riderId: ID!
     success: Boolean!
-    status: RiderStatus!
+    # Present for suspend/unsuspend (the resulting RiderStatus); null for delete.
+    status: RiderStatus
     error: String
   }
 
