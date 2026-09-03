@@ -65,6 +65,7 @@ const JOB_TYPE_TO_QUEUE: Record<JobType, string> = {
   [JobType.AI_BATCH]: 'ai_batch',
   [JobType.SQUAD_WEBHOOK]: 'squid_webhooks',
   [JobType.EXPORT]: 'exports',
+  [JobType.BILLING_NOTIFICATION]: 'billing_notifications',
 };
 
 function toQueueName(type: JobType): string {

@@ -285,6 +285,7 @@ var JobType = /* @__PURE__ */ ((JobType2) => {
   JobType2["SQUAD_WEBHOOK"] = "squad-webhook";
   JobType2["EXPORT"] = "export";
   JobType2["AI_BATCH"] = "ai:batch";
+  JobType2["BILLING_NOTIFICATION"] = "billing-notification";
   return JobType2;
 })(JobType || {});
 var SystemStatus = /* @__PURE__ */ ((SystemStatus2) => {
@@ -3002,7 +3003,8 @@ var JOB_TYPE_TO_QUEUE = {
   ["delivery-notification" /* DELIVERY_NOTIFICATION */]: "delivery_notifications",
   ["ai:batch" /* AI_BATCH */]: "ai_batch",
   ["squad-webhook" /* SQUAD_WEBHOOK */]: "squid_webhooks",
-  ["export" /* EXPORT */]: "exports"
+  ["export" /* EXPORT */]: "exports",
+  ["billing-notification" /* BILLING_NOTIFICATION */]: "billing_notifications"
 };
 function toQueueName(type) {
   return JOB_TYPE_TO_QUEUE[type];

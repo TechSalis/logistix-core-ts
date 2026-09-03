@@ -261,7 +261,8 @@ declare enum JobType {
     DELIVERY_NOTIFICATION = "delivery-notification",
     SQUAD_WEBHOOK = "squad-webhook",
     EXPORT = "export",
-    AI_BATCH = "ai:batch"
+    AI_BATCH = "ai:batch",
+    BILLING_NOTIFICATION = "billing-notification"
 }
 declare enum SystemStatus {
     UP = "UP",

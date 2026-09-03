@@ -307,6 +307,7 @@ export enum JobType {
   SQUAD_WEBHOOK = 'squad-webhook',
   EXPORT = 'export',
   AI_BATCH = 'ai:batch',
+  BILLING_NOTIFICATION = 'billing-notification',
 }
 
 export enum SystemStatus {

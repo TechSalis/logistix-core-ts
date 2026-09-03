@@ -444,6 +444,7 @@ var JobType = /* @__PURE__ */ ((JobType2) => {
   JobType2["SQUAD_WEBHOOK"] = "squad-webhook";
   JobType2["EXPORT"] = "export";
   JobType2["AI_BATCH"] = "ai:batch";
+  JobType2["BILLING_NOTIFICATION"] = "billing-notification";
   return JobType2;
 })(JobType || {});
 var SystemStatus = /* @__PURE__ */ ((SystemStatus2) => {

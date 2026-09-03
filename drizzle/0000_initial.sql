@@ -494,6 +494,7 @@ SELECT pgmq.create('delivery_notifications');
 SELECT pgmq.create('ai_batch');
 SELECT pgmq.create('squid_webhooks');
 SELECT pgmq.create('exports');
+SELECT pgmq.create('billing_notifications');
 
 -- Note: CREATE EXTENSION pgmq (and pg_cron) run their install scripts inside the
 -- migrated transaction, and pgmq's script leaves search_path clobbered to an empty
@@ -590,6 +591,280 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Billing: cancel PAST_DUE subscriptions whose 14-day grace window has elapsed
+-- (PAST_DUE → CANCELLED). Mirrors the removed worker processPastDue: the state
+-- transition, deactivation, DOWNGRADE audit event, and rider/dispatcher FCM
+-- token collection are all DB-native (self-healing even if workers are down);
+-- the only worker-side step is delivering the enqueued email/FCM notification.
+-- Payment-received wedge + first-day past-due notice stamp are preserved 1:1.
+CREATE OR REPLACE FUNCTION pg_cron_cancel_overdue_subscriptions() RETURNS void AS $$
+DECLARE
+  company RECORD;
+  days_since_start numeric;
+  payment_received boolean;
+  already_notified boolean;
+  rider_tokens text[];
+  dispatcher_tokens text[];
+  cancelled_count integer := 0;
+  notified_count integer := 0;
+BEGIN
+  FOR company IN
+    SELECT cs.company_id, cs.tier, cs.period_start, cs.period_end, cs.metadata,
+           cp.name AS company_name, dp.email AS contact_email
+    FROM company_settings cs
+    JOIN companies cp ON cp.id = cs.company_id
+    LEFT JOIN dispatchers dp
+      ON dp.company_id = cs.company_id AND dp.role = 'OWNER'::"DispatcherRole"
+    WHERE cs.subscription_status = 'PAST_DUE'::"SubscriptionStatus"
+      AND (cs.metadata->>'lastPastDueNotifiedAt' IS NULL
+           OR extract(epoch from (NOW() - COALESCE(cs.period_start, NOW()))) / 86400.0 >= 14)
+    ORDER BY cs.period_end ASC NULLS LAST
+    FOR UPDATE OF cs SKIP LOCKED
+  LOOP
+    IF company.period_end IS NULL THEN
+      CONTINUE;
+    END IF;
+
+    -- Re-check under lock: only a row still PAST_DUE is processed.
+    PERFORM 1 FROM company_settings
+    WHERE company_id = company.company_id
+      AND subscription_status = 'PAST_DUE'::"SubscriptionStatus";
+    IF NOT FOUND THEN
+      CONTINUE;
+    END IF;
+
+    days_since_start := floor(
+      extract(epoch from (NOW() - COALESCE(company.period_start, NOW()))) / 86400.0
+    );
+
+    -- First-day past-due notice — stamped once per episode so re-runs can't resend.
+    IF days_since_start < 1 AND company.contact_email IS NOT NULL THEN
+      already_notified := company.metadata->>'lastPastDueNotifiedAt' IS NOT NULL;
+      IF NOT already_notified THEN
+        UPDATE company_settings
+        SET metadata = jsonb_set(
+          COALESCE(metadata, '{}'::jsonb),
+          '{lastPastDueNotifiedAt}',
+          to_jsonb(to_char(NOW(), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')::text)
+        )
+        WHERE company_id = company.company_id;
+
+        -- First-day notice delivery deferred to the queue drain (email only).
+        INSERT INTO pgmq.q_billing_notifications (message)
+        VALUES (
+          jsonb_build_object(
+            '_meta', jsonb_build_object('enqueuedAt', now()),
+            'reason', 'past_due_notify',
+            'company', jsonb_build_object(
+              'companyId', company.company_id,
+              'companyName', company.company_name,
+              'contactEmail', company.contact_email,
+              'tier', company.tier::text
+            )
+          )
+        );
+        notified_count := notified_count + 1;
+      END IF;
+    END IF;
+
+    IF days_since_start < 14 THEN
+      CONTINUE;
+    END IF;
+
+    -- Payment-received wedge: a successful charge during the grace window reactivates.
+    SELECT EXISTS (
+      SELECT 1 FROM subscription_transactions st
+      WHERE st.company_id = company.company_id
+        AND st.status = 'SUCCESS'::"TransactionStatus"
+        AND st.created_at >= COALESCE(company.period_start, NOW())
+    ) INTO payment_received;
+
+    IF payment_received THEN
+      UPDATE company_settings
+      SET subscription_status = 'ACTIVE'::"SubscriptionStatus"
+      WHERE company_id = company.company_id;
+      CONTINUE;
+    END IF;
+
+    -- No payment — cancel subscription (DB-only; network I/O deferred to the queue drain).
+    UPDATE companies SET deactivated_at = NOW() WHERE id = company.company_id;
+
+    UPDATE company_settings
+    SET subscription_status = 'CANCELLED'::"SubscriptionStatus"
+    WHERE company_id = company.company_id;
+
+    UPDATE company_channels
+    SET status = 'DEACTIVATED'::"CompanyChannelStatus",
+        metadata = jsonb_set(
+          COALESCE(metadata, '{}'::jsonb),
+          '{deactivatedReason}',
+          '"Subscription cancelled - payment overdue"'
+        )
+    WHERE company_id = company.company_id
+      AND status = 'ACTIVE'::"CompanyChannelStatus";
+
+    INSERT INTO event_logs (id, entity_type, entity_id, event_type, metadata, created_at)
+    VALUES (
+      gen_random_uuid()::text, 'COMPANY'::"EntityType", company.company_id,
+      'DOWNGRADE'::"EventType",
+      jsonb_build_object(
+        'from_tier', company.tier::text,
+        'to_tier', NULL,
+        'reason', 'Subscription cancelled - payment overdue',
+        'cancelled_at', to_char(NOW(), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+      ),
+      NOW()
+    );
+
+    -- Collect FCM tokens inside the same txn (row is locked).
+    SELECT COALESCE(array_agg(dt.fcm_token), ARRAY[]::text[])
+    INTO rider_tokens
+    FROM riders r
+    JOIN device_tokens dt ON dt.user_id = r.user_id
+    WHERE r.company_id = company.company_id
+      AND r.approval_status = 'APPROVED'::"ApprovalStatus"
+      AND dt.fcm_token IS NOT NULL;
+
+    SELECT COALESCE(array_agg(dt.fcm_token), ARRAY[]::text[])
+    INTO dispatcher_tokens
+    FROM dispatchers d
+    JOIN device_tokens dt ON dt.user_id = d.user_id
+    WHERE d.company_id = company.company_id
+      AND d.approval_status = 'APPROVED'::"ApprovalStatus"
+      AND dt.fcm_token IS NOT NULL;
+
+    -- Cancellation notice delivery deferred to the queue drain (email + FCM).
+    INSERT INTO pgmq.q_billing_notifications (message)
+    VALUES (
+      jsonb_build_object(
+        '_meta', jsonb_build_object('enqueuedAt', now()),
+        'reason', 'past_due_cancelled',
+        'company', jsonb_build_object(
+          'companyId', company.company_id,
+          'companyName', company.company_name,
+          'contactEmail', company.contact_email,
+          'tier', company.tier::text
+        ),
+        'riderTokens', rider_tokens,
+        'dispatcherTokens', dispatcher_tokens
+      )
+    );
+
+    cancelled_count := cancelled_count + 1;
+    notified_count := notified_count + 1;
+  END LOOP;
+
+  RAISE NOTICE 'PastDue cancel: % cancelled, % notifications enqueued', cancelled_count, notified_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Billing: terminate CANCELLING subscriptions whose paid period has elapsed
+-- (CANCELLING → CANCELLED). Mirrors the removed worker processCancellingExpiry.
+-- Owner-initiated cancellation keeps the company active until periodEnd; once it
+-- passes the subscription is terminated and the team notified. No payment wedge
+-- (the owner chose to end the plan) and no first-day stamp (CANCELLING carries
+-- no grace-window notice).
+CREATE OR REPLACE FUNCTION pg_cron_cancel_expired_cancelling() RETURNS void AS $$
+DECLARE
+  company RECORD;
+  rider_tokens text[];
+  dispatcher_tokens text[];
+  cancelled_count integer := 0;
+  notified_count integer := 0;
+BEGIN
+  FOR company IN
+    SELECT cs.company_id, cs.tier, cs.period_end,
+           cp.name AS company_name, dp.email AS contact_email
+    FROM company_settings cs
+    JOIN companies cp ON cp.id = cs.company_id
+    LEFT JOIN dispatchers dp
+      ON dp.company_id = cs.company_id AND dp.role = 'OWNER'::"DispatcherRole"
+    WHERE cs.subscription_status = 'CANCELLING'::"SubscriptionStatus"
+      AND cs.period_end < NOW()
+    ORDER BY cs.period_end ASC NULLS LAST
+    FOR UPDATE OF cs SKIP LOCKED
+  LOOP
+    IF company.period_end IS NULL THEN
+      CONTINUE;
+    END IF;
+
+    -- Re-check under lock: only a row still CANCELLING is processed.
+    PERFORM 1 FROM company_settings
+    WHERE company_id = company.company_id
+      AND subscription_status = 'CANCELLING'::"SubscriptionStatus";
+    IF NOT FOUND THEN
+      CONTINUE;
+    END IF;
+
+    UPDATE companies SET deactivated_at = NOW() WHERE id = company.company_id;
+
+    UPDATE company_settings
+    SET subscription_status = 'CANCELLED'::"SubscriptionStatus"
+    WHERE company_id = company.company_id;
+
+    UPDATE company_channels
+    SET status = 'DEACTIVATED'::"CompanyChannelStatus",
+        metadata = jsonb_set(
+          COALESCE(metadata, '{}'::jsonb),
+          '{deactivatedReason}',
+          '"Owner-requested cancellation completed"'
+        )
+    WHERE company_id = company.company_id
+      AND status = 'ACTIVE'::"CompanyChannelStatus";
+
+    INSERT INTO event_logs (id, entity_type, entity_id, event_type, metadata, created_at)
+    VALUES (
+      gen_random_uuid()::text, 'COMPANY'::"EntityType", company.company_id,
+      'DOWNGRADE'::"EventType",
+      jsonb_build_object(
+        'from_tier', company.tier::text,
+        'to_tier', NULL,
+        'reason', 'Owner-requested cancellation completed',
+        'cancelled_at', to_char(NOW(), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+      ),
+      NOW()
+    );
+
+    SELECT COALESCE(array_agg(dt.fcm_token), ARRAY[]::text[])
+    INTO rider_tokens
+    FROM riders r
+    JOIN device_tokens dt ON dt.user_id = r.user_id
+    WHERE r.company_id = company.company_id
+      AND r.approval_status = 'APPROVED'::"ApprovalStatus"
+      AND dt.fcm_token IS NOT NULL;
+
+    SELECT COALESCE(array_agg(dt.fcm_token), ARRAY[]::text[])
+    INTO dispatcher_tokens
+    FROM dispatchers d
+    JOIN device_tokens dt ON dt.user_id = d.user_id
+    WHERE d.company_id = company.company_id
+      AND d.approval_status = 'APPROVED'::"ApprovalStatus"
+      AND dt.fcm_token IS NOT NULL;
+
+    INSERT INTO pgmq.q_billing_notifications (message)
+    VALUES (
+      jsonb_build_object(
+        '_meta', jsonb_build_object('enqueuedAt', now()),
+        'reason', 'cancelling_expired',
+        'company', jsonb_build_object(
+          'companyId', company.company_id,
+          'companyName', company.company_name,
+          'contactEmail', company.contact_email,
+          'tier', company.tier::text
+        ),
+        'riderTokens', rider_tokens,
+        'dispatcherTokens', dispatcher_tokens
+      )
+    );
+
+    cancelled_count := cancelled_count + 1;
+    notified_count := notified_count + 1;
+  END LOOP;
+
+  RAISE NOTICE 'CancellingExpiry: % cancelled, % notifications enqueued', cancelled_count, notified_count;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Daily metrics computation: compute DAY buckets for all 4 domains
 -- Metrics compression: fold expired daily buckets into lifetime totals
 CREATE OR REPLACE FUNCTION pg_cron_metrics_compression() RETURNS void AS $$
@@ -682,6 +957,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Idempotency-key cleanup: delete expired keys (replaces the workers maintenance-queue
+-- pruneExpiredIdempotencyKeys). Backend claimers no longer run a lazy full-table DELETE
+-- on the write path; this scheduled prune owns that cleanup at a bounded (15-min) cadence.
+-- Deletes only `expires_at < NOW()`, so a row reclaimed in-between is untouched.
+CREATE OR REPLACE FUNCTION pg_cron_idempotency_cleanup() RETURNS void AS $$
+DECLARE
+  pruned_count integer;
+BEGIN
+  DELETE FROM idempotency_keys WHERE expires_at < NOW();
+  GET DIAGNOSTICS pruned_count = ROW_COUNT;
+  IF pruned_count > 0 THEN
+    RAISE NOTICE 'Idempotency cleanup: pruned % expired key(s)', pruned_count;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 -- -------------------------------------------------------
 -- 4. Backend NOTIFY functions (pg_cron → TypeScript handlers)
 -- -------------------------------------------------------
@@ -698,9 +989,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION pg_cron_notify_conversation_ownership() RETURNS void AS $$
+-- Conversation ownership: release human-owned conversations inactive > 30 min
+-- back to AI. The state UPDATE is fully DB-native (self-healing even if the
+-- backend is down); the NOTIFY is ONLY a side-effect signal so a live backend
+-- can invalidate L1 conversation caches and fan out the ownership change to
+-- connected dispatchers (both are correctness necessities — see
+-- @core/cache-invalidation; routing reads cached handled_by_type).
+-- The 30-min threshold mirrors SCALING_CONFIG.jobs.pgCron.conversationOwnershipInactivityMs.
+CREATE OR REPLACE FUNCTION pg_cron_release_inactive_conversations() RETURNS void AS $$
+DECLARE
+  released_ids text;
 BEGIN
-  PERFORM pg_notify('pg_cron_sweeper', 'conversation_ownership');
+  WITH released AS (
+    UPDATE conversations
+    SET handled_by_type = 'AI', handled_by = NULL, handled_at = NULL
+    WHERE handled_by_type <> 'AI'
+      AND handled_at < NOW() - INTERVAL '30 minutes'
+    RETURNING id
+  )
+  SELECT COALESCE(string_agg(id, ','), '') INTO released_ids FROM released;
+  IF released_ids <> '' THEN
+    PERFORM pg_notify('pg_cron_sweeper', 'conversation_ownership:' || released_ids);
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -717,15 +1027,18 @@ $$ LANGUAGE plpgsql;
 -- Worker DB-only tasks (pure SQL, no backend involvement)
 SELECT cron.schedule('draft-expiration', '0 2 * * *', 'SELECT pg_cron_draft_expiration()');
 SELECT cron.schedule('session-device-cleanup', '0 2 * * *', 'SELECT pg_cron_session_device_cleanup()');
+SELECT cron.schedule('past-due-cancel', '0 2 * * *', 'SELECT pg_cron_cancel_overdue_subscriptions()');
+SELECT cron.schedule('cancelling-expiry', '0 2 * * *', 'SELECT pg_cron_cancel_expired_cancelling()');
 SELECT cron.schedule('payment-timeout-cancellation', '*/5 * * * *', 'SELECT pg_cron_payment_timeout_cancellation()');
 SELECT cron.schedule('metrics-compression', '0 1 * * *', 'SELECT pg_cron_metrics_compression()');
 
 -- Backend sweepers (pure SQL, no backend involvement)
 SELECT cron.schedule('outbox-prune', '*/5 * * * *', 'SELECT pg_cron_outbox_prune()');
 SELECT cron.schedule('typing-marker-sweep', '* * * * *', 'SELECT pg_cron_typing_marker_sweep()');
+SELECT cron.schedule('idempotency-cleanup', '*/15 * * * *', 'SELECT pg_cron_idempotency_cleanup()');
 
 -- Backend NOTIFY triggers (pg_cron fires → backend LISTENs → TypeScript handler)
 SELECT cron.schedule('delivery-expiry-lifecycle', '*/15 * * * *', 'SELECT pg_cron_notify_delivery_expiry()');
 SELECT cron.schedule('delivery-liveness', '*/15 * * * *', 'SELECT pg_cron_notify_delivery_liveness()');
-SELECT cron.schedule('conversation-ownership', '*/15 * * * *', 'SELECT pg_cron_notify_conversation_ownership()');
+SELECT cron.schedule('conversation-ownership', '*/15 * * * *', 'SELECT pg_cron_release_inactive_conversations()');
 SELECT cron.schedule('stale-assignment', '*/15 * * * *', 'SELECT pg_cron_notify_stale_assignment()');

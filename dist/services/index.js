@@ -2286,7 +2286,8 @@ var JOB_TYPE_TO_QUEUE = {
   ["delivery-notification" /* DELIVERY_NOTIFICATION */]: "delivery_notifications",
   ["ai:batch" /* AI_BATCH */]: "ai_batch",
   ["squad-webhook" /* SQUAD_WEBHOOK */]: "squid_webhooks",
-  ["export" /* EXPORT */]: "exports"
+  ["export" /* EXPORT */]: "exports",
+  ["billing-notification" /* BILLING_NOTIFICATION */]: "billing_notifications"
 };
 function toQueueName(type) {
   return JOB_TYPE_TO_QUEUE[type];
