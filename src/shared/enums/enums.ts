@@ -310,6 +310,25 @@ export enum JobType {
   BILLING_NOTIFICATION = 'billing-notification',
 }
 
+/**
+ * SQL→handler contract for billing notification reasons. The pg_cron functions
+ * that enqueue into the `billing_notifications` pgmq queue use exactly these
+ * string values. This const is the single source of truth — the SQL functions
+ * in sql/appendix.sql and the workers handler must agree with it.
+ */
+export const BILLING_NOTIFICATION_REASONS = {
+  PAST_DUE_NOTIFY: 'past_due_notify',
+  PAST_DUE_CANCELLED: 'past_due_cancelled',
+  CANCELLING_EXPIRED: 'cancelling_expired',
+} as const;
+
+export type BillingNotificationReason =
+  (typeof BILLING_NOTIFICATION_REASONS)[keyof typeof BILLING_NOTIFICATION_REASONS];
+
+export function isBillingNotificationReason(value: string): value is BillingNotificationReason {
+  return (Object.values(BILLING_NOTIFICATION_REASONS) as string[]).includes(value);
+}
+
 export enum SystemStatus {
   UP = 'UP',
   DOWN = 'DOWN',

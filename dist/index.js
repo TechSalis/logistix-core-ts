@@ -288,6 +288,14 @@ var JobType = /* @__PURE__ */ ((JobType2) => {
   JobType2["BILLING_NOTIFICATION"] = "billing-notification";
   return JobType2;
 })(JobType || {});
+var BILLING_NOTIFICATION_REASONS = {
+  PAST_DUE_NOTIFY: "past_due_notify",
+  PAST_DUE_CANCELLED: "past_due_cancelled",
+  CANCELLING_EXPIRED: "cancelling_expired"
+};
+function isBillingNotificationReason(value) {
+  return Object.values(BILLING_NOTIFICATION_REASONS).includes(value);
+}
 var SystemStatus = /* @__PURE__ */ ((SystemStatus2) => {
   SystemStatus2["UP"] = "UP";
   SystemStatus2["DOWN"] = "DOWN";
@@ -3331,6 +3339,7 @@ export {
   ApprovalStatus,
   AuditActorType,
   BILLING_CONFIG,
+  BILLING_NOTIFICATION_REASONS,
   CAC_EVIDENCE_STATUS,
   CHANNEL_FEES,
   CLIENT_CONFIG,
@@ -3490,6 +3499,7 @@ export {
   haversineDistanceMeters,
   idempotencyKeys,
   isBillableTier,
+  isBillingNotificationReason,
   isTransientHttpError,
   ledgerAdjustmentType,
   ledgerTransactions,

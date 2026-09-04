@@ -90,6 +90,7 @@
     "test:watch": "vitest",
     "db:generate": "DATABASE_URL=postgresql://dummy:dummy@localhost/dummy drizzle-kit generate",
     "db:migrate": "npx tsx scripts/migrate.ts",
+    "db:recreate": "npx tsx scripts/recreate.ts",
     "lint": "eslint src/",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",

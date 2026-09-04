@@ -69,7 +69,10 @@ export {
   safeEnumValue,
   LEAD_CATEGORIES,
   CAC_EVIDENCE_STATUS,
+  BILLING_NOTIFICATION_REASONS,
+  isBillingNotificationReason,
   type CACEvidenceStatus,
+  type BillingNotificationReason,
 } from './enums/enums.js';
 
 export { ENUM_CATALOG, type EnumValue, type EnumCatalog } from './enums/enum-catalog.js';

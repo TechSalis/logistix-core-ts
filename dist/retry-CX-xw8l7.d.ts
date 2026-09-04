@@ -264,6 +264,19 @@ declare enum JobType {
     AI_BATCH = "ai:batch",
     BILLING_NOTIFICATION = "billing-notification"
 }
+/**
+ * SQL→handler contract for billing notification reasons. The pg_cron functions
+ * that enqueue into the `billing_notifications` pgmq queue use exactly these
+ * string values. This const is the single source of truth — the SQL functions
+ * in sql/appendix.sql and the workers handler must agree with it.
+ */
+declare const BILLING_NOTIFICATION_REASONS: {
+    readonly PAST_DUE_NOTIFY: "past_due_notify";
+    readonly PAST_DUE_CANCELLED: "past_due_cancelled";
+    readonly CANCELLING_EXPIRED: "cancelling_expired";
+};
+type BillingNotificationReason = (typeof BILLING_NOTIFICATION_REASONS)[keyof typeof BILLING_NOTIFICATION_REASONS];
+declare function isBillingNotificationReason(value: string): value is BillingNotificationReason;
 declare enum SystemStatus {
     UP = "UP",
     DOWN = "DOWN",
@@ -511,4 +524,4 @@ declare function withRetry<T>(fn: (attempt: number) => Promise<T>, options?: Wit
  */
 declare function isTransientHttpError(error: unknown): boolean;
 
-export { SecuritySeverity as $, ALL_DAYS as A, LedgerAdjustmentType as B, type CACEvidenceStatus as C, DayOfWeek as D, EntityType as E, FcmNotificationType as F, LlmRole as G, LogLevel as H, IdType as I, JobType as J, MessageStatus as K, LEAD_CATEGORIES as L, MESSAGE_STATUS_RANK as M, MetricDomain as N, MetricGranularity as O, NOTIFICATION_PRIORITY as P, NodeEnv as Q, type NotificationPriority as R, PaymentMethod as S, PaymentProvider as T, PaymentStatus as U, ProviderCapability as V, ProviderRole as W, RETRYABLE_NETWORK_ERROR_CODES as X, RETRYABLE_SQLSTATE_CODES as Y, RiderStatus as Z, SecurityEventType as _, AdminDeliveryAction as a, SenderType as a0, SseEventType as a1, SubscriptionEventType as a2, SubscriptionHealth as a3, SubscriptionStatus as a4, SubscriptionTier as a5, SystemStatus as a6, TransactionStatus as a7, TransactionType as a8, UserAuditAction as a9, UserRole as aa, VehicleType as ab, type WithRetryOptions as ac, isTransientHttpError as ad, safeEnumValue as ae, sleep as af, withRetry as ag, AdminEscalationAction as b, AdminRole as c, ApiTag as d, ApprovalStatus as e, AuditActorType as f, CAC_EVIDENCE_STATUS as g, ChannelPlatform as h, ChannelType as i, CompanyAccessLevel as j, CompanyChannelStatus as k, ContactCategory as l, ConversationHandlerType as m, ConversationScope as n, DeliveryExpiryReason as o, DeliveryStatus as p, DeliverySyncScope as q, DevicePlatform as r, DispatcherRole as s, ErrorCode as t, EscalatedTo as u, EscalationStatus as v, EventType as w, ExportDataType as x, ExportReason as y, JwtTokenType as z };
+export { RiderStatus as $, ALL_DAYS as A, BILLING_NOTIFICATION_REASONS as B, type CACEvidenceStatus as C, DayOfWeek as D, EntityType as E, FcmNotificationType as F, JwtTokenType as G, LedgerAdjustmentType as H, IdType as I, JobType as J, LlmRole as K, LEAD_CATEGORIES as L, LogLevel as M, MESSAGE_STATUS_RANK as N, MessageStatus as O, MetricDomain as P, MetricGranularity as Q, NOTIFICATION_PRIORITY as R, NodeEnv as S, type NotificationPriority as T, PaymentMethod as U, PaymentProvider as V, PaymentStatus as W, ProviderCapability as X, ProviderRole as Y, RETRYABLE_NETWORK_ERROR_CODES as Z, RETRYABLE_SQLSTATE_CODES as _, AdminDeliveryAction as a, SecurityEventType as a0, SecuritySeverity as a1, SenderType as a2, SseEventType as a3, SubscriptionEventType as a4, SubscriptionHealth as a5, SubscriptionStatus as a6, SubscriptionTier as a7, SystemStatus as a8, TransactionStatus as a9, TransactionType as aa, UserAuditAction as ab, UserRole as ac, VehicleType as ad, type WithRetryOptions as ae, isBillingNotificationReason as af, isTransientHttpError as ag, safeEnumValue as ah, sleep as ai, withRetry as aj, AdminEscalationAction as b, AdminRole as c, ApiTag as d, ApprovalStatus as e, AuditActorType as f, type BillingNotificationReason as g, CAC_EVIDENCE_STATUS as h, ChannelPlatform as i, ChannelType as j, CompanyAccessLevel as k, CompanyChannelStatus as l, ContactCategory as m, ConversationHandlerType as n, ConversationScope as o, DeliveryExpiryReason as p, DeliveryStatus as q, DeliverySyncScope as r, DevicePlatform as s, DispatcherRole as t, ErrorCode as u, EscalatedTo as v, EscalationStatus as w, EventType as x, ExportDataType as y, ExportReason as z };
